@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.26",
- "nouveautes": "Quantités par action lues sur ta ferme : tous les calculs utilisent uniquement tes données.",
+ "version": "2026-11-07.27",
+ "nouveautes": "Rendement de chaque culture et fruit lu sur ta ferme.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

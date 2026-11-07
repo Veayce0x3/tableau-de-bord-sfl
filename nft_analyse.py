@@ -258,7 +258,8 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
                 seuils.append((res, v * pr(res), saison_txt))
         elif kind == "crops_mult":
             m = e[2]
-            g = sum(n * prod["rendement_culture"] * (1 - 1 / m) * pr(c) for c, n in prod["recoltes"].items())
+            rc = prod.get("rendements_cultures") or {}
+            g = sum(n * rc.get(c, prod["rendement_culture"]) * (1 - 1 / m) * pr(c) for c, n in prod["recoltes"].items())
             why.append(f"×{m:g} sur toutes tes récoltes")
         elif kind == "time":
             target, m = e[1], e[2]
@@ -266,7 +267,8 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
             if target in RES_NODES:
                 base = 0  # rochers et arbres : tu passes déjà ~6 fois par jour, plus de vitesse ne change presque rien
             elif target == "crops":
-                base = sum(n * prod["rendement_culture"] * pr(c) for c, n in prod["recoltes"].items())
+                rc = prod.get("rendements_cultures") or {}
+                base = sum(n * rc.get(c, prod["rendement_culture"]) * pr(c) for c, n in prod["recoltes"].items())
             elif target == "hen":
                 base = prod["cycles_poules"] * 2 * pr("Egg")
             elif target == "cow":

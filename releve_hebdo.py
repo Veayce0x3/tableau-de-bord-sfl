@@ -511,13 +511,16 @@ def main():
     all_prices = collect_prices(fin)
     # Quantité par action de TA ferme (pierre par coup de pioche, bois par arbre…), lue sur sfl.world
     # si tu ne l'as pas réglée toi-même dans ma_ferme.json → "rendements"
-    if not CONFIG.get("rendements"):
-        res_ferme = (try_json(f"https://sfl.world/api/v1/land/{FARM_ID}") or {}).get("resources") or {}
-        lus = {k.capitalize(): v.get("avg") for k, v in res_ferme.items()
-               if k in ("stone", "iron", "gold", "crimstone", "wood") and isinstance(v, dict) and v.get("avg")}
-        if lus:
-            CONFIG["rendements"] = lus
-            CONFIG["rendements_source"] = "lus sur ta ferme (sfl.world)"
+    v1 = try_json(f"https://sfl.world/api/v1/land/{FARM_ID}") or {}
+    lus = {}
+    for groupe in ("resources", "crops", "fruits"):
+        for k, v in (v1.get(groupe) or {}).items():
+            if isinstance(v, dict) and v.get("avg"):
+                lus[k.capitalize()] = v["avg"]
+    if lus:
+        # tes réglages manuels (ma_ferme.json → "rendements") restent prioritaires
+        CONFIG["rendements"] = {**lus, **(CONFIG.get("rendements") or {})}
+        CONFIG["rendements_source"] = "lus sur ta ferme (sfl.world)"
     # Cours du Flower en dollars (USDC) du jour, gardé avec les compteurs du compte
     try:
         usd = (try_json(RATES_URL) or {}).get("flowerUsd")
@@ -727,6 +730,11 @@ def main():
         p.update(animaux)
         if (CONFIG.get("rendements") or {}).get("Wood"):
             p["rendement_bois"] = CONFIG["rendements"]["Wood"]
+        rd = CONFIG.get("rendements") or {}
+        cultures = {c: rd[c] for c in p.get("recoltes", {}) if rd.get(c)}
+        if cultures:
+            p["rendements_cultures"] = cultures
+            p["rendement_culture"] = rd.get("Wheat") or sum(cultures.values()) / len(cultures)
         p["arbres"] = ferme["noeuds"]["Wood"]
         if animaux_lus:
             p["poules"] = (animaux_lus.get("Chicken") or {}).get("nombre", 0)
