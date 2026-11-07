@@ -8,6 +8,23 @@ Tu n'as **plus besoin d'aller sur ces sites** : tout s'affiche dans ton tableau 
 
 ---
 
+## 🍏 Sur Mac : installation en une ligne (recommandé)
+Pas de zip, pas de blocage de macOS.
+1. Installe **Python 3** si besoin (voir étape 2 plus bas).
+2. Ouvre **Terminal** (Cmd + Espace, tape « Terminal », Entrée).
+3. Copie-colle cette ligne, puis Entrée :
+   ```
+   bash -c "$(curl -fsSL https://raw.githubusercontent.com/Veayce0x3/tableau-de-bord-sfl/main/installer.sh)"
+   ```
+4. Tape ton **numéro de ferme** quand il est demandé, puis Entrée.
+
+C'est tout : l'outil s'installe dans `Documents/Tableau-de-bord-SFL`, un raccourci **« Ferme SFL »** apparaît sur ton Bureau, et le tableau de bord s'ouvre.
+Ensuite, chaque jour : double-clic sur **« Ferme SFL »** sur le Bureau.
+(Si un jour quelque chose est cassé, relance la même ligne : elle répare l'outil sans toucher à tes données.)
+
+---
+
+## Installation avec le zip (Windows, ou Mac sans Terminal)
 ## Étape 1 — Dézipper
 1. Enregistre `Tableau-de-bord-SFL.zip` où tu veux (par exemple dans Documents).
 2. Double-clic dessus (Mac) ou clic droit → **Extraire tout** (Windows).
@@ -45,8 +62,8 @@ C'est la **seule** info à donner : à partir de ce numéro, l'outil récupère 
 
 ## Étape 4 — Lancer l'outil
 - **Mac** : double-clic sur **`Lancer le relevé.command`**.
-  La première fois, macOS peut bloquer : fais **clic droit → Ouvrir → Ouvrir**.
-  (Si ça bloque encore : Réglages Système → Confidentialité et sécurité → « Ouvrir quand même ».)
+  macOS bloque souvent les fichiers d'un zip téléchargé. Le plus simple : utilise plutôt l'installation en une ligne ci-dessus.
+  Sinon : Réglages Système → Confidentialité et sécurité → « Ouvrir quand même ».
 - **Windows** : double-clic sur **`Lancer le relevé.bat`**.
   Si Windows affiche « Windows a protégé votre ordinateur » : **Informations complémentaires → Exécuter quand même**.
 
