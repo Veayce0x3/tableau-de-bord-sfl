@@ -326,7 +326,7 @@ def _fr(x, d=0):
     return f"{x:,.{d}f}".replace(",", " ").replace(".", ",")
 
 
-def potentiel(entries, prices, prod):
+def potentiel(entries, prices, prod, owned=(), textes=None):
     """Ce que tu fais aujourd'hui (en clair) et le gain par jour si tu optimises au maximum."""
     pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
     if not entries:
@@ -346,7 +346,8 @@ def potentiel(entries, prices, prod):
                + f" ({quand})")
         opt = (f"si tu récoltes chacun de tes {noeuds} {NOM_NOEUD[res]} dès qu'il est prêt (~{_fr(mx)} fois par jour)"
                if noeuds else None)
-        return {"actuel": txt, "g_max": mx * par_action, "opt": opt}
+        return {"actuel": txt, "g_max": mx * par_action, "opt": opt,
+                "cur": {"unite": "coups par jour" if res != "Wood" else "arbres coupés par jour", "actu": actu, "max": mx, "gain_u": par_action}}
     if k in ("animal", "hen"):
         bete = "vache" if k == "animal" else "poule"
         nb = prod.get("vaches" if k == "animal" else "poules") or 0
@@ -355,7 +356,8 @@ def potentiel(entries, prices, prod):
         txt = (f"Aujourd'hui tu récoltes une {bete} {_fr(actu)} fois par jour (chaque clic sur une {bete} qui a produit)"
                + (f" · tu as {nb} {bete}s" if nb else "") + f" ({quand})")
         opt = f"si tu récoltes tes {nb} {bete}s à chaque cycle (~{_fr(mx)} récoltes par jour)" if nb else None
-        return {"actuel": txt, "g_max": mx * e[2] * pr(res), "opt": opt}
+        return {"actuel": txt, "g_max": mx * e[2] * pr(res), "opt": opt,
+                "cur": {"unite": f"récoltes de {bete} par jour", "actu": actu, "max": mx, "gain_u": e[2] * pr(res)}}
     if k == "crop_add":
         ss = SAISONS.get(res, ["spring", "summer", "autumn", "winter"])
         plein = prod.get("champs_total") or 0
@@ -369,7 +371,23 @@ def potentiel(entries, prices, prod):
         saison_txt = " et ".join(SAISON_FR[x] for x in ss) if len(ss) < 4 else "toute l'année"
         txt = (f"Aujourd'hui tu fais ~{_fr(rec4, 1)} récoltes complètes {de(res)} ({plein} champs) toutes les 4 semaines ({quand})")
         opt = f"si tu plantes tous tes champs en {FR.get(res, res)} pendant sa saison ({saison_txt}) : ~{_fr(mx4, 1)} récoltes complètes toutes les 4 semaines"
-        return {"actuel": txt, "g_max": mx * e[2] * share * pr(res), "opt": opt}
+        # Planter plus de cette culture = moins d'une autre (ta culture principale) : ce que tu perds en face
+        rd = prod.get("rendements_cultures") or {}
+        autres = {c: v for c, v in (parts or prod["recoltes"]).items() if c != res and v}
+        alt = max(autres, key=autres.get) if autres else None
+        bonus_alt = 0.0
+        if alt:
+            for o in owned:
+                for e2 in (B.get(o) or effets_auto((textes or {}).get(o, []))):
+                    if e2[0] == "crop_add" and e2[1] == alt:
+                        bonus_alt += e2[2] * (e2[3] if len(e2) > 3 else 1)
+        y_res, y_alt = rd.get(res, prod.get("rendement_culture", 2.7)), rd.get(alt, prod.get("rendement_culture", 2.7)) if alt else 0
+        jour_u = plein / 28   # une récolte complète en plus toutes les 4 semaines = plein/28 champs par jour
+        return {"actuel": txt, "g_max": mx * e[2] * share * pr(res), "opt": opt,
+                "cur": {"unite": "récoltes complètes toutes les 4 semaines", "actu": rec4, "max": mx4,
+                        "gain_u": e[2] * share * pr(res) * jour_u,
+                        "culture": FR.get(res, res), "alt": FR.get(alt, alt) if alt else None,
+                        "echange_u": ((y_res * pr(res)) - (y_alt * pr(alt) + bonus_alt * pr(alt))) * jour_u if alt else 0}}
     return None
 
 
@@ -431,7 +449,7 @@ def analyse_nft(holdings, prices, cfg, source="défaut", fiable=True):
                 v, c = "❌ Trop cher pour ce qu'il rapporte", "neg"
         if not fiable and not mine:
             g, an = 0.0, None
-        pot = potentiel(entries, prices, prod) if chiffrable and not xp else None
+        pot = potentiel(entries, prices, prod, owned, textes) if chiffrable and not xp else None
         an_max = (pot["g_max"] * 365 / price * 100) if (pot and price and pot.get("opt")) else None
         mois = (price / g / 30) if (price and g > 0.001) else None
         note = ("🔴 Pas rentable" if mois is None else "🟢 Très rentable" if mois < 12 else "🟡 Correct" if mois < 24

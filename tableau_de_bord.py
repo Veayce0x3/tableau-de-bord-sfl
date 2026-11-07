@@ -390,6 +390,21 @@ function skillsTab(){
  <div class="card"><h2>🌳 Tes arbres</h2><div class="scroll"><table><tr><th>Arbre</th><th>Points</th><th>Palier atteint</th><th>Palier 2 à</th><th>Palier 3 à</th></tr>${K.arbres.map(a=>`<tr><td>${a.arbre}</td><td>${a.points}</td><td><b>${a.palier}</b></td><td>${a.seuil2} pts</td><td>${a.seuil3} pts</td></tr>`).join("")}</table></div>
  <div class="sub">Gains calculés avec ta ferme (rochers, arbres, champs, animaux) et tes habitudes, aux prix du jour, sur l'effet de base (rang 1). Les pouvoirs ne comptent pas la nourriture des animaux.</div></div>`;
 }
+function sliderHTML(r){const c=r.pot.cur,mx=Math.max(c.max,c.actu)*1.0,st=mx>50?1:0.1;
+ return `<div class="sim" style="margin-top:6px;padding:8px;border:1px dashed var(--line,#ccc);border-radius:8px" data-sim="${encodeURIComponent(JSON.stringify({c,price:r.price,base:r.jour}))}">
+  <div><b>🎚️ Et si je faisais…</b> <span class="sim_v"></span> ${c.unite}</div>
+  <input type="range" min="0" max="${mx.toFixed(1)}" step="${st}" value="${c.actu.toFixed(1)}" style="width:100%">
+  <div class="sim_out"></div></div>`;}
+function simUpdate(box){const d=JSON.parse(decodeURIComponent(box.dataset.sim)),c=d.c,x=+box.querySelector("input").value;
+ const g=Math.max(0,d.base+(x-c.actu)*c.gain_u),an=g*365/d.price*100,mo=g>0.0001?d.price/g/30:null;
+ const note=mo==null?"🔴 Pas rentable":mo<12?"🟢 Très rentable":mo<24?"🟡 Correct":mo<36?"🟠 Moyen":"🔴 Pas rentable";
+ box.querySelector(".sim_v").textContent=fr(x,x<20?1:0);
+ let t=`→ <b>${note}</b> · ${fr(an,0)} %/an · ${mo!=null?"remboursé en "+fr(mo,0)+" mois":"jamais remboursé"} · +${fr(g*30)} FLW/mois`;
+ if(c.alt&&x!==c.actu){const dx=x-c.actu,ech=dx*c.echange_u*30,net=(x-c.actu)*c.gain_u*30+ech;
+  t+=`<br>🔄 ${dx>0?"Ces champs seraient pris sur ton "+c.alt:"Ces champs repasseraient en "+c.alt} : ${ech>=0?"tu y gagnes":"tu y perds"} <b>${fr(Math.abs(ech))} FLW/mois</b> en valeur de récolte (${c.culture} contre ${c.alt}, tes bonus sur le ${c.alt} compris).<br>➡️ <b>Bilan pour toute ta ferme : ${sg(net)} FLW/mois.</b>`;}
+ box.querySelector(".sim_out").innerHTML=t;}
+document.addEventListener("input",e=>{const b=e.target.closest(".sim");if(b)simUpdate(b);});
+document.addEventListener("toggle",e=>{const b=e.target.querySelector&&e.target.querySelector(".sim");if(b)simUpdate(b);},true);
 function nftTab(){
  const el=document.getElementById("nft"),N=(D.nft||{}).rows||[],P=(D.nft||{}).prod||{};
  const own=N.filter(r=>r.owned),buy=N.filter(r=>!r.owned);
@@ -397,7 +412,7 @@ function nftTab(){
  const row=r=>`<tr><td style="text-align:left;min-width:190px">${!r.owned&&r.price?`<button class="chip" title="En faire un objectif" data-obj-nft="${encodeURIComponent(r.n)}">🎯</button> `:""}<b>${r.n}</b>${r.wearable?' <span class="why">(vêtement)</span>':""}<div class="why">🎁 ${r.effet||""}</div></td><td>${r.price?fr(r.price):"—"}</td><td class="${r.jour>0.001?"pos":""}">${r.xp?"XP":"+"+fp(r.jour)}</td><td>${r.xp?"—":"+"+fr(r.mois)}</td><td class="${r.cls}"><b>${r.an_pct!=null&&!r.xp?fr(r.an_pct,0)+" %":"—"}</b></td><td>${r.rembourse_jours?fr(r.rembourse_jours/30,0)+" mois":"—"}</td><td style="text-align:left;min-width:280px">${r.note?`<div><b>${r.note}</b>${r.an_pct!=null?` · ${fr(r.an_pct,0)} %/an`:""}${r.rembourse_jours?` · remboursé en ${fr(r.rembourse_jours/30,0)} mois`:""}${r.jour>0.001?` · +${fr(r.mois)} FLW/mois`:""}</div>`:""}
   ${r.pot?`<div class="why">👉 ${r.pot.actuel}</div>`:""}
   ${r.pot&&r.pot.opt&&r.an_max!=null?(r.an_max>(r.an_pct||0)*1.15?`<div class="why">💡 Jusqu'à <b>${fr(r.an_max,0)} %/an</b>${r.mois_max?` (remboursé en ${fr(r.mois_max,0)} mois)`:""} ${r.pot.opt}</div>`:`<div class="why">✅ Tu en tires déjà presque tout.</div>`):""}
-  ${r.amorti?`<div><b>💳 Amorti ${fr(r.amorti.pct,0)} %</b> (${fr(r.amorti.fait)} / ${fr(r.amorti.prix)} FLW) · reste ${fr(r.amorti.reste)} FLW${r.amorti.mois!=null?` ≈ ${fr(r.amorti.mois,0)} mois à ton rythme`:""}</div><div class="bar"><span style="width:${r.amorti.pct}%"></span></div>`:""}${r.note?"":`<span class="${r.cls}">${r.verdict}</span>`}<details><summary class="why" style="cursor:pointer">ℹ️ détail du calcul</summary><div class="why">${r.note?r.verdict+" · ":""}${r.why}</div></details></td></tr>`;
+  ${r.amorti?`<div><b>💳 Amorti ${fr(r.amorti.pct,0)} %</b> (${fr(r.amorti.fait)} / ${fr(r.amorti.prix)} FLW) · reste ${fr(r.amorti.reste)} FLW${r.amorti.mois!=null?` ≈ ${fr(r.amorti.mois,0)} mois à ton rythme`:""}</div><div class="bar"><span style="width:${r.amorti.pct}%"></span></div>`:""}${r.note?"":`<span class="${r.cls}">${r.verdict}</span>`}<details><summary class="why" style="cursor:pointer">ℹ️ détail${r.pot&&r.pot.cur&&r.price?" et « Et si je faisais… »":" du calcul"}</summary><div class="why">${r.note?r.verdict+" · ":""}${r.why}</div>${r.pot&&r.pot.cur&&r.price?sliderHTML(r):""}</details></td></tr>`;
  const SK=[["n","NFT et ce qu’il fait"],["price","Prix (FLW)"],["jour","Gain / jour"],["mois","Gain / mois"],["an_pct","Rendement / an"],["rembourse_jours","Remboursé en"],[null,"Verdict"]];
  const head=`<tr>${SK.map(([k,l],i)=>`<th ${k?`data-sort="${k}" style="cursor:pointer;user-select:none;${i===0?"text-align:left":""}" title="Clique pour trier"`:'style="text-align:left"'}>${l}<span class="sarr"></span></th>`).join("")}</tr>`;
  let SORT={k:null,dir:0};

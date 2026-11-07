@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.31",
- "nouveautes": "NFT : une note claire, ce que tu fais aujourd hui, et jusqu où tu peux aller si tu optimises.",
+ "version": "2026-11-07.32",
+ "nouveautes": "NFT : curseur « Et si je faisais… » pour tester un changement d habitude.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
