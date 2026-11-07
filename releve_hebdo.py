@@ -773,6 +773,15 @@ def main():
         fmax["champs"] = max(fmax.get("champs", 0), p.get("champs_total") or 0)
         safe_write(DATA / "ferme_max.json", json.dumps(fmax))
         p["champs_total"] = fmax["champs"]
+        if not reel and fmax["champs"]:
+            # Pas encore de rythme mesuré : on estime avec TOUS tes champs (pas seulement ceux plantés à cet instant)
+            tot = fmax["champs"] * 1.7
+            if parts_vie:
+                p["recoltes"] = {c: tot * v for c, v in parts_vie.items()}
+            else:
+                plantes = {c: n for c, n in (p.get("recoltes") or {}).items() if n}
+                somme = sum(plantes.values()) or 1
+                p["recoltes"] = {c: tot * n / somme for c, n in plantes.items()} or p.get("recoltes", {})
         p["max_actions"] = ferme.get("max_actions") or {}
         if animaux_lus:
             p["poules"] = (animaux_lus.get("Chicken") or {}).get("nombre", 0)

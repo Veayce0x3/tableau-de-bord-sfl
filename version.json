@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.33",
- "nouveautes": "Scarecrow et Lunar Calendar mieux calculés (ton mélange de cultures), nombre total de champs retenu, curseur retiré.",
+ "version": "2026-11-07.34",
+ "nouveautes": "Vitesse des cultures comptée à 100 % (avec mention), estimation sur tous tes champs.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

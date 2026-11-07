@@ -287,8 +287,14 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
                 champs = prod.get("champs_total") or sum(prod["recoltes"].values()) / 1.7
                 n = max(prod["recoltes"].get(target, 0), champs * prod.get("frequence_recolte", 1.7) * PART_EN_SAISON) * len(ss) / 4
                 base = n * prod["rendement_culture"] * pr(target)
+            if target == "crops" or target in CROPS:
+                eff = 1.0   # tes champs ne restent jamais vides (plantations calées sur la nuit) : toute la vitesse compte
+                why.append(f"temps ×{m:g} : tes cultures poussent {(1 - m) * 100:.0f} % plus vite, donc {(1 / m - 1) * 100:.0f} % de récoltes en plus. "
+                           f"⚠️ Compté à 100 % : ça suppose que tes champs ne restent jamais vides (tu replantes dès qu'ils sont prêts "
+                           f"et tu cales des cultures longues pour la nuit). Si tes champs restent souvent vides, le gain réel est plus faible")
+            else:
+                why.append(f"temps ×{m:g} (gain réduit de moitié : la nuit, tu ne ramasses pas)")
             g = base * (1 / m - 1) * eff
-            why.append(f"temps ×{m:g} (gain réduit de moitié : la nuit, tu ne récoltes pas)")
         elif kind == "animal":
             res, v = e[1], e[2]
             g = v * prod["cycles_vaches"] * pr(res)
