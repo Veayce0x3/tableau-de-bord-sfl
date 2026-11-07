@@ -324,8 +324,29 @@ function nftTab(){
  const head=`<tr><th style="text-align:left">NFT et ce qu’il fait</th><th>Prix (FLW)</th><th>Gain / jour</th><th>Gain / mois</th><th>Rendement / an</th><th>Remboursé en</th><th style="text-align:left">Verdict</th></tr>`;
  el.innerHTML=(/^pas encore/.test((D.nft||{}).source||"")?`<div class="card"><p class="plain">⚠️ <b>Ta ferme n'a pas pu être lue</b> (sfl.world n'a pas répondu). Les conseils d'achat sont masqués pour ne pas te conseiller un NFT inutile. Réessaie 🔄 Actualiser dans quelques minutes.</p></div>`:"")+`<div class="hero"><div><div class="l">Tes NFT à bonus rapportent</div><div class="big pos">+${fr(ownDay*30)} FLW/mois</div><div class="l">+${fp(ownDay)} par jour</div></div><div><div class="l">Ils valent (prix plancher)</div><div class="big">${fr(ownVal)} FLW</div><div class="l">soit ${ownVal?fr(ownDay*365/ownVal*100,0):"—"} %/an en moyenne</div></div></div>
  <div class="card"><h2>🧾 Tes NFT</h2><div class="sub">Rendement / an = ce qu'il rapporte en un an ÷ son prix. Un NFT reste à toi et se revend : au-dessus de ~35-40 %/an, c'est un bon placement.</div><div class="scroll"><table>${head}${own.map(row).join("")||'<tr><td colspan="7" class="empty">Aucun NFT à bonus détecté.</td></tr>'}</table></div></div>
- <div class="card"><h2>🛒 NFT que tu pourrais acheter (du plus rentable au moins rentable)</h2><div class="scroll"><table>${head}${buy.sort((a,b)=>(b.an_pct||-1)-(a.an_pct||-1)).map(row).join("")}</table></div></div>
+ <div class="card"><h2>🛒 Tous les NFT en vente, comparés à ta ferme</h2>
+ <div class="controls" style="flex-wrap:wrap;gap:8px;align-items:center">
+  <span>Prix de</span><input id="nf_min" type="number" min="0" step="10" style="width:90px"> <span>à</span><input id="nf_max" type="number" min="0" step="50" style="width:90px"><span>FLW</span>
+  ${[[0,200],[200,1000],[1000,3000],[0,0]].map(([a,b])=>`<button class="chip" data-min="${a}" data-max="${b}">${b?a+" – "+b:"Tous"}</button>`).join("")}
+  <label style="white-space:nowrap"><input type="checkbox" id="nf_ok"> Seulement ceux qui rapportent</label>
+  <input id="nf_q" type="search" placeholder="Chercher un NFT…" style="min-width:160px">
+ </div>
+ <div class="sub" id="nf_count"></div>
+ <div class="scroll"><table>${head}<tbody id="nf_rows"></tbody></table></div>
+ <div class="sub">Triés du plus rentable au moins rentable pour TA ferme actuelle. « Effet non chiffrable » = bonus qui ne se mesure pas en Flower (marks, cuisine, pêche, confort…) : l'effet est quand même indiqué.</div></div>
  <div class="card"><h2>⚙️ Calculé avec ta production par jour</h2><p class="plain">${/^pas encore/.test((D.nft||{}).source||"")?"⚠️ <b>Production "+D.nft.source+".</b> Les gains des NFT et des compétences ne sont pas encore ceux de TA ferme : ils deviennent justes après 3 jours de relevés (l'outil mesure ce que tu produis chaque jour).":"✅ Production "+((D.nft||{}).source||"")+"."}</p><p class="plain">Pierre ${fr(P.Stone,0)} · Fer ${fr(P.Iron,0)} · Or ${fr(P.Gold,0)} · Crimstone ${fr(P.Crimstone,1)} · Bois ${fr(P.Wood,0)} coups/jour · ${fr(P.cycles_vaches,0)} cycles de vaches · ${fr(P.cycles_poules,0)} cycles de poules · champs/jour : ${Object.entries(P.recoltes||{}).map(([k,v])=>nm(k)+" "+fr(v,0)).join(", ")}.</p><div class="sub">Si ta ferme est différente, règle ces nombres dans <code>ma_ferme.json</code> → <code>"ma_production"</code>. Les vêtements (Milk Apron…) ne sont pas détectés : ajoute-les dans <code>"nft_possedes"</code>. Effets des NFT tirés du code du jeu ; prix plancher du jour. Les bonus de vitesse comptent pour moitié (la nuit, tu ne récoltes pas).</div></div>`;
+ let F={min:0,max:200,ok:false,q:""};try{F=Object.assign(F,JSON.parse(localStorage.getItem("nf")||"{}"))}catch(e){}
+ const mn=document.getElementById("nf_min"),mx=document.getElementById("nf_max"),ok=document.getElementById("nf_ok"),q=document.getElementById("nf_q");
+ mn.value=F.min||0;mx.value=F.max||"";ok.checked=!!F.ok;q.value=F.q||"";
+ const draw=()=>{F={min:+mn.value||0,max:+mx.value||0,ok:ok.checked,q:q.value.trim().toLowerCase()};try{localStorage.setItem("nf",JSON.stringify(F))}catch(e){}
+  const L=buy.filter(r=>r.price&&r.price>=F.min&&(!F.max||r.price<=F.max)&&(!F.ok||(r.jour>0.001&&!r.xp))&&(!F.q||r.n.toLowerCase().includes(F.q)||(r.effet||"").toLowerCase().includes(F.q)))
+   .sort((a,b)=>(b.chiffrable-a.chiffrable)||((b.an_pct??-1)-(a.an_pct??-1)));
+  document.getElementById("nf_rows").innerHTML=L.map(row).join("")||'<tr><td colspan="7" class="empty">Aucun NFT dans cette tranche de prix.</td></tr>';
+  document.getElementById("nf_count").textContent=`${L.length} NFT entre ${fr(F.min,0)} et ${F.max?fr(F.max,0):"∞"} FLW · ${L.filter(r=>r.jour>0.001&&r.an_pct>=35).length} rentables pour ta ferme (≥ 35 %/an)`;
+  document.querySelectorAll("#nft .chip[data-min]").forEach(b=>b.classList.toggle("on",+b.dataset.min===F.min&&+b.dataset.max===F.max));};
+ [mn,mx,ok].forEach(x=>x.onchange=draw);q.oninput=draw;mn.oninput=draw;mx.oninput=draw;
+ document.querySelectorAll("#nft .chip[data-min]").forEach(b=>b.onclick=()=>{mn.value=b.dataset.min;mx.value=+b.dataset.max||"";draw();});
+ draw();
 }
 
 const SIG={vendre:["🟢","Bon moment pour vendre","good"],normal:["⚪","Prix normal","mid"],attendre:["🟠","Attends si tu peux","wait"],garder:["🔵","À garder","keep"],cout:["🔴","Sous ton coût","bad"]};

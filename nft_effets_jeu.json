@@ -1,0 +1,1334 @@
+{
+"game": [
+"+0.2 Crop Plot Yield",
+"+0.2 Crop Plot Yield from Knowledge Crab",
+"+0.1 Fruit Patch Yield",
+"+{{value}} Fruit Patch Yield from Fruitful Bounty Skill",
+"2x Crop Plot Growth Speed",
+"x0.5 Crop Plot Growth Time",
+"1.25x Fruit Patch Growth Speed",
+"x0.8 Fruit Patch Growth Time",
+"2x Crop Growth Speed",
+"x0.5 Crop Growth Time",
+"2x Fruit Growth Speed",
+"x0.5 Fruit Growth Time",
+"2x Tree Recovery Speed",
+"x0.5 Tree Recovery Time",
+"2x Mineral Recovery Speed",
+"x0.5 Mineral Recovery Time",
+"2x Cooking Speed",
+"x0.5 Cooking Time",
+"2x Crafting Box Speed",
+"x0.5 Crafting Box Time"
+],
+"Basic Scarecrow": [
+"x0.7 Basic Crops Growth Time",
+"x0.8 Basic Crops Growth Time",
+"Area of Effect (7x7) below",
+"Area of Effect (3x3) below"
+],
+"Scary Mike": [
+"+0.3 Medium Crops",
+"+0.2 Medium Crops",
+"Area of Effect (7x7) below",
+"Area of Effect (3x3) below"
+],
+"Laurie the Chuckle Crow": [
+"+0.3 Advanced Crops",
+"+0.2 Advanced Crops",
+"Area of Effect (7x7) below",
+"Area of Effect (3x3) below"
+],
+"Nancy": [
+"x0.85 Crop Growth Time",
+"Disabled if Scarecrow or Kuebiko Active"
+],
+"Scarecrow": [
+"x0.85 Crop Growth Time",
+"x1.2 Crop Yield",
+"Disabled if Kuebiko Active"
+],
+"Kuebiko": [
+"x0.85 Crop Growth Time",
+"x1.2 Crop Yield",
+"Free Seeds"
+],
+"Gnome": [
+"+10 yield to medium/advanced crops",
+"Affects plot below",
+"Requires Clementine & Cobalt"
+],
+"Sir Goldensnout": [
+"+0.5 crop yield",
+"Affects plots around (4x4)"
+],
+"Lunar Calendar": [
+"x0.9 Crop Growth Time"
+],
+"Peeled Potato": [
+"20% Chance for +1 Potato"
+],
+"Victoria Sisters": [
+"x1.2 Pumpkin"
+],
+"Freya Fox": [
+"+0.5 Pumpkin"
+],
+"Easter Bunny": [
+"x1.2 Carrot"
+],
+"Pablo The Bunny": [
+"+0.1 Carrot"
+],
+"Cabbage Boy": [
+"+0.5 Cabbage (Cabbage Girl boost)",
+"+0.25 Cabbage"
+],
+"Cabbage Girl": [
+"x0.5 Cabbage Plot Growth Time"
+],
+"Karkinos": [
+"+0.1 Cabbage",
+"Disabled if Cabbage Boy Active"
+],
+"Golden Cauliflower": [
+"x2 Cauliflower"
+],
+"Mysterious Parsnip": [
+"x0.5 Parsnip Growth Time"
+],
+"Purple Trail": [
+"+0.2 Eggplant"
+],
+"Obie": [
+"x0.75 Eggplant Growth Time"
+],
+"Maximus": [
+"+1 Eggplant"
+],
+"Poppy": [
+"+0.1 Corn"
+],
+"Kernaldo": [
+"x0.75 Corn Growth Time"
+],
+"Queen Cornelia": [
+"+1 Corn",
+"Affects plots around (3x4)"
+],
+"Foliant": [
+"+0.2 Kale"
+],
+"Hoot": [
+"+0.5 Overnight Crops"
+],
+"Hungry Caterpillar": [
+"Free Flower Seeds"
+],
+"Rapid Root": [
+"2x Crop Plot Growth Speed",
+"x0.5 Crop Plot Growth Time"
+],
+"Greenhouse Glow": [
+"1.25x Greenhouse Pot Growth Speed",
+"x0.8 Greenhouse Pot Growth Time"
+],
+"Greenhouse Goodie": [
+"+0.2 Greenhouse Produce Yield"
+],
+"Salt Lick": [
+"x1.05 Animal Produce Yield"
+],
+"Honey Treat": [
+"x0.75 Animal Feed"
+],
+"Truffle Seasoning": [
+"x0.5 next Animal sleep"
+],
+"Turbo Sprout": [
+"2x Growth Speed in Greenhouse",
+"x0.5 Growth Time in Greenhouse"
+],
+"Soybliss": [
+"+1 Soybean"
+],
+"Grape Granny": [
+"+1 Grape"
+],
+"Vinny": [
+"+0.25 Grape"
+],
+"Rice Panda": [
+"+0.25 Rice"
+],
+"Immortal Pear": [
+"+2 Fruit Patch Harvest per seed",
+"+1 Fruit Patch Harvest per seed"
+],
+"Black Bearry": [
+"+1 Blueberry"
+],
+"Squirrel Monkey": [
+"x0.5 Orange Growth Time"
+],
+"Lady Bug": [
+"+0.25 Apple"
+],
+"Banana Chicken": [
+"+0.1 Banana"
+],
+"Nana": [
+"x0.9 Banana Growth Time"
+],
+"Carrot Sword": [
+"4x Chance of Mutant Crop"
+],
+"Stellar Sunflower": [
+"3% Chance of +10 Sunflower"
+],
+"Potent Potato": [
+"3% Chance of +10 Potato"
+],
+"Radical Radish": [
+"3% Chance of +10 Radish"
+],
+"Lab Grown Pumpkin": [
+"+0.3 Pumpkin"
+],
+"Lab Grown Carrot": [
+"+0.2 Carrot"
+],
+"Lab Grown Radish": [
+"+0.4 Radish"
+],
+"Fat Chicken": [
+"x0.9 Feed to Chicken"
+],
+"Rich Chicken": [
+"+0.1 Egg"
+],
+"Speed Chicken": [
+"x0.9 Chicken Sleep Time"
+],
+"Ayam Cemani": [
+"+0.2 Egg"
+],
+"Squid Chicken": [
+"+0.1 Egg"
+],
+"El Pollo Veloz": [
+"-2h Chicken Sleep Time"
+],
+"Rooster": [
+"2x Chance of Mutant Chicken"
+],
+"Undead Rooster": [
+"+0.1 Egg"
+],
+"Chicken Coop": [
+"+1 Egg",
+"+5 Base Chickens",
+"+5 Max Chickens per Hen House Upgrade"
+],
+"Farm Dog": [
+"x0.75 Sheep Sleep Time"
+],
+"Gold Egg": [
+"Feed Chickens for free"
+],
+"Bale": [
+"+{{value}} Egg",
+"+{{value}} Milk",
+"+{{value}} Wool"
+],
+"Woody the Beaver": [
+"x1.2 Wood",
+"Disabled if Apprentice Beaver or Foreman Beaver Active"
+],
+"Apprentice Beaver": [
+"x1.2 Wood",
+"x0.5 Tree Recovery Time",
+"Disabled if Foreman Beaver Active"
+],
+"Foreman Beaver": [
+"x1.2 Wood",
+"x0.5 Tree Recovery Time",
+"Chop Trees without Axes"
+],
+"Wood Nymph Wendy": [
+"+0.2 Wood"
+],
+"Tiki Totem": [
+"+0.1 Wood"
+],
+"Tunnel Mole": [
+"+0.25 Stone"
+],
+"Rocky the Mole": [
+"+0.25 Iron"
+],
+"Nugget": [
+"+0.25 Gold"
+],
+"Rock Golem": [
+"10% Chance of +2 Stone"
+],
+"Iron Idol": [
+"+1 Iron"
+],
+"Tin Turtle": [
+"+0.1 Stone",
+"Affects plots around (3x3)"
+],
+"Emerald Turtle": [
+"+0.5 Stone, Iron, Gold (AOE 3x3)",
+"Affects plots around (3x3)"
+],
+"Crimson Carp": [
+"+0.05 Crimstone"
+],
+"Battle Fish": [
+"+0.05 Oil"
+],
+"Lemon Shark": [
+"+0.2 Lemons"
+],
+"Longhorn Cowfish": [
+"+0.2 Milk"
+],
+"Crim Peckster": [
+"+0.1 Crimstone"
+],
+"Knight Chicken": [
+"+0.1 Oil"
+],
+"Mushroom House": [
+"+0.2 Wild Mushroom"
+],
+"Queen Bee": [
+"+1 Honey Production Speed"
+],
+"Humming Bird": [
+"20% Chance for +1 Flower"
+],
+"Beehive": [
+"10% Chance for +0.2 Crop when Beehive is full"
+],
+"Pharaoh Chicken": [
+"+1 daily Desert Dig attempt"
+],
+"Skill Shrimpy": [
+"x1.2 Bumpkin XP from Fish"
+],
+"Walrus": [
+"+1 Fish"
+],
+"Super Star": [
+"+1 Fish during Winter"
+],
+"Alba": [
+"50% Chance of +1 Basic Fish"
+],
+"Soil Krabby": [
+"x0.9 Composter Compost Time"
+],
+"Knowledge Crab": [
+"Double Sprout Mix Boost Effect"
+],
+"Maneki Neko": [
+"1 Free Food per Day"
+],
+"Dino Egg Trophy": [
+"Speed up with Coins instead of Gems (50 Coins/Gem, up to 20,000 Coins/day)."
+],
+"Treasure Map": [
+"+20% Coins Treasure Sale Price"
+],
+"Heart of Davy Jones": [
+"+20 daily Desert Dig attempts"
+],
+"Genie Lamp": [
+"Grants 3 Wishes from the Wish list"
+],
+"Grain Grinder": [
+"x1.2 Bumpkin XP from Cakes"
+],
+"Observatory": [
+"x1.05 Bumpkin XP"
+],
+"Blossombeard": [
+"x1.1 Bumpkin XP"
+],
+"Desert Gnome": [
+"x0.9 Cooking Time"
+],
+"Christmas Tree": [
+"Free Gift at Christmas"
+],
+"Festive Tree": [
+"Free Gift at Christmas"
+],
+"Grinx's Hammer": [
+"Halves expansion costs"
+],
+"Time Warp Totem": [
+"Lasts for {{time}} hours"
+],
+"Radiant Ray": [
+"+0.1 Iron"
+],
+"Gilded Swordfish": [
+"+0.1 Gold"
+],
+"Flower Fox": [
+"x0.9 Flower Growth Time"
+],
+"Hungry Hare": [
+"Fermented Carrots 2x Bumpkin XP"
+],
+"Gourmet Hourglass": [
+"2x Cooking Speed",
+"x0.5 Cooking Time",
+"Lasts for {{time}} hours"
+],
+"Harvest Hourglass": [
+"1.35x Crop Growth Speed",
+"x0.75 Crop Growth Time",
+"Lasts for {{time}} hours"
+],
+"Timber Hourglass": [
+"1.35x Tree Recovery Speed",
+"x0.75 Tree Recovery Time (4hrs)",
+"Lasts for {{time}} hours"
+],
+"Ore Hourglass": [
+"2x Mineral Recovery Speed",
+"x0.5 Mineral Recovery Time",
+"Lasts for {{time}} hours"
+],
+"Orchard Hourglass": [
+"1.35x Fruit Growth Speed",
+"x0.75 Fruit Growth Time",
+"Lasts for {{time}} hours"
+],
+"Fisher's Hourglass": [
+"50% Chance of +1 Fish",
+"Lasts for {{time}} hours"
+],
+"Blossom Hourglass": [
+"1.35x Flower Growth Speed",
+"x0.75 Flower Growth Time",
+"Lasts for {{time}} hours"
+],
+"Desert Rose": [
+"10% Chance for +1 Flower"
+],
+"Chicory": [
+"10% Chance for +1 Flower"
+],
+"Pharaoh Gnome": [
+"+2 Greenhouse Produce"
+],
+"Lemon Tea Bath": [
+"x0.5 Lemon Growth Time"
+],
+"Tomato Clown": [
+"x0.5 Tomato Growth Time"
+],
+"Cannonball": [
+"x0.75 Tomato Growth Time"
+],
+"Tomato Bombard": [
+"+1 Tomato"
+],
+"Camel": [
+"+1 Sand",
+"+30% Treasure Sale Price"
+],
+"Reveling Lemon": [
+"+0.25 Lemon"
+],
+"Lemon Frog": [
+"x0.75 Lemon Growth Time"
+],
+"Stone Beetle": [
+"+0.1 Stone"
+],
+"Iron Beetle": [
+"+0.1 Iron"
+],
+"Gold Beetle": [
+"+0.1 Gold"
+],
+"Fairy Circle": [
+"+0.2 Wild Mushroom"
+],
+"Squirrel": [
+"+0.1 Wood"
+],
+"Butterfly": [
+"20% chance of +1 flower"
+],
+"Macaw": [
+"+0.2 Fruit Patch Yield",
+"+0.1 Fruit Patch Yield"
+],
+"Sheaf of Plenty": [
+"+2 Barley"
+],
+"Moo-ver": [
+"+0.25 Leather"
+],
+"Swiss Whiskers": [
+"+500 Bumpkin XP from Cheese Recipes"
+],
+"Cluckulator": [
+"x0.75 Feed to Chicken"
+],
+"Alien Chicken": [
+"+0.1 Feathers"
+],
+"Toxic Tuft": [
+"+0.1 Merino Wool"
+],
+"Astronaut Sheep": [
+"+0.1 Wool"
+],
+"Mermaid Sheep": [
+"x0.95 Sheep Feed"
+],
+"Mootant": [
+"+0.1 Leather"
+],
+"King of Bears": [
+"+0.25 Honey per Full Beehive"
+],
+"Super Totem": [
+"Lasts for 7 days"
+],
+"Golden Cow": [
+"Feed cows for free!"
+],
+"Volcano Gnome": [
+"+0.1 Minerals"
+],
+"Mammoth": [
+"x0.75 Cow Sleep Time"
+],
+"Frozen Sheep": [
+"Sheep cannot get sick during winter"
+],
+"Jellyfish": [
+"+1 Fish during Summer"
+],
+"Anemone Flower": [
+"+1 Fishing minigame attempt"
+],
+"Frozen Cow": [
+"Cows cannot get sick during winter"
+],
+"Summer Chicken": [
+"Chickens cannot get sick during summer"
+],
+"Sleepy Chicken": [
+"Chickens cannot get sick during autumn"
+],
+"Golden Sheep": [
+"Feed Sheeps for free!"
+],
+"Barn Blueprint": [
+"+5 Base Barn Animals",
+"+5 Max Barn Animals per Upgrade"
+],
+"Giant Yam": [
+"+0.5 Yams"
+],
+"Giant Zucchini": [
+"x0.5 Zucchini Plot Growth Time"
+],
+"Giant Kale": [
+"+2 Kale"
+],
+"Obsidian Turtle": [
+"+0.5 Obsidian"
+],
+"Quarry": [
+"Mine stone without pickaxes"
+],
+"Winter Guardian": [
+"Winter Disaster Protection",
+"Blessed Winter Events"
+],
+"Autumn Guardian": [
+"Autumn Disaster Protection",
+"Blessed Autumn Events"
+],
+"Spring Guardian": [
+"Spring Disaster Protection",
+"Blessed Spring Events"
+],
+"Summer Guardian": [
+"Summer Disaster Protection",
+"Blessed Summer Events"
+],
+"Nurse Sheep": [
+"Sheep cannot get sick during summer"
+],
+"Dr Cow": [
+"x0.95 Cow Feed Cost"
+],
+"Pink Dolphin": [
+"+1 Fish during Spring"
+],
+"Poseidon": [
+"+1 Fish during Autumn"
+],
+"Toolshed": [
+"x1.5 workbench tool stock"
+],
+"Warehouse": [
+"x1.2 market seed stock"
+],
+"Groovy Gramophone": [
+"x0.5 Growth Time in Crop Machine"
+],
+"Giant Onion": [
+"+3 Onions"
+],
+"Giant Turnip": [
+"x0.5 Turnip Growth Time"
+],
+"Baby Cow": [
+"+10 cow xp from animal affection tools"
+],
+"Janitor Chicken": [
+"x0.95 chicken sleep time"
+],
+"Reelmaster's Chair": [
+"+5 daily fishing reels"
+],
+"Fruit Tune Box": [
+"x0.8 Fruit Patch Growth Time"
+],
+"Giant Artichoke": [
+"+2 Artichokes"
+],
+"Farmer's Monument": [
+"+1 Help Limit"
+],
+"Woodcutter's Monument": [
+"+1 Help Limit"
+],
+"Miner's Monument": [
+"+1 Help Limit"
+],
+"Teamwork Monument": [
+"+1 Help Limit"
+],
+"Fox Shrine": [
+"1.35x Crafting Box Speed",
+"x0.75 Crafting Box Time",
+"10% chance to instantly craft a recipe"
+],
+"Boar Shrine": [
+"1.25x Cooking Speed",
+"x0.8 Cooking Time"
+],
+"Hound Shrine": [
+"+100 Pet XP per food request"
+],
+"Pet Bowls": [
+"+10 Pet XP per food request."
+],
+"Stag Shrine": [
+"1.35x Oil Recovery Speed",
+"x0.75 Oil Recovery Time",
+"+15 Oil every 3rd drill"
+],
+"Sparrow Shrine": [
+"1.35x Plot Crop Growth Speed",
+"x0.75 Plot Crop Growth Time"
+],
+"Toucan Shrine": [
+"1.35x Fruit Patch Growth Speed",
+"x0.75 Fruit Patch Growth Time"
+],
+"Collie Shrine": [
+"1.35x Cow Sleep Speed",
+"x0.75 Cow Sleep Time",
+"1.35x Sheep Sleep Speed",
+"x0.75 Sheep Sleep Time",
+"x0.95 Feed to feed barn animals"
+],
+"Badger Shrine": [
+"1.35x Tree Recovery Speed",
+"x0.75 Tree Recovery Time",
+"1.35x Stone Recovery Speed",
+"x0.75 Stone Recovery Time"
+],
+"Legendary Shrine": [
+"+1 Crop Yield",
+"+1 Fruit Patch Yield",
+"+1 Wood",
+"+1 Stone",
+"+1 Flower",
+"2x Cooking Speed",
+"x0.5 Cooking Time"
+],
+"Obsidian Shrine": [
+"Bulk harvest, plant and fertilise your crops, fruit and greenhouse"
+],
+"Mole Shrine": [
+"1.35x Iron Recovery Speed",
+"x0.75 Iron Recovery Time",
+"1.35x Gold Recovery Speed",
+"x0.75 Gold Recovery Time",
+"1.35x Crimstone Recovery Speed",
+"x0.75 Crimstone Recovery Time"
+],
+"Bear Shrine": [
+"+0.5 Honey Production Speed",
+"+20% bee swarm chance (added to base)"
+],
+"Tortoise Shrine": [
+"1.5x Greenhouse Growth Speed",
+"x0.67 Greenhouse Growth Time",
+"1.11x Crop Machine Growth Speed",
+"x0.9 Crop Machine Growth Time"
+],
+"Moth Shrine": [
+"1.35x Flower Growth Speed",
+"x0.75 Flower Growth Time",
+"20% chance to get +1 Flower"
+],
+"Bantam Shrine": [
+"1.35x Chicken Sleep Speed",
+"x0.75 Chicken Sleep Time",
+"x0.95 Feed to feed chickens"
+],
+"Trading Shrine": [
+"-2.5% resource tax (subtracted from base)"
+],
+"Ancient Tree": [
+"+0.5 Wood"
+],
+"Sacred Tree": [
+"+2.5 Wood"
+],
+"Fused Stone Rock": [
+"+0.5 Stone"
+],
+"Reinforced Stone Rock": [
+"+2.5 Stone"
+],
+"Refined Iron Rock": [
+"+0.5 Iron"
+],
+"Tempered Iron Rock": [
+"+2.5 Iron"
+],
+"Pure Gold Rock": [
+"+0.5 Gold"
+],
+"Prime Gold Rock": [
+"+2.5 Gold"
+],
+"Giant Gold Bone": [
+"+2 Daily Cheers"
+],
+"Lunar Temple": [
+"+1 help progress to player's monuments"
+],
+"Oaken": [
+"+0.25 Acorn"
+],
+"Meerkat": [
+"+5 daily Desert Digs attempts",
+"+1 Sand"
+],
+"Poseidon's Throne": [
+"+1 Weed & Dung per farm help",
+"{{count}} helps needed"
+],
+"Crystal Altar": [
+"x0.95 Crab Pot & Mariner Pot time",
+"{{count}} helps needed"
+],
+"Crimstone Clam": [
+"x0.9 Crimstone recovery time",
+"10% chance for Crimstone to recover instantly"
+],
+"Magma Stone": [
+"x0.85 Lava Pit Time",
+"+0.15 Obsidian"
+],
+"Cornucopia": [
+"+1 Giant Fruit yield from village projects",
+"{{count}} helps needed"
+],
+"Nautilus": [
+"+5 daily fishing reels"
+],
+"Salt Sculpture": [
+"Cumulative Salt & Aging buffs per level"
+],
+"Navigation Table": [
+"+100% Map Piece Odds"
+],
+"Royal Crab Pot": [
+"Trap without Trap Pots"
+],
+"Crab House": [
+"+2 Crustacean yield"
+],
+"Speed Trap": [
+"x0.8 Trap Pot time"
+],
+"Flamingo Chicken": [
+"x0.975 Chicken Sleep Time"
+],
+"Spa Sheep": [
+"+5 Sheep XP from Animal Affection tools"
+],
+"Spa Cow": [
+"+0.1 Milk"
+],
+"Deep Sea Slug": [
+"+5 daily fishing reels",
+"+1 Worm from Composting"
+],
+"Salt Crystal Flower": [
+"5% chance for +1 Flower"
+],
+"Astrolabe": [
+"15% chance to double Fermentation & Spice Rack output",
+"x1.05 XP from Aged Fish"
+],
+"Ascension Monument": [
+"x0.8 Expansion Time"
+],
+"Duende Monument": [
+"x0.9 Expansion Resources",
+"Resource discount disabled if Grinx's Hammer Active",
+"x0.9 Expansion Time"
+],
+"Straw House": [
+"x0.9 Composter Compost Time",
+"x3 base Fertiliser from Composters",
+"x3 base Worms from Composting"
+],
+"Pot of Luck": [
+"1/3 chance of +1 Desert Treasure",
+"Does not affect Chapter Artefacts"
+],
+"Giant Truffle": [
+"x1.3 Bumpkin XP from non-fish food",
+"x1.6 Bumpkin XP from Smoothie Shack drinks (instead of x1.3)",
+"x1.6 Bumpkin XP from Deli food (instead of x1.3)"
+],
+"Brick House": [
+"x0.75 Crimstone for Expansions",
+"Crimstone discount disabled if Grinx's Hammer Active",
+"x0.95 Coins for Expansions"
+],
+"Stick House": [
+"x0.75 Oil for Expansions",
+"Oil discount disabled if Grinx's Hammer Active",
+"x0.9 Expansion Time"
+],
+"Mushroom Chicken": [
+"+0.5 Crimstone every 5th mine"
+],
+"Beetle Sheep": [
+"x0.925 Sheep Sleep Time"
+],
+"Ladybug Cow": [
+"+1 Oil"
+],
+"Cyclops Bloom": [
+"x0.8 Fish Market processing time"
+],
+"Macropinna": [
+"+0.1 Obsidian"
+],
+"Otty the Otter": [
+"+5 daily fishing reels",
+"+1 random fish every 15th reel"
+],
+"Ascended Chicken": [
+"+0.1 Egg"
+],
+"Ascended Sheep": [
+"+0.05 Wool"
+],
+"Ascended Cow": [
+"x0.975 Cow Sleep Time"
+],
+"Ruins Flower": [
+"+0.05 Honey from full beehives"
+],
+"Dumbo Octopus": [
+"20% chance of +1 Fish"
+],
+"Ascended Idol": [
+"Harvest Salt without Salt Rakes"
+],
+"Salt Worker Gnome": [
+"x0.7 Salt Node recovery time",
+"+2 Salt per harvest"
+],
+"Winged Vase": [
+"+14% Prime Aged chance (added to base)"
+],
+"Vibraphone": [
+"Animal feed buffs last twice as many harvests",
+"+1 Farmhand"
+],
+"Halo": [
+"Access to mod tools"
+],
+"Gift Giver": [
+"Gift players a gift"
+],
+"Streamer Hat": [
+"Award players with 5 Love Charms every 5 minutes"
+],
+"Deep Sea Helm": [
+"+100% chance to find Marvel Map Pieces"
+],
+"Banana Onesie": [
+"x0.8 Banana Growth Time"
+],
+"Chef Apron": [
+"+20% Cake Delivery Profit"
+],
+"Fruit Picker Apron": [
+"+0.1 Apple, Blueberry, Orange + Banana"
+],
+"Angel Wings": [
+"30% Chance of Instant Crops"
+],
+"Devil Wings": [
+"30% Chance of Instant Crops"
+],
+"Eggplant Onesie": [
+"+0.1 Eggplant"
+],
+"Golden Spatula": [
+"x1.1 Bumpkin XP"
+],
+"Mushroom Hat": [
+"+0.1 Wild Mushroom"
+],
+"Parsnip": [
+"x1.2 Parsnip"
+],
+"Sunflower Shield": [
+"Free Sunflower Seeds"
+],
+"Sunflower Amulet": [
+"x1.1 Sunflower"
+],
+"Carrot Amulet": [
+"x0.8 Carrot Plot Growth time"
+],
+"Beetroot Amulet": [
+"x1.2 Beetroot"
+],
+"Green Amulet": [
+"Chance 10x Crops"
+],
+"Luna's Hat": [
+"x0.5 Cooking Time"
+],
+"Infernal Pitchfork": [
+"+3 Crops"
+],
+"Cattlegrim": [
+"+0.25 Animal Produce"
+],
+"Corn Onesie": [
+"+0.1 Corn"
+],
+"Corn Silk Hair": [
+"+2 Corn"
+],
+"Sunflower Rod": [
+"10% Chance +1 Fish"
+],
+"Trident": [
+"20% Chance +1 Fish"
+],
+"Bucket O' Worms": [
+"+1 Worm"
+],
+"Luminous Anglerfish Topper": [
+"x1.5 Bumpkin XP from Fish"
+],
+"Angler Waders": [
+"+10 daily fishing reels"
+],
+"Ancient Rod": [
+"Cast without rod"
+],
+"Banana Amulet": [
+"+0.5 Bananas"
+],
+"Bee Suit": [
+"+0.1 Honey per Full Beehive"
+],
+"Crimstone Hammer": [
+"+2 Crimstones on 5th mine"
+],
+"Crimstone Amulet": [
+"x0.8 Crimstone Cooldown Time"
+],
+"Crimstone Armor": [
+"+0.1 Crimstones"
+],
+"Hornet Mask": [
+"2x base Bee Swarm chance"
+],
+"Honeycomb Shield": [
+"+1 Honey per Full Beehive"
+],
+"Flower Crown": [
+"x0.5 Flower Growth Time"
+],
+"Beekeeper Hat": [
+"+0.2 Honey Production Speed"
+],
+"Non La Hat": [
+"+1 Rice"
+],
+"Oil Can": [
+"+2 Oil"
+],
+"Paw Shield": [
+"+25% Faction Pet Satiation and Marks Awarded"
+],
+"Olive Shield": [
+"+1 Olive"
+],
+"Pan": [
+"x1.25 Bumpkin XP"
+],
+"Olive Royalty Shirt": [
+"+0.25 Olive"
+],
+"Tofu Mask": [
+"+0.1 Soybean"
+],
+"Goblin Armor": [
+"+20% Marks"
+],
+"Goblin Helmet": [
+"+10% Marks"
+],
+"Goblin Pants": [
+"+5% Marks"
+],
+"Goblin Sabatons": [
+"+5% Marks"
+],
+"Goblin Axe": [
+"+10% Marks"
+],
+"Nightshade Armor": [
+"+20% Marks"
+],
+"Nightshade Helmet": [
+"+10% Marks"
+],
+"Nightshade Pants": [
+"+5% Marks"
+],
+"Nightshade Sabatons": [
+"+5% Marks"
+],
+"Nightshade Sword": [
+"+10% Marks"
+],
+"Bumpkin Armor": [
+"+20% Marks"
+],
+"Bumpkin Helmet": [
+"+10% Marks"
+],
+"Bumpkin Sword": [
+"+10% Marks"
+],
+"Bumpkin Pants": [
+"+5% Marks"
+],
+"Bumpkin Sabatons": [
+"+5% Marks"
+],
+"Sunflorian Armor": [
+"+20% Marks"
+],
+"Sunflorian Sword": [
+"+10% Marks"
+],
+"Sunflorian Helmet": [
+"+10% Marks"
+],
+"Sunflorian Pants": [
+"+5% Marks"
+],
+"Sunflorian Sabatons": [
+"+5% Marks"
+],
+"Camel Onesie": [
+"+0.1 Fruit Patch Yield"
+],
+"Crab Trap": [
+"+1 Crab when digging or drilling"
+],
+"Lemon Shield": [
+"+1 Lemon"
+],
+"Infernal Drill": [
+"Drill Oil without Oil Drill"
+],
+"Ancient Shovel": [
+"Dig treasure without Sand Shovel"
+],
+"Oil Overalls": [
+"+10 Oil"
+],
+"Dev Wrench": [
+"x0.5 Oil Regeneration Time"
+],
+"Bionic Drill": [
+"+5 daily Desert Dig attempts"
+],
+"Grape Pants": [
+"+0.2 Grapes"
+],
+"Pirate Potion": [
+"Unlock Pirate Chest"
+],
+"Bumpkin Crown": [
+"+25% FLOWER & Coin Deliveries",
+"+10% Marks"
+],
+"Goblin Crown": [
+"+25% FLOWER & Coin Deliveries",
+"+10% Marks"
+],
+"Nightshade Crown": [
+"+25% FLOWER & Coin Deliveries",
+"+10% Marks"
+],
+"Sunflorian Crown": [
+"+25% FLOWER & Coin Deliveries",
+"+10% Marks"
+],
+"Bumpkin Shield": [
+"+0.25 Wood & Minerals"
+],
+"Goblin Shield": [
+"+0.25 Wood & Minerals"
+],
+"Nightshade Shield": [
+"+0.25 Wood & Minerals"
+],
+"Sunflorian Shield": [
+"+0.25 Wood & Minerals"
+],
+"Bumpkin Quiver": [
+"+0.25 Crops & Fruits"
+],
+"Goblin Quiver": [
+"+0.25 Crops & Fruits"
+],
+"Nightshade Quiver": [
+"+0.25 Crops & Fruits"
+],
+"Sunflorian Quiver": [
+"+0.25 Crops & Fruits"
+],
+"Bumpkin Medallion": [
+"x0.75 Cooking Time"
+],
+"Goblin Medallion": [
+"x0.75 Cooking Time"
+],
+"Nightshade Medallion": [
+"x0.75 Cooking Time"
+],
+"Sunflorian Medallion": [
+"x0.75 Cooking Time"
+],
+"Milk Apron": [
+"+0.5 Milk"
+],
+"Dream Scarf": [
+"x0.8 Sheep Sleep Time"
+],
+"Infernal Bullwhip": [
+"x0.5 Feed to Barn Animal"
+],
+"Chicken Suit": [
+"+1 Feather"
+],
+"Cowbell Necklace": [
+"+2 Milk"
+],
+"Black Sheep Onesie": [
+"+2 Wool"
+],
+"Merino Jumper": [
+"+1 Merino Wool"
+],
+"White Sheep Onesie": [
+"+0.25 Wool"
+],
+"Ladybug Suit": [
+"x0.75 Onion Seed coin cost"
+],
+"Crab Hat": [
+"+1 treasure when fishing"
+],
+"Sickle": [
+"+2 Wheat"
+],
+"Sol & Luna": [
+"x0.5 Crafting Box Time"
+],
+"Blossom Ward": [
+"+1 Yield to Spring Plot Crop in Spring"
+],
+"Solflare Aegis": [
+"x0.5 Plot Crop Time in Summer"
+],
+"Autumn's Embrace": [
+"x0.5 Plot Crop Time in Autumn"
+],
+"Frozen Heart": [
+"+1 Yield to Winter Plot Crop in Winter"
+],
+"Oracle Syringe": [
+"Heal animals for free"
+],
+"Obsidian Necklace": [
+"x0.5 Lava Pit Time"
+],
+"Medic Apron": [
+"x0.5 Medicine to heal animals"
+],
+"Broccoli Hat": [
+"x0.5 Broccoli Plot Growth Time"
+],
+"Red Pepper Onesie": [
+"x0.75 Red Pepper Growth Time"
+],
+"Turd Topper": [
+"+1 Fertiliser from Composters"
+],
+"Duende Hat": [
+"x0.9 Crop Plot Growth Time",
+"x0.9 Fruit Patch Growth Time"
+],
+"Hercules Beetle Hat": [
+"x0.75 Obsidian for Expansions",
+"Obsidian discount disabled if Grinx's Hammer Active"
+],
+"Firefly Aura": [
+"x0.8 Lava Pit Time",
+"5% chance to instantly complete a Lava Pit"
+],
+"Antique Dress": [
+"x0.7 Grape Growth Time",
+"10% chance of +10 Grapes"
+],
+"Harpoon": [
+"+2 Fish per catch",
+"20% chance to not use a daily fishing reel"
+],
+"Lava Swimwear": [
+"x0.5 Lava Pit resources"
+],
+"Oil Gallon": [
+"+5 Oil"
+],
+"Architect Ruler": [
+"x0.75 Crafting Box Time"
+],
+"Pickaxe Shark": [
+"x0.85 Gold recovery time",
+"10% chance for gold to recover instantly"
+],
+"Saw Fish": [
+"+5 daily fishing reels",
+"+1 Worm from Composting"
+],
+"Luna's Crescent": [
+"x0.5 Power Skill Cooldown"
+],
+"Master Chef's Cleaver": [
+"x0.85 Cooking Time",
+"10% chance of +1 Food from cooking"
+],
+"Training Whistle": [
+"+1 Leather"
+],
+"Squirrel Onesie": [
+"+1 Acorn"
+],
+"Crimstone Spikes Hair": [
+"Mine crimstone without Gold Pickaxes"
+],
+"Paw Aura": [
+"Feed pets for free"
+],
+"Victoria's Apron": [
+"33% chance next reset is free after feeding pet fully."
+],
+"Beast Shoes": [
+"Pet XP +100/+250 (Med/Hard)"
+],
+"Walrus Onesie": [
+"+5 Pet Energy"
+],
+"Pistol Shrimp": [
+"20% chance to get +1 crustacean yield"
+],
+"Shrimp Onesie": [
+"+1 random fish every 15th reel"
+],
+"Bubble Aura": [
+"x0.8 Fish Market processing time",
+"20% chance for +1 yield from Fish Processing"
+],
+"Deep Sea Salt Cave Background": [
+"+5 Salt per harvest"
+],
+"Moon Hair": [
+"+2 Full Moon Seed stock",
+"+0.5 Full Moon Fruit"
+],
+"Surfer Hair": [
+"x0.5 Salt cost for aging fish"
+],
+"Rice Shirt": [
+"x0.5 Oil to plant Rice",
+"+1 Rice"
+],
+"Alchemist Apron": [
+"x0.5 Potion House fee"
+],
+"Salt Bottle Onesie": [
+"+1 Spice Rack output"
+],
+"Pig Onesie": [
+"x1.05 Animal Feed XP"
+],
+"Ascension Staff": [
+"x0.9 Power Skill Cooldown"
+],
+"Fish Trap": [
+"x0.8 Fish Aging Time"
+]
+}

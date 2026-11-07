@@ -4,6 +4,7 @@ Effets tirés du code du jeu (collectibleItemBuffs.ts / bumpkinItemBuffs.ts).
 Ta production par jour se règle dans ma_ferme.json → "ma_production".
 """
 
+import json
 import re
 
 TAX = 0.075
@@ -122,23 +123,89 @@ def effet(name):
     return re.sub(r"(\d)%", r"\1 %", txt)
 
 
+RES_NODES = {"Stone", "Iron", "Gold", "Crimstone", "Wood"}
+CROPS = ["Sunflower", "Potato", "Rhubarb", "Pumpkin", "Zucchini", "Carrot", "Yam", "Cabbage", "Broccoli", "Soybean",
+         "Beetroot", "Pepper", "Cauliflower", "Parsnip", "Eggplant", "Corn", "Onion", "Radish", "Wheat", "Turnip",
+         "Kale", "Artichoke", "Barley"]
+
+
+def effets_auto(textes):
+    """Transforme le texte d'effet du jeu (ex. « +0.25 Iron ») en effet chiffrable. Ce qui ne se chiffre pas est ignoré."""
+    out, aoe = [], any("AOE" in t or "Affects plots" in t or "Area of Effect" in t for t in textes)
+    for t in textes:
+        m = re.match(r"^\+(\d*\.?\d+) (Stone|Iron|Gold|Crimstone|Wood)$", t)
+        if m:
+            out.append(("add", m.group(2), float(m.group(1)), 0.3 if aoe else 1)); continue
+        m = re.match(r"^\+(\d*\.?\d+) Stone, Iron, Gold", t)
+        if m:
+            out += [("add", r, float(m.group(1)), 0.3 if aoe else 1) for r in ("Stone", "Iron", "Gold")]; continue
+        m = re.match(r"^\+(\d*\.?\d+) Wood & Minerals", t)
+        if m:
+            out += [("add", r, float(m.group(1)), 0.3 if aoe else 1) for r in ("Wood", "Stone", "Iron", "Gold", "Crimstone")]; continue
+        m = re.match(r"^\+(\d*\.?\d+) Crimstone every 5th mine", t)
+        if m:
+            out.append(("add", "Crimstone", float(m.group(1)) / 5)); continue
+        m = re.match(r"^x(\d*\.?\d+) Wood$", t)
+        if m:
+            out.append(("mult", "Wood", float(m.group(1)))); continue
+        m = re.match(r"^\+(\d*\.?\d+) (" + "|".join(CROPS) + r")$", t)
+        if m:
+            out.append(("crop_add", m.group(2), float(m.group(1)), 0.15 if aoe else 1)); continue
+        m = re.match(r"^\+(\d*\.?\d+) (?:Crops & Fruits|crop yield|Crops)$", t, re.I)
+        if m:
+            out += [("crop_add", c, float(m.group(1)), 0.15 if aoe else 1) for c in CROPS]; continue
+        m = re.match(r"^x(\d*\.?\d+) Crop Yield$", t)
+        if m:
+            out.append(("crops_mult", None, float(m.group(1)))); continue
+        m = re.match(r"^\+(\d*\.?\d+) (Milk|Leather)$", t)
+        if m:
+            out.append(("animal", m.group(2), float(m.group(1)))); continue
+        m = re.match(r"^\+(\d*\.?\d+) (Egg|Feather)s?$", t)
+        if m:
+            out.append(("hen", m.group(2), float(m.group(1)))); continue
+        m = re.match(r"^x(0\.\d+) (?:Crop|Crop Plot) Growth Time$", t)
+        if m and not aoe:
+            out.append(("time", "crops", float(m.group(1)))); continue
+        m = re.match(r"^x(0\.\d+) (" + "|".join(CROPS) + r") Growth Time$", t)
+        if m:
+            out.append(("time", m.group(2), float(m.group(1)))); continue
+        m = re.match(r"^x(0\.\d+) Chicken Sleep Time$", t)
+        if m:
+            out.append(("time", "hen", float(m.group(1)))); continue
+        m = re.match(r"^x(0\.\d+) Cow Sleep Time$", t)
+        if m:
+            out.append(("time", "cow", float(m.group(1)))); continue
+        m = re.match(r"^x(1\.\d+) Bumpkin XP", t)
+        if m:
+            out.append(("xp", None, float(m.group(1)))); continue
+    return out
+
+
+def _effets_jeu():
+    try:
+        from pathlib import Path
+        return json.loads((Path(__file__).resolve().parent / "nft_effets_jeu.json").read_text())
+    except Exception:
+        return {}
+
+
 def _prod(cfg):
     p = {**DEFAULT_PROD, **(cfg.get("ma_production") or {})}
     p["recoltes"] = {**DEFAULT_PROD["recoltes"], **((cfg.get("ma_production") or {}).get("recoltes") or {})}
     return p
 
 
-def gain_par_jour(name, prices, prod, owned):
+def gain_par_jour(name, prices, prod, owned, entries=None):
     """Gain net (après taxe) en Flower par jour, et une phrase d'explication."""
     pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
     total, why, xp = 0.0, [], None
-    for e in B[name]:
+    for e in (entries if entries is not None else B[name]):
         kind = e[0]
         if kind == "add":
             res, v = e[1], e[2]
             share = e[3] if len(e) > 3 else 1
-            g = v * prod[res] * share * pr(res)
-            why.append(f"+{v:g} × {prod[res] * share:g} coups/jour")
+            g = v * prod.get(res, 0) * share * pr(res)
+            why.append(f"+{v:g} × {prod.get(res, 0) * share:g} coups/jour")
         elif kind == "chance":
             res, p_, v = e[1], e[2], e[3]
             g = p_ * v * prod[res] * pr(res)
@@ -153,7 +220,7 @@ def gain_par_jour(name, prices, prod, owned):
             share = e[3] if len(e) > 3 else 1
             n = prod["recoltes"].get(res, 0) * share
             g = v * n * pr(res)
-            why.append(f"+{v:g} × ~{n:g} champs de {res}/jour (moyenne sur l'année)")
+            why.append(f"+{v:g} × ~{n:g} champs de {res} récoltés/jour")
         elif kind == "crops_mult":
             m = e[2]
             g = sum(n * prod["rendement_culture"] * (1 - 1 / m) * pr(c) for c, n in prod["recoltes"].items())
@@ -161,7 +228,9 @@ def gain_par_jour(name, prices, prod, owned):
         elif kind == "time":
             target, m = e[1], e[2]
             eff = 0.5  # la nuit et tes horaires limitent le gain de vitesse
-            if target == "crops":
+            if target in RES_NODES:
+                base = 0  # rochers et arbres : tu passes déjà ~6 fois par jour, plus de vitesse ne change presque rien
+            elif target == "crops":
                 base = sum(n * prod["rendement_culture"] * pr(c) for c, n in prod["recoltes"].items())
             elif target == "hen":
                 base = prod["cycles_poules"] * 2 * pr("Egg")
@@ -198,18 +267,30 @@ def gain_par_jour(name, prices, prod, owned):
 
 def analyse_nft(holdings, prices, cfg, source="défaut", fiable=True):
     prod = _prod(cfg)
-    owned = {n for n in B if (holdings.get(n) or 0) > 0} | set(cfg.get("nft_possedes") or [])
+    textes = _effets_jeu()
+    noms = set(B) | {n for n in textes if prices.get(n) or (holdings.get(n) or 0) > 0}
+    owned = {n for n in noms if (holdings.get(n) or 0) > 0} | set(cfg.get("nft_possedes") or [])
     rows = []
-    for name in B:
+    for name in noms:
         price = prices.get(name)
-        g, why, xp = gain_par_jour(name, prices, prod, owned)
+        entries = B.get(name) or effets_auto(textes.get(name, []))
+        texte_jeu = " · ".join(t for t in textes.get(name, []) if "{{" not in t)
+        chiffrable = bool(entries)
+        if chiffrable:
+            g, why, xp = gain_par_jour(name, prices, prod, owned, entries)
+        else:
+            g, why, xp = 0.0, "effet qui ne se chiffre pas en Flower", None
         an = g * 365 / price * 100 if price else None
         mine = name in owned
         if mine:
             if xp:
                 v, c = "💤 À vendre si ton but est de gagner des Flower (il ne donne que de l'XP)", "neutral"
+            elif not chiffrable:
+                v, c = "➖ Effet non chiffrable en Flower (confort, cuisine, pêche, marks…)", "neutral"
             elif an is None:
                 v, c = "Garder", "pos"
+            elif g <= 0.001:
+                v, c = "➖ Ne rapporte rien sur ta ferme actuelle : tu peux le vendre", "neutral"
             elif an >= 40:
                 v, c = "✅ Garder : il rapporte bien", "pos"
             elif an >= 15:
@@ -219,8 +300,12 @@ def analyse_nft(holdings, prices, cfg, source="défaut", fiable=True):
         else:
             if xp:
                 v, c = "Seulement si ton objectif est l'XP", "neutral"
+            elif not chiffrable:
+                v, c = "➖ Effet non chiffrable en Flower", "neutral"
             elif not fiable:
                 v, c = "⚠️ Pas calculable : ta ferme n'a pas pu être lue (réessaie Actualiser)", "neutral"
+            elif g <= 0.001 and why.startswith("ne s'ajoute"):
+                v, c = "❌ Inutile : " + why, "neg"
             elif g <= 0.001:
                 v, c = "❌ N'apporte rien sur ta ferme (tu ne produis pas ce qu'il améliore)", "neg"
             elif an is None:
@@ -233,10 +318,11 @@ def analyse_nft(holdings, prices, cfg, source="défaut", fiable=True):
                 v, c = "❌ Trop cher pour ce qu'il rapporte", "neg"
         if not fiable and not mine:
             g, an = 0.0, None
-        rows.append({"n": name, "effet": effet(name), "owned": mine, "wearable": name in WEARABLES, "price": price, "jour": g,
+        rows.append({"n": name, "effet": effet(name) if name in B else texte_jeu, "owned": mine,
+                     "wearable": name in WEARABLES, "price": price, "jour": g, "chiffrable": chiffrable,
                      "mois": g * 30, "an_pct": an, "rembourse_jours": (price / g) if price and g > 0.001 else None,
                      "why": why, "xp": xp, "verdict": v, "cls": c})
-    rows.sort(key=lambda r: (not r["owned"], -(r["an_pct"] or -1)))
+    rows.sort(key=lambda r: (not r["owned"], not r["chiffrable"], -(r["an_pct"] or -1)))
     return {"rows": rows, "prod": prod, "source": source}
 
 
@@ -294,7 +380,7 @@ def lire_ferme_sflworld(page_html, skills):
     par_noeud = lambda h: min(6.0, 16 / h + 1) if h < 16 else 24 / h
     prod = {k: round(noeuds[k] * par_noeud(rec[k]), 1) for k in noeuds}
     champs = {}
-    for c in ("Wheat", "Barley", "Corn", "Kale"):
+    for c in CROPS:
         m = re.findall(r"(\d+)x " + c + r" \d", t)
         if m:
             champs[c] = int(m[0])

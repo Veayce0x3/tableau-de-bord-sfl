@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.11",
- "nouveautes": "Un NFT qui améliore ce que tu ne produis pas est marqué N apporte rien ; jamais de conseil d achat si ta ferme n a pas pu être lue.",
+ "version": "2026-11-07.12",
+ "nouveautes": "Tous les NFT en vente (effets du jeu) comparés à ta ferme, avec un filtre par prix.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
@@ -13,6 +13,7 @@
   "nft_analyse.py",
   "competences.py",
   "competences_jeu.json",
-  "lancer_app.sh"
+  "lancer_app.sh",
+  "nft_effets_jeu.json"
  ]
 }
