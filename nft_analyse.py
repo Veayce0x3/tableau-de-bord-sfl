@@ -139,6 +139,7 @@ de = lambda r: ("d'" if VOYELLE(FR.get(r, r)) else "de ") + FR.get(r, r)
 du = lambda r: ("de l'" if VOYELLE(FR.get(r, r)) else "du ") + FR.get(r, r)
 
 RES_NODES = {"Stone", "Iron", "Gold", "Crimstone", "Wood"}
+FRUITS = ["Tomato", "Lemon", "Blueberry", "Orange", "Apple", "Banana", "Grape", "Rice", "Olive"]
 CROPS = ["Sunflower", "Potato", "Rhubarb", "Pumpkin", "Zucchini", "Carrot", "Yam", "Cabbage", "Broccoli", "Soybean",
          "Beetroot", "Pepper", "Cauliflower", "Parsnip", "Eggplant", "Corn", "Onion", "Radish", "Wheat", "Turnip",
          "Kale", "Artichoke", "Barley"]
@@ -148,7 +149,7 @@ def effets_auto(textes):
     """Transforme le texte d'effet du jeu (ex. « +0.25 Iron ») en effet chiffrable. Ce qui ne se chiffre pas est ignoré."""
     out, aoe = [], any("AOE" in t or "Affects plots" in t or "Area of Effect" in t for t in textes)
     for t in textes:
-        m = re.match(r"^\+(\d*\.?\d+) (Stone|Iron|Gold|Crimstone|Wood)$", t)
+        m = re.match(r"^\+(\d*\.?\d+) (Stone|Iron|Gold|Crimstone|Wood)s?$", t)
         if m:
             out.append(("add", m.group(2), float(m.group(1)), 0.3 if aoe else 1)); continue
         m = re.match(r"^\+(\d*\.?\d+) Stone, Iron, Gold", t)
@@ -322,8 +323,11 @@ def analyse_nft(holdings, prices, cfg, source="défaut", fiable=True):
     PRIX_COURANT.clear()
     PRIX_COURANT.update({k: v for k, v in prices.items() if isinstance(v, (int, float))})
     textes = _effets_jeu()
-    noms = set(B) | {n for n in textes if prices.get(n) or (holdings.get(n) or 0) > 0}
-    owned = {n for n in noms if (holdings.get(n) or 0) > 0} | set(cfg.get("nft_possedes") or [])
+    pas_nft = set(CROPS) | set(FRUITS) | {"Wood", "Stone", "Iron", "Gold", "Crimstone", "Obsidian", "Milk", "Leather", "Egg",
+                                          "Feather", "Wool", "Honey", "Truffle", "Pig Bristles"}
+    portes = set(cfg.get("nft_possedes") or [])
+    noms = (set(B) | {n for n in textes if prices.get(n) or (holdings.get(n) or 0) > 0} | portes) - pas_nft
+    owned = {n for n in noms if (holdings.get(n) or 0) > 0} | portes
     rows = []
     for name in noms:
         price = prices.get(name)
@@ -593,7 +597,7 @@ def bonus_totaux(owned_nft, skills_owned, prices, prod):
             k, res = e[0], e[1]
             if k == "add" and res in R:
                 v = e[2] * (e[3] if len(e) > 3 else 1)
-                ajoute(res, name, f"{f(e[2])} par action" + (" (zone autour de l'objet, compté à 30 %)" if len(e) > 3 else ""), v)
+                ajoute(res, name, f"{f(e[2])} par action" + (" (zone autour de l'objet, compté à 30 %)" if len(e) > 3 and e[3] < 1 else ""), v)
             elif k == "chance" and res in R:
                 R[res]["chances"].append(f"{e[2]:.0%} de +{e[3]:g}"); ajoute(res, name, f"{e[2]:.0%} de chance de +{e[3]:g}")
             elif k == "mult" and res in R:
@@ -730,3 +734,15 @@ def amortissement(fichier_data, rows, aujourdhui):
         if not any(r["n"] == n and r["owned"] for r in rows):
             fichier_data.pop(n)   # NFT vendu : on arrête de le suivre
     return fichier_data
+
+
+def lire_vetements_sflworld(page_html):
+    """Vêtements à bonus portés par ton Bumpkin et tes Farm Hands (page sfl.world/land/<numéro>)."""
+    import html as _h
+    t = re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", page_html)))
+    i = t.find("Wearables with boost")
+    if i < 0:
+        return []
+    j = t.find(" Bumpkin ", i)
+    sec = t[j if j > 0 else i: (j if j > 0 else i) + 3000]
+    return sorted(n for n in _effets_jeu() if len(n) > 3 and re.search(r"\b" + re.escape(n) + r"\b", sec))

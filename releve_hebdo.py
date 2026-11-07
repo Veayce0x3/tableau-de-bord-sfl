@@ -509,6 +509,11 @@ def main():
                    | {k for k, v in holdings.items() if v and k not in NOT_FOR_SALE})
     watched += [i for i in extra if i not in watched]
     all_prices = collect_prices(fin)
+    # Taux coins → Flower du jour (SFL Tool, meilleur échange), sauf si tu l'as réglé toi-même
+    if not CONFIG.get("coins_par_flower_manuel"):
+        cpf = ((try_json(RATES_URL) or {}).get("best") or {}).get("coinsPerFlower")
+        if cpf:
+            CONFIG["coins_par_flower"] = round(cpf)
     # Quantité par action de TA ferme (pierre par coup de pioche, bois par arbre…), lue sur sfl.world
     # si tu ne l'as pas réglée toi-même dans ma_ferme.json → "rendements"
     v1 = try_json(f"https://sfl.world/api/v1/land/{FARM_ID}") or {}
@@ -683,6 +688,10 @@ def main():
             page = subprocess.run(["curl", "-fsSL", "-A", "releve-hebdo-sfl", f"https://sfl.world/land/{FARM_ID}"],
                                   capture_output=True, check=True).stdout.decode("utf-8", "replace")
         ferme = lire_ferme_sflworld(page, ((land or {}).get("bumpkin") or {}).get("skills"))
+        from nft_analyse import lire_vetements_sflworld
+        vetements = lire_vetements_sflworld(page)
+        if vetements:
+            CONFIG["nft_possedes"] = sorted(set(CONFIG.get("nft_possedes") or []) | set(vetements))
         m_s = re.search(r"Current season\s+(spring|summer|autumn|winter)", re.sub(r"<[^>]+>", " ", page))
         saison = m_s.group(1) if m_s else None
     except Exception as e:

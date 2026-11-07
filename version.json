@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.27",
- "nouveautes": "Rendement de chaque culture et fruit lu sur ta ferme.",
+ "version": "2026-11-07.28",
+ "nouveautes": "Tout est lu sur ta ferme : vêtements portés (toi et tes Farm Hands), rendements, taux des coins. Plus aucun réglage à la main.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
