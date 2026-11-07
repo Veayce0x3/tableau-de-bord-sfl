@@ -24,6 +24,9 @@ Un petit outil qui enregistre chaque jour les données **publiques** de ta ferme
 
    Facultatif : `"date_depart": "2026-11-07"` pour compter tes gains seulement à partir de cette date (les anciens échanges restent dans Historique).
 
+## Mises à jour
+À chaque lancement, `maj.py` vérifie sur GitHub (Veayce0x3/tableau-de-bord-sfl) s'il y a une nouvelle version et remplace seulement les fichiers du programme. Tes données et réglages ne sont jamais touchés.
+
 ## 2. Utiliser
 - **Mac** : double-clic sur **`Lancer le relevé.command`** (la première fois : clic droit → Ouvrir).
 - **Windows** : double-clic sur **`Lancer le relevé.bat`**.

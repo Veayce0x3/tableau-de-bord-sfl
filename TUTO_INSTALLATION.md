@@ -11,7 +11,7 @@ Tu n'as **plus besoin d'aller sur ces sites** : tout s'affiche dans ton tableau 
 ## Étape 1 — Dézipper
 1. Enregistre `Tableau-de-bord-SFL.zip` où tu veux (par exemple dans Documents).
 2. Double-clic dessus (Mac) ou clic droit → **Extraire tout** (Windows).
-3. Tu obtiens un dossier avec 9 fichiers. **Ne les sépare pas.**
+3. Tu obtiens un dossier avec une dizaine de fichiers. **Ne les sépare pas.**
 
 ## Étape 2 — Installer Python 3
 
@@ -61,6 +61,11 @@ Une petite fenêtre noire s'ouvre, travaille 30 secondes à 1 minute, puis **le 
 Astuce : pour aller plus vite, fais glisser `Lancer le relevé` dans ton Dock (Mac) ou sur ton Bureau (Windows, clic droit → Envoyer vers → Bureau).
 
 ---
+
+## Mises à jour
+Rien à faire : à chaque **Lancer le relevé**, l'outil vérifie s'il existe une nouvelle version et se met à jour tout seul (message « ✅ Outil mis à jour » dans la fenêtre noire).
+Seul le programme est remplacé : **tes données (`donnees/`) et tes réglages (`ma_ferme.json`, `objectifs.json`) ne sont jamais touchés.**
+Sans internet, l'outil continue simplement avec la version actuelle.
 
 ## Ça ne marche pas ?
 | Problème | Solution |

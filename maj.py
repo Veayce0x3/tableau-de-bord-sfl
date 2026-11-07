@@ -45,7 +45,12 @@ def main():
     for nom, contenu in nouveaux.items():  # tout est téléchargé avant de remplacer quoi que ce soit
         tmp = ICI / (nom + ".tmp")
         tmp.write_bytes(contenu)
-        tmp.replace(ICI / nom)
+        cible = ICI / nom
+        if cible.exists():
+            tmp.chmod(cible.stat().st_mode)  # garde le double-clic possible sur Mac
+        elif nom.endswith(".command"):
+            tmp.chmod(0o755)
+        tmp.replace(cible)
     (ICI / "version.json").write_text(json.dumps(distante, ensure_ascii=False, indent=1))
     print(f"✅ Outil mis à jour : version {distante.get('version')}. {distante.get('nouveautes', '')}")
 
