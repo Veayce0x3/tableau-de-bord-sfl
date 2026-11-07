@@ -4,6 +4,8 @@ Effets tirés du code du jeu (collectibleItemBuffs.ts / bumpkinItemBuffs.ts).
 Ta production par jour se règle dans ma_ferme.json → "ma_production".
 """
 
+import re
+
 TAX = 0.075
 
 # Production par jour (actions ou cycles). Valeurs par défaut = une grosse ferme de niveau ~90.
@@ -263,3 +265,36 @@ def mesure_production(stock_hist, trades, rendements, jours_min=3):
     prod["cycles_poules"] = round(par_jour("Egg") / 2, 1)
     prod["recoltes"] = {c: round(par_jour(c) / 2.72, 1) for c in ("Wheat", "Barley", "Corn", "Kale")}
     return prod, jours
+
+
+def lire_ferme_sflworld(page_html, skills):
+    """Rochers, arbres et champs de LA ferme (page publique sfl.world/land/<numéro>), convertis en actions par jour.
+
+    Hypothèse : tu passes ~6 fois par jour (7 h-23 h) ; un rocher prêt plus souvent n'est pas plus récolté.
+    """
+    import html as _h
+    t = re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", page_html)))
+    def nb(name):
+        return sum(int(x) for x in re.findall(r"Nodes (?:\d+x [A-Za-z ]+\(Tier \d\) )*?(\d+)x " + name + r" \(Tier", t)) or \
+            sum(int(x) for x in re.findall(r"(\d+)x " + name + r" \(Tier", t))
+    noeuds = {"Stone": nb("Stone Rock"), "Iron": nb("Iron Rock"), "Gold": nb("Gold Rock"),
+              "Crimstone": nb("Crimstone Rock"), "Wood": nb("Tree") + nb("Ancient Tree")}
+    if not any(noeuds.values()):
+        return None
+    sk = skills or {}
+    rec = {"Stone": 4 * (0.8 if "Speed Miner" in sk else 1),
+           "Iron": 8 * (0.7 if "Iron Hustle" in sk else 1),
+           "Gold": 24 * (0.9 if "Midas Sprint" in sk else 1) * (0.8 if "Midas Rush" in sk else 1),
+           "Crimstone": 24 * (0.85 if "Fireside Alchemist" in sk else 1),
+           "Wood": 2 * (0.9 if "Tree Charge" in sk else 1)}
+    par_noeud = lambda h: min(6.0, 16 / h + 1) if h < 16 else 24 / h
+    prod = {k: round(noeuds[k] * par_noeud(rec[k]), 1) for k in noeuds}
+    champs = {}
+    for c in ("Wheat", "Barley", "Corn", "Kale"):
+        m = re.findall(r"(\d+)x " + c + r" \d", t)
+        if m:
+            champs[c] = int(m[0])
+    prod["recoltes"] = {c: round(n * 1.7, 1) for c, n in champs.items()}
+    for c in ("Wheat", "Barley", "Corn", "Kale"):
+        prod["recoltes"].setdefault(c, 0)
+    return {"prod": prod, "noeuds": noeuds, "champs": champs}

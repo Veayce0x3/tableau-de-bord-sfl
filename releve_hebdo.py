@@ -595,11 +595,35 @@ def main():
     goals = load(ROOT / "objectifs.json", [])
     goals_eval = evaluate_goals(goals, {**holdings, "Coins": fin.get("coins") or 0}, all_prices, all_trades,
                                 land, float(CONFIG.get("coins_par_flower", 1525))) if goals else []
-    from nft_analyse import analyse_nft, mesure_production
-    # Production de TA ferme : réglée à la main (ma_production) > mesurée sur ton stock > valeurs par défaut
+    from nft_analyse import analyse_nft, mesure_production, lire_ferme_sflworld, DEFAULT_PROD
+    # Production de TA ferme : réglée à la main (ma_production) > lue sur ta ferme (sfl.world) > mesurée > ferme type
     mesure, jours = mesure_production(stock_hist, all_trades, CONFIG.get("rendements"))
+    ferme = None
+    try:
+        req = urllib.request.Request(f"https://sfl.world/land/{FARM_ID}", headers={"User-Agent": "releve-hebdo-sfl"})
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                page = r.read().decode("utf-8", "replace")
+        except urllib.error.URLError:
+            import subprocess
+            page = subprocess.run(["curl", "-fsSL", "-A", "releve-hebdo-sfl", f"https://sfl.world/land/{FARM_ID}"],
+                                  capture_output=True, check=True).stdout.decode("utf-8", "replace")
+        ferme = lire_ferme_sflworld(page, ((land or {}).get("bumpkin") or {}).get("skills"))
+    except Exception as e:
+        print(f"(ferme non lue sur sfl.world : {e})", file=sys.stderr)
     if CONFIG.get("ma_production"):
         cfg_prod, source = CONFIG, "réglée dans ma_ferme.json"
+    elif ferme:
+        p = dict(ferme["prod"])
+        animaux = {k: mesure[k] for k in ("cycles_vaches", "cycles_poules", "vaches")} if mesure else \
+            {k: DEFAULT_PROD[k] for k in ("cycles_vaches", "cycles_poules", "vaches")}
+        p.update(animaux)
+        n = ferme["noeuds"]
+        source = (f"lue sur ta ferme : {n['Stone']} rochers de pierre, {n['Iron']} de fer, {n['Gold']} d'or, "
+                  f"{n['Crimstone']} de crimstone, {n['Wood']} arbres, champs : "
+                  + (", ".join(f"{v} {NAMES_FR.get(k, k)}" for k, v in ferme["champs"].items()) or "aucun planté")
+                  + (f" · animaux mesurés sur {jours} jours" if mesure else " · animaux : estimés (mesurés après 3 jours)"))
+        cfg_prod = {**CONFIG, "ma_production": p}
     elif mesure:
         cfg_prod, source = {**CONFIG, "ma_production": mesure}, f"mesurée sur ta ferme ({jours} jours)"
     else:

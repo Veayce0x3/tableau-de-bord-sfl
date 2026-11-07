@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.7",
- "nouveautes": "NFT et compétences calculés avec la vraie production de ta ferme (mesurée après 3 jours).",
+ "version": "2026-11-07.8",
+ "nouveautes": "NFT et compétences calculés avec les rochers, arbres et champs réels de ta ferme, lus à chaque relevé.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
