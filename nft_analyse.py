@@ -283,10 +283,10 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
             elif target == "cow":
                 base = 0  # limité par les bounties de vaches
             else:
-                ss = SAISONS.get(target, ["spring", "summer", "autumn", "winter"])
-                champs = prod.get("champs_total") or sum(prod["recoltes"].values()) / 1.7
-                n = max(prod["recoltes"].get(target, 0), champs * prod.get("frequence_recolte", 1.7) * PART_EN_SAISON) * len(ss) / 4
-                base = n * prod["rendement_culture"] * pr(target)
+                # une culture précise : ce que TU en récoltes d'habitude (pas d'hypothèse)
+                parts = prod.get("parts_vie") or {}
+                n = sum(prod["recoltes"].values()) * parts.get(target, 0) if parts else prod["recoltes"].get(target, 0)
+                base = n * (prod.get("rendements_cultures") or {}).get(target, prod["rendement_culture"]) * pr(target)
             if target == "crops" or target in CROPS:
                 eff = 1.0   # tes champs ne restent jamais vides (plantations calées sur la nuit) : toute la vitesse compte
                 why.append(f"temps ×{m:g} : tes cultures poussent {(1 - m) * 100:.0f} % plus vite, donc {(1 / m - 1) * 100:.0f} % de récoltes en plus. "
@@ -464,11 +464,27 @@ def analyse_nft(holdings, prices, cfg, source="défaut", fiable=True):
         if not fiable and not mine:
             g, an = 0.0, None
         pot = potentiel(entries, prices, prod, owned, textes) if chiffrable and not xp else None
+        # Pertinence : le NFT améliore-t-il quelque chose que tu produis vraiment ?
+        pas_pour_toi = None
+        if chiffrable and not xp and entries:
+            e0 = entries[0]
+            parts = prod.get("parts_vie") or {}
+            cible = e0[1] if e0[0] in ("crop_add", "time") and e0[1] in CROPS else None
+            if cible and parts and parts.get(cible, 0) < 0.03:
+                pas_pour_toi = f"tu ne plantes presque jamais {de(cible)} ({parts.get(cible, 0):.0%} de tes récoltes)"
+            elif e0[0] in ("add", "chance") and e0[1] in RES_NODES and prod.get(e0[1], 0) < 1:
+                pas_pour_toi = f"tu n'as pas de {NOM_NOEUD.get(e0[1], e0[1])} ou tu ne les récoltes pas"
+            elif e0[0] == "animal" and not prod.get("vaches"):
+                pas_pour_toi = "tu n'as pas de vaches"
+            elif e0[0] == "hen" and not prod.get("cycles_poules"):
+                pas_pour_toi = "tu n'as pas de poules"
         an_max = (pot["g_max"] * 365 / price * 100) if (pot and price and pot.get("opt")) else None
         mois = (price / g / 30) if (price and g > 0.001) else None
         note = ("🔴 Pas rentable" if mois is None else "🟢 Très rentable" if mois < 12 else "🟡 Correct" if mois < 24
                 else "🟠 Moyen" if mois < 36 else "🔴 Pas rentable")
-        rows.append({"note": note if chiffrable and not xp and fiable else None, "pot": pot, "an_max": an_max,
+        if pas_pour_toi and not mine:
+            note = "🚫 Pas pour toi"
+        rows.append({"pas_pour_toi": pas_pour_toi, "note": note if chiffrable and not xp and fiable else None, "pot": pot, "an_max": an_max,
                      "mois_max": (price / pot["g_max"] / 30) if (pot and price and pot["g_max"] > 0.001) else None,
                      "n": name, "effet": effet(name) if name in B else texte_jeu, "owned": mine,
                      "wearable": name in WEARABLES, "price": price, "jour": g, "chiffrable": chiffrable,

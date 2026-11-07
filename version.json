@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.34",
- "nouveautes": "Vitesse des cultures comptée à 100 % (avec mention), estimation sur tous tes champs.",
+ "version": "2026-11-07.35",
+ "nouveautes": "NFT : « 🏆 Le top pour ta ferme », « 🚫 Pas pour toi » si tu ne produis pas ce qu il améliore.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
