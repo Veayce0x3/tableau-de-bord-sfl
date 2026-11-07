@@ -220,7 +220,7 @@ function apercu(){
  ${(()=>{const R=(D.stock||[]).filter(r=>r.price&&r.stock).map(r=>({n:nm(r.n),v:r.stock*r.price*0.925})),N=((D.nft||{}).rows||[]).filter(r=>r.owned&&r.price).map(r=>({n:r.n,v:r.price*0.925}));
   const vr=sum(R,x=>x.v),vn=sum(N,x=>x.v),top=[...R,...N].sort((a,b)=>b.v-a.v).slice(0,6);
   return `<details class="card"><summary style="cursor:pointer"><b>ℹ️ Informations : ce que vaut ton inventaire (${fr(vr+vn)} FLW)</b></summary><div class="hero" style="margin:8px 0 0"><div><div class="l">Total (si tu vendais tout, après taxe)</div><div class="big">${fr(vr+vn)} FLW</div></div><div><div class="l">📦 Ressources</div><div class="big" style="font-size:22px">${fr(vr)} FLW</div></div><div><div class="l">🧾 NFT à bonus (prix plancher)</div><div class="big" style="font-size:22px">${fr(vn)} FLW</div></div></div>
-  <p class="plain">Ce qui pèse le plus : ${top.map(x=>`<b>${x.n}</b> ${fr(x.v)}`).join(" · ")}.</p><div class="sub">Prix du marché du jour − 7,5 % de taxe. Seuls les NFT à bonus sont comptés, au prix plancher (le moins cher en vente) ; les objets de déco, les vêtements non déclarés dans <code>nft_possedes</code> et les coins ne sont pas comptés. C'est une valeur indicative : vendre beaucoup d'un coup ferait baisser le prix.</div></details>`})()}
+  <p class="plain">Ce qui pèse le plus : ${top.map(x=>`<b>${x.n}</b> ${fr(x.v)}`).join(" · ")}.</p><div class="sub">Prix du marché du jour − 7,5 % de taxe. Seuls les NFT à bonus sont comptés, au prix plancher (le moins cher en vente) ; les objets de déco et les coins ne sont pas comptés. C'est une valeur indicative : vendre beaucoup d'un coup ferait baisser le prix.</div></details>`})()}
  <div class="card"><h2>📈 Courbe de tes gains (cumul, comme un cours de bourse)</h2><div class="controls" id="cum_per">${[["7","7 jours"],["30","1 mois"],["tout",STARTFR?"Depuis le "+STARTFR.slice(0,5):"Depuis le début"]].map(([k,l])=>`<button class="chip" data-k="${k}">${l}</button>`).join("")}</div><div class="chart"><canvas id="c_cum"></canvas></div><div class="sub" id="cum_note"></div></div>
  <div class="card"><h2>Ton état global (marché, après la taxe de 7,5 %)</h2><div class="scroll"><table class="matrix">
   <tr><th></th>${T.map(([k,l])=>`<th>${l}</th>`).join("")}</tr>
@@ -229,7 +229,7 @@ function apercu(){
   ${row("📥 Achats",x=>-x.ac,()=> "neg")}
   ${row("🧾 Taxe payée",x=>-x.tax,()=> "neg")}
   <tr><th>Nombre d'échanges</th>${T.map(([k,l,x])=>`<td>${x.n}</td>`).join("")}</tr>
- </table></div><div class="sub">Les gains sont comptés à partir du ${first} (ton nouveau départ, réglable avec <code>date_depart</code> dans <code>ma_ferme.json</code>). Les échanges plus anciens restent dans Historique et Échanges.</div></div>
+ </table></div><div class="sub">Les gains sont comptés à partir du ${first} (ton premier jour de suivi). Les échanges plus anciens restent dans Historique et Échanges.</div></div>
  <div class="card"><h2>📊 Tes ressources</h2>
  <div class="controls"><button class="chip on" id="mode_ferme">🌾 Ma ferme (récolté / utilisé)</button><button class="chip" id="mode_marche">🏪 Le marché (vendu / acheté)</button></div>
  <div class="controls" id="res_per"></div>
@@ -311,7 +311,7 @@ function objectifs(){
  ${Object.entries(groups).map(([n,a])=>`<div class="card"><h2>${n} <span class="msum">${a.filter(g=>g.fait).length}/${a.length}</span></h2>
   ${a.map(g=>`<div class="goal ${g.fait?"ok":""}"><div class="gchk">${g.fait?"✅":"⬜"}</div><div class="gtxt"><div class="gt">${g.titre}</div>${g.info?`<div class="why">${g.info}</div>`:""}${g.note?`<div class="why">ℹ️ ${g.note}</div>`:""}</div>
    <div class="gcost"><button class="chip" title="Marquer fait / pas fait" data-obj-fait="${g._i}">${g.fait?"↩️":"✅"}</button> <button class="chip" title="Enlever" data-obj-del="${g._i}">🗑️</button><br>${g.type==="nft"&&!g.fait&&g.prix?`<b>${fr(g.prix)}</b> FLW`:g.cout_restant!=null&&!g.fait?`<b>${fr(g.cout_restant)}</b> FLW<div class="why">en ressources manquantes (sur ${fr(g.cout_total)})</div>`:""}</div></div>`).join("")}</div>`).join("")}
- <div class="sub">Validés automatiquement à chaque relevé : NFT achetés ou vendus, compétences, niveau, objectifs de la semaine. Les autres (« manuel ») se cochent dans <code>objectifs.json</code> en mettant <code>"fait": true</code>. Coûts au prix du marché du jour (coins au taux de 1 525, huile ≈ 0,10).</div></details>`;
+ <div class="sub">Validés automatiquement à chaque relevé : NFT achetés ou vendus, compétences, niveau, objectifs de la semaine. Les autres se cochent avec le bouton ✅. Coûts au prix du marché du jour (coins au taux du jour, huile ≈ 0,10).</div></details>`;
  bindConseil();
  bindSz();
  const ob=document.getElementById("obj_add");if(ob)ob.onclick=()=>{const v=document.getElementById("obj_new").value.trim();if(v)postObj({action:"add",titre:v});};
@@ -356,7 +356,7 @@ function conseils(b){
   if(st.length)li.push(`📦 Tu as : ${st.map(r=>`${nm(r.n)} ${fr(r.stock,0)}`).join(" · ")}.`);
   const mines=N.filter(r=>!r.xp&&/Mole|Golem|Nugget|Idol|Turtle|Beaver|Totem|Wendy|Peckster/.test(r.n)&&!r.owned&&r.an_pct>=35);
   if(mines.length)li.push(`⛏️ NFT qui produisent ces matériaux et restent rentables : ${mines.map(r=>`<b>${r.n}</b> (${fr(r.an_pct,0)} %/an)`).join(", ")}.`);
-  li.push(`📝 Ajoute ton prochain agrandissement dans <code>objectifs.json</code> avec ses ressources : l'outil calcule ce qu'il te manque et combien ça coûterait au marché.`);
+  li.push(`📝 Écris « prochain agrandissement » dans « Ma liste d'objectifs » (➕ Ajouter) : l'outil calcule ce qu'il te manque et combien ça coûterait au marché.`);
  }
  return li.length?li.map(x=>`<p class="plain">${x}</p>`).join(""):'<div class="empty">Rien à signaler 👍</div>';
 }
@@ -437,7 +437,7 @@ function nftTab(){
  <div class="sub" id="nf_count"></div>
  <div class="scroll"><table>${head}<tbody id="nf_rows"></tbody></table></div>
  <div class="sub">Triés du plus rentable au moins rentable pour TA ferme actuelle. « Effet non chiffrable » = bonus qui ne se mesure pas en Flower (marks, cuisine, pêche, confort…) : l'effet est quand même indiqué.</div></div>
- <div class="card"><h2>⚙️ Calculé avec ta production par jour</h2><p class="plain">${/^pas encore/.test((D.nft||{}).source||"")?"⚠️ <b>Production "+D.nft.source+".</b> Les gains des NFT et des compétences ne sont pas encore ceux de TA ferme : ils deviennent justes après 3 jours de relevés (l'outil mesure ce que tu produis chaque jour).":"✅ Production "+((D.nft||{}).source||"")+"."}</p><p class="plain">Pierre ${fr(P.Stone,0)} · Fer ${fr(P.Iron,0)} · Or ${fr(P.Gold,0)} · Crimstone ${fr(P.Crimstone,1)} · Bois ${fr(P.Wood,0)} coups/jour · ${fr(P.cycles_vaches,0)} cycles de vaches · ${fr(P.cycles_poules,0)} cycles de poules · champs/jour : ${Object.entries(P.recoltes||{}).map(([k,v])=>nm(k)+" "+fr(v,0)).join(", ")}.</p><div class="sub">Si ta ferme est différente, règle ces nombres dans <code>ma_ferme.json</code> → <code>"ma_production"</code>. Les vêtements (Milk Apron…) ne sont pas détectés : ajoute-les dans <code>"nft_possedes"</code>. Effets des NFT tirés du code du jeu ; prix plancher du jour. Bonus de vitesse des cultures comptés à 100 % (si tes champs ne restent jamais vides) ; ceux des animaux à 50 % (la nuit, tu ne ramasses pas).</div></div>`;
+ <div class="card"><h2>⚙️ Calculé avec ta production par jour</h2><p class="plain">${/^pas encore/.test((D.nft||{}).source||"")?"⚠️ <b>Production "+D.nft.source+".</b> Les gains des NFT et des compétences ne sont pas encore ceux de TA ferme : ils deviennent justes après 3 jours de relevés (l'outil mesure ce que tu produis chaque jour).":"✅ Production "+((D.nft||{}).source||"")+"."}</p><p class="plain">Pierre ${fr(P.Stone,0)} · Fer ${fr(P.Iron,0)} · Or ${fr(P.Gold,0)} · Crimstone ${fr(P.Crimstone,1)} · Bois ${fr(P.Wood,0)} coups/jour · ${fr(P.cycles_vaches,0)} cycles de vaches · ${fr(P.cycles_poules,0)} cycles de poules · champs/jour : ${Object.entries(P.recoltes||{}).map(([k,v])=>nm(k)+" "+fr(v,0)).join(", ")}.</p><div class="sub">Tout est lu automatiquement sur ta ferme à chaque relevé : rochers, arbres, champs, vaches, poules, vêtements portés (toi et tes Farm Hands), compétences, rendements et ton rythme réel. Effets des NFT tirés du code du jeu ; prix plancher du jour. Bonus de vitesse des cultures comptés à 100 % (si tes champs ne restent jamais vides) ; ceux des animaux à 50 % (la nuit, tu ne ramasses pas).</div></div>`;
  let F={min:0,max:200,ok:false,q:""};try{F=Object.assign(F,JSON.parse(localStorage.getItem("nf")||"{}"))}catch(e){}
  const mn=document.getElementById("nf_min"),mx=document.getElementById("nf_max"),ok=document.getElementById("nf_ok"),q=document.getElementById("nf_q");
  mn.value=F.min||0;mx.value=F.max||"";ok.checked=!!F.ok;q.value=F.q||"";
@@ -473,7 +473,7 @@ function vente(){
  <div class="card"><h2>🏷️ Ce que tu produis pour vendre</h2><div class="scroll">${sale.length?venteTable(sale,false):'<div class="empty">Rien dans ce filtre.</div>'}</div></div>
  <div class="card"><h2>🌾 Pour ta ferme — seulement le surplus</h2><div class="sub">Tu les produis pour nourrir tes animaux ou fabriquer tes outils. Ne vends que ce qui dépasse ta réserve.</div><div class="scroll">${farm.length?venteTable(farm,true):'<div class="empty">Rien dans ce filtre.</div>'}</div></div>
  ${other.length?`<details class="card"><summary><b>Autres ressources en stock (${other.length})</b> · ${fr(v(other))} FLW</summary><div class="scroll" style="margin-top:10px">${venteTable(other,false)}</div></details>`:""}
- <div class="sub" id="v_note">Classement réglable dans <code>ma_ferme.json</code> : « a_vendre », « pour_ma_ferme », « stock_a_garder ». Le conseil compare le prix du jour aux 7 derniers jours (plus précis après ~5 jours d'historique) et à ton coût de production.</div>`;
+ <div class="sub" id="v_note">Le conseil compare le prix du jour aux 7 derniers jours (plus précis après ~5 jours d'historique) et à ton coût de production.</div>`;
  document.querySelectorAll("#vf .chip").forEach(b=>b.onclick=()=>{try{localStorage.setItem("vf",b.dataset.k)}catch(e){};vente();});
  const q=document.getElementById("v_q");
  q.oninput=()=>{const t=q.value.trim().toLowerCase();const out=document.getElementById("v_res");
@@ -503,7 +503,7 @@ function rentabilite(){
  ${real.map(x=>`<tr><td>${x.profit>=0?"✅":"❌"}</td><td><b>${nm(x.item)}</b></td><td>${fr(x.q,0)}</td><td>${fp(x.unet)}</td><td>${fp(x.cost)}</td><td class="${cls(x.profit)}">${sg((x.unet-x.cost)*100)}</td><td class="${cls(x.profit)}"><b>${sg(x.profit)} FLW</b></td></tr>`).join("")}
  </table></div>`:'<div class="empty">Pas de vente de ressource produite sur 30 jours.</div>'}</div>
  <details class="card"><summary style="cursor:pointer"><b>🧾 Détail : coût de production d'une unité vs prix de vente</b></summary>
- <div class="sub">Coût = outils (coins au taux de 1 FLW = 1 525 coins + ressources au prix du marché) ÷ ce que rapporte une action. Vente nette = prix du marché − 7,5 % de taxe. Rendements réglables dans <code>ma_ferme.json</code>.</div>
+ <div class="sub">Coût = outils (coins au taux du jour de SFL Tool + ressources au prix du marché) ÷ ce que rapporte une action. Vente nette = prix du marché − 7,5 % de taxe. Rendements lus sur ta ferme.</div>
  <div class="scroll"><table><tr><th>Ressource</th><th>Coût / unité</th><th>dont coins</th><th>dont ressources</th><th>Vente nette / unité</th><th>Marge / unité</th><th>Marge</th><th>Ton prix de vente moyen (30 j)</th><th>Ta marge réelle</th><th>Recette</th></tr>
  ${res.map(r=>{const s=sold[r.item];const u=s?s.g/s.q*0.925:null;return `<tr><td>${nm(r.item)}</td><td>${fp(r.cout)}</td><td>${fp(r.cout_coins)}</td><td>${fp(r.cout_matieres)}</td><td>${fp(r.vente_nette)}</td><td class="${cls(r.marge)}"><b>${fp(r.marge)}</b></td><td class="${cls(r.marge)}">${pctm(r)}</td><td>${u!=null?fp(u):"—"}</td><td class="${u!=null?cls(u-r.cout):""}">${u!=null?fp(u-r.cout):"—"}</td><td style="text-align:left;color:var(--muted)">${r.detail}</td></tr>`}).join("")}
  </table></div></details>
@@ -609,7 +609,7 @@ function totauxCard(){
  const T=(D.nft||{}).totaux||[];
  return T.length?`<div class="card"><h2>🧮 Le total de tes bonus, ressource par ressource</h2><div class="scroll"><table><tr><th style="text-align:left">Ressource</th><th>Grâce aux NFT</th><th>Grâce aux compétences</th><th>Total en plus à chaque action</th><th>Multiplicateur</th><th>Temps de repousse</th><th style="text-align:left">Chances</th><th style="text-align:left">Détail (d'où vient chaque bonus)</th></tr>
   ${T.map(x=>`<tr><td style="text-align:left"><b>${x.nom}</b></td><td>${x.add_nft?sg(x.add_nft):"—"}</td><td>${x.add_comp?sg(x.add_comp):"—"}</td><td class="${x.add>0?"pos":x.add<0?"neg":""}"><b>${x.add?sg(x.add):"—"}</b></td><td>${x.mult!==1?"×"+fr(x.mult,2):"—"}</td><td>${x.temps!==1?"×"+fr(x.temps,2)+" ("+fr((1-x.temps)*100,0)+" % plus rapide)":"—"}</td><td style="text-align:left">${x.chances.join(" · ")||"—"}</td><td style="text-align:left;color:var(--muted);font-size:12px">${x.lignes.map(l=>"• "+l).join("<br>")}</td></tr>`).join("")}</table></div>
-  <div class="sub">NFT <b>et</b> compétences additionnés. Ex. pierre « +0,85 » = à chaque coup de pioche, tu gagnes 0,85 pierre de plus que sans aucun bonus (+0,25 des NFT, +0,60 des compétences, Ferrous Favor enlevant 0,5). Temps de repousse ×0,8 = tes rochers reviennent 20 % plus vite. Les compétences sont comptées à leur effet de base (rang 1) ; les vêtements ne sont comptés que s'ils sont déclarés dans <code>nft_possedes</code>. Un total à 0 avec des lignes (ex. plumes) = un bonus et un malus qui s'annulent.</div></div>`:"";
+  <div class="sub">NFT <b>et</b> compétences additionnés. Ex. pierre « +0,85 » = à chaque coup de pioche, tu gagnes 0,85 pierre de plus que sans aucun bonus (+0,25 des NFT, +0,60 des compétences, Ferrous Favor enlevant 0,5). Temps de repousse ×0,8 = tes rochers reviennent 20 % plus vite. Les compétences sont comptées à leur effet de base (rang 1) ; les vêtements portés (toi et tes Farm Hands) sont lus automatiquement. Un total à 0 avec des lignes (ex. plumes) = un bonus et un malus qui s'annulent.</div></div>`:"";
 }
 function cyclesTab(){
  const el=document.getElementById("cycles"),SP=(D.nft||{}).saisons_passees||[],CP=(D.nft||{}).cycles_passes||[];
