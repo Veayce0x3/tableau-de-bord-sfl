@@ -70,6 +70,56 @@ CONFLITS = {  # n'apporte rien de plus si l'autre est déjà là
 WEARABLES = {"Milk Apron", "Corn Silk Hair", "Corn Onesie"}
 
 
+FR = {"Stone": "pierre", "Iron": "fer", "Gold": "or", "Crimstone": "crimstone", "Wood": "bois", "Wheat": "blé",
+      "Barley": "orge", "Corn": "maïs", "Kale": "chou kale", "Milk": "lait", "Leather": "cuir", "Egg": "œuf",
+      "Feather": "plume"}
+OUTIL = {"Stone": "coup de pioche sur un rocher de pierre", "Iron": "coup de pioche sur un rocher de fer",
+         "Gold": "coup de pioche sur un rocher d'or", "Crimstone": "coup de pioche sur un rocher de crimstone",
+         "Wood": "arbre coupé"}
+ZONE = {"Tin Turtle": " (seulement les rochers dans une zone de 3×3 autour de lui)",
+        "Emerald Turtle": " (seulement les rochers dans une zone de 3×3 autour de lui)",
+        "Queen Cornelia": " (seulement les champs dans une zone de 3×4 autour d'elle)"}
+SPECIAL = {"Baby Cow": "+10 XP pour la vache à chaque caresse → tes vaches montent de niveau plus vite",
+           "Mammoth": "Les vaches dorment 25 % moins longtemps (inutile si tu es limité par les bounties de vaches)",
+           "Scarecrow": "+20 % de récolte sur toutes tes cultures, et elles poussent 15 % plus vite",
+           "Speed Chicken": "Les poules dorment 10 % moins longtemps → plus d'œufs par jour",
+           "El Pollo Veloz": "Les poules dorment 2 h de moins → plus d'œufs par jour",
+           "Fat Chicken": "Les poules mangent 10 % de nourriture en moins",
+           "Grain Grinder": "+20 % d'XP quand tu manges des gâteaux"}
+
+
+def effet(name):
+    """L'effet du NFT en clair : +combien, de quoi, quand."""
+    if name in SPECIAL:
+        return SPECIAL[name]
+    out = []
+    for e in B[name]:
+        k = e[0]
+        if k == "add":
+            out.append(f"+{e[2]:g} {FR[e[1]]} à chaque {OUTIL[e[1]]}")
+        elif k == "chance":
+            out.append(f"{e[2]:.0%} de chance d'avoir +{e[3]:g} {FR[e[1]]} à chaque {OUTIL[e[1]]}")
+        elif k == "mult":
+            out.append(f"+{(e[2] - 1) * 100:.0f} % de {FR[e[1]]} à chaque {OUTIL[e[1]]}")
+        elif k == "crop_add":
+            out.append(f"+{e[2]:g} {FR[e[1]]} à chaque champ de {FR[e[1]]} récolté")
+        elif k == "time":
+            if e[1] == "crops":
+                out.append(f"Toutes tes cultures poussent {(1 - e[2]) * 100:.0f} % plus vite")
+            else:
+                out.append(f"Le {FR.get(e[1], e[1])} pousse {(1 - e[2]) * 100:.0f} % plus vite")
+        elif k == "animal":
+            out.append(f"+{e[2]:g} {FR[e[1]]} à chaque fois qu'une vache produit")
+        elif k == "hen":
+            out.append(f"+{e[2]:g} {FR[e[1]]} à chaque fois qu'une poule produit")
+        elif k == "xp":
+            out.append(f"+{(e[2] - 1) * 100:.0f} % d'XP sur tout ce que tu fais")
+    import re
+    txt = " · ".join(out) + ZONE.get(name, "")
+    txt = re.sub(r"(\d)\.(\d)", r"\1,\2", txt).replace("de orge", "d'orge").replace("(\d)%", "")
+    return re.sub(r"(\d)%", r"\1 %", txt)
+
+
 def _prod(cfg):
     p = {**DEFAULT_PROD, **(cfg.get("ma_production") or {})}
     p["recoltes"] = {**DEFAULT_PROD["recoltes"], **((cfg.get("ma_production") or {}).get("recoltes") or {})}
@@ -177,7 +227,7 @@ def analyse_nft(holdings, prices, cfg):
                 v, c = "🟡 Correct", "neutral"
             else:
                 v, c = "❌ Trop cher pour ce qu'il rapporte", "neg"
-        rows.append({"n": name, "owned": mine, "wearable": name in WEARABLES, "price": price, "jour": g,
+        rows.append({"n": name, "effet": effet(name), "owned": mine, "wearable": name in WEARABLES, "price": price, "jour": g,
                      "mois": g * 30, "an_pct": an, "rembourse_jours": (price / g) if price and g > 0.001 else None,
                      "why": why, "xp": xp, "verdict": v, "cls": c})
     rows.sort(key=lambda r: (not r["owned"], -(r["an_pct"] or -1)))

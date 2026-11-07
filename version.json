@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.3",
- "nouveautes": "Nouvel onglet NFT (rentabilité de chaque NFT) et conseils selon ton objectif dans Objectifs.",
+ "version": "2026-11-07.4",
+ "nouveautes": "Onglet NFT : ce que fait chaque NFT, en clair.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
