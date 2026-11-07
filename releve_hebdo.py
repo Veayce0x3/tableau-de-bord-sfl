@@ -509,6 +509,15 @@ def main():
                    | {k for k, v in holdings.items() if v and k not in NOT_FOR_SALE})
     watched += [i for i in extra if i not in watched]
     all_prices = collect_prices(fin)
+    # Quantité par action de TA ferme (pierre par coup de pioche, bois par arbre…), lue sur sfl.world
+    # si tu ne l'as pas réglée toi-même dans ma_ferme.json → "rendements"
+    if not CONFIG.get("rendements"):
+        res_ferme = (try_json(f"https://sfl.world/api/v1/land/{FARM_ID}") or {}).get("resources") or {}
+        lus = {k.capitalize(): v.get("avg") for k, v in res_ferme.items()
+               if k in ("stone", "iron", "gold", "crimstone", "wood") and isinstance(v, dict) and v.get("avg")}
+        if lus:
+            CONFIG["rendements"] = lus
+            CONFIG["rendements_source"] = "lus sur ta ferme (sfl.world)"
     # Cours du Flower en dollars (USDC) du jour, gardé avec les compteurs du compte
     try:
         usd = (try_json(RATES_URL) or {}).get("flowerUsd")
@@ -716,6 +725,8 @@ def main():
         else:
             animaux = {k: DEFAULT_PROD[k] for k in ("cycles_vaches", "cycles_poules", "vaches")}
         p.update(animaux)
+        if (CONFIG.get("rendements") or {}).get("Wood"):
+            p["rendement_bois"] = CONFIG["rendements"]["Wood"]
         p["arbres"] = ferme["noeuds"]["Wood"]
         if animaux_lus:
             p["poules"] = (animaux_lus.get("Chicken") or {}).get("nombre", 0)

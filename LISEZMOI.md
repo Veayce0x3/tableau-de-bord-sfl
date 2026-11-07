@@ -5,6 +5,9 @@ Un petit outil qui enregistre chaque jour les données **publiques** de ta ferme
 - **Lecture seule** : il ne touche jamais au jeu, ne demande ni mot de passe, ni clé, ni wallet. Il lit seulement ce que SFL Tool (primerascripto.com) et sfl.world affichent publiquement pour un numéro de ferme.
 - **Tout reste sur ton ordinateur**, dans le dossier `donnees/`.
 
+## Tes données, rien que tes données
+Tout est calculé avec **ta** ferme, lue à chaque relevé grâce à ton numéro : tes échanges et ton stock (SFL Tool), ton niveau, tes compétences, tes rochers, arbres, champs, vaches et poules, ta quantité par action et ton rythme réel (sfl.world). Les conseils (NFT, compétences, objectifs, amortissement) dépendent donc de ta façon de jouer. Tes données restent dans le dossier `donnees/` de ton ordinateur : rien n'est envoyé ailleurs, et la mise à jour automatique ne remplace que le programme.
+
 ## 1. Installer (une seule fois)
 1. Il faut **Python 3**.
    - Mac : il est souvent déjà là. Sinon, tape `python3` dans le Terminal : macOS propose de l'installer.
