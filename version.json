@@ -1,0 +1,5 @@
+{
+ "version": "2026-11-07.1",
+ "nouveautes": "Poules et échange des cochons dans Rentabilité, total par ressource, courbes, sauvegardes quotidiennes.",
+ "fichiers": ["releve_hebdo.py", "tableau_de_bord.py", "serveur.py", "maj.py", "LISEZMOI.md", "TUTO_INSTALLATION.md", "Lancer le relevé.command", "Lancer le relevé.bat"]
+}

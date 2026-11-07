@@ -1,0 +1,5 @@
+donnees/
+releves/
+*.tmp
+*.abime
+__pycache__/

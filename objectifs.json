@@ -1,0 +1,8 @@
+[
+  {"titre": "Exemple : acheter Rocky the Mole", "type": "nft", "nom": "Rocky the Mole", "groupe": "NFT à acheter"},
+  {"titre": "Exemple : prendre la compétence Ferrous Favor", "type": "competence", "nom": "Ferrous Favor", "groupe": "Compétences"},
+  {"titre": "Exemple : passer niveau 90", "type": "niveau", "valeur": 90, "groupe": "Compétences"},
+  {"titre": "Exemple : grange niveau 3", "type": "manuel", "fait": false, "groupe": "Animaux",
+   "ressources": {"coins": 75000, "Wood": 5000, "Iron": 300, "Gold": 200, "Crimstone": 125, "Oil": 250}},
+  {"titre": "Dans le vert sur les 7 derniers jours", "type": "dans_le_vert", "groupe": "Chaque semaine"}
+]
