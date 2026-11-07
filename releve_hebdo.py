@@ -626,7 +626,7 @@ def main():
     except Exception as e:
         print(f"(animaux non lus sur sfl.world : {e})", file=sys.stderr)
     # Compteurs réels (minés, coupés, récoltés, collectés) : enregistrés à chaque relevé pour mesurer ton rythme
-    reel, jours_reel = None, 0
+    reel, jours_reel, parts_vie = None, 0, {}
     try:
         compteurs = lire_activite_sflworld(page_sfl(f"https://sfl.world/land/{FARM_ID}/activity"))
         if compteurs:
@@ -634,6 +634,9 @@ def main():
             act.append({"date": today, "c": compteurs})
             safe_write(DATA / "activite.json", json.dumps(act, ensure_ascii=False))
             reel, jours_reel = rythme_reel(act)
+            from nft_analyse import CROPS
+            tot = sum(compteurs.get(f"{c} Harvested", 0) for c in CROPS)
+            parts_vie = {c: compteurs.get(f"{c} Harvested", 0) / tot for c in CROPS} if tot else {}
     except Exception as e:
         print(f"(activité non lue sur sfl.world : {e})", file=sys.stderr)
     if CONFIG.get("ma_production"):
@@ -677,6 +680,8 @@ def main():
         else:
             source = ("⏳ estimation (rochers × ~6 passages/jour) : ton vrai rythme sera mesuré au prochain relevé, demain · "
                       + source)
+        if parts_vie:
+            p["parts_vie"] = parts_vie
         cfg_prod = {**CONFIG, "ma_production": p}
     elif mesure:
         cfg_prod, source = {**CONFIG, "ma_production": mesure}, f"mesurée sur ta ferme ({jours} jours)"

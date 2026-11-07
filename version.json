@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.15",
- "nouveautes": "NFT de cultures : calcul sur tes vraies récoltes et seuil de rentabilité.",
+ "version": "2026-11-07.16",
+ "nouveautes": "NFT de cultures calculés avec tes habitudes de plantation (ta part de chaque culture).",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

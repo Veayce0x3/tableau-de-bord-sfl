@@ -133,6 +133,10 @@ SAISON_FR = {"spring": "printemps", "summer": "été", "autumn": "automne", "win
 PART_EN_SAISON = 0.5  # on suppose que tu mettrais la moitié de tes champs sur cette culture pendant sa saison
 
 PRIX_COURANT = {}
+VOYELLE = lambda w: w[:1].lower() in "aeiouyéèh"
+art = lambda r: ("l'" if VOYELLE(FR.get(r, r)) else "le ") + FR.get(r, r)
+de = lambda r: ("d'" if VOYELLE(FR.get(r, r)) else "de ") + FR.get(r, r)
+du = lambda r: ("de l'" if VOYELLE(FR.get(r, r)) else "du ") + FR.get(r, r)
 
 RES_NODES = {"Stone", "Iron", "Gold", "Crimstone", "Wood"}
 CROPS = ["Sunflower", "Potato", "Rhubarb", "Pumpkin", "Zucchini", "Carrot", "Yam", "Cabbage", "Broccoli", "Soybean",
@@ -233,16 +237,17 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
             ss = SAISONS.get(res, ["spring", "summer", "autumn", "winter"])
             saison_txt = " et ".join(SAISON_FR[x] for x in ss) if len(ss) < 4 else "toute l'année"
             parts = prod.get("parts_vie") or {}
-            if prod.get("mesure_reelle") and len(ss) < 4 and parts:
+            if parts and (len(ss) < 4 or not prod.get("mesure_reelle")):
                 # Culture de saison : ta part habituelle (depuis le début de ta ferme) × ton rythme actuel de récolte
                 part = parts.get(res, 0)
                 n = sum(prod["recoltes"].values()) * part * share
-                why.append(f"+{v:g} × ~{n:.0f} champs/jour en moyenne sur l'année : le {FR.get(res, res)} fait {part:.0%} "
-                           f"de tout ce que tu as récolté depuis le début ({saison_txt})")
+                why.append(f"+{v:g} × ~{n:.0f} champs/jour en moyenne sur l'année : {art(res)} fait {part:.0%} "
+                           f"de tout ce que tu as récolté depuis le début ({saison_txt})"
+                           + ("" if prod.get("mesure_reelle") else " · rythme de récolte estimé jusqu'au relevé de demain"))
             elif prod.get("mesure_reelle"):
                 # Ce que tu récoltes vraiment (moyenne des derniers jours), sans hypothèse
                 n = prod["recoltes"].get(res, 0) * share
-                why.append(f"+{v:g} × {n:g} champs de {FR.get(res, res)} que tu récoltes vraiment par jour (moyenne mesurée)")
+                why.append(f"+{v:g} × {n:g} champs {de(res)} que tu récoltes vraiment par jour (moyenne mesurée)")
             else:
                 champs = prod.get("champs_total") or sum(prod["recoltes"].values()) / 1.7
                 n = max(prod["recoltes"].get(res, 0), champs * 1.7 * PART_EN_SAISON) * len(ss) / 4 * share
@@ -299,7 +304,7 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
     if seuils and price and len(seuils) == 1:
         res, par_champ, saison_txt = seuils[0]
         besoin = price * 0.35 / 365 / par_champ   # champs/jour pour atteindre 35 %/an
-        why.append(f"👉 rentable (35 %/an) si tu récoltes au moins {besoin:.0f} champs de {FR.get(res, res)} par jour "
+        why.append(f"👉 rentable (35 %/an) si tu récoltes au moins {besoin:.0f} champs {de(res)} par jour "
                    f"en moyenne sur l'année ({saison_txt})" + ("" if res == "Wheat" else " — à toi de voir si tu as la place à côté du blé pour tes animaux"))
     return total, " · ".join(why), xp
 
