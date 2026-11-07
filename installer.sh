@@ -11,11 +11,12 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
-TMP="$(mktemp -d)"
-curl -fsSL "$ZIP_URL" -o "$TMP/outil.zip"
-unzip -q "$TMP/outil.zip" -d "$TMP"
-SRC="$(find "$TMP" -maxdepth 1 -type d -name 'tableau-de-bord-sfl-*' | head -1)"
 mkdir -p "$DEST"
+TMP="$DEST/.installation"
+rm -rf "$TMP" && mkdir -p "$TMP"
+curl -fsSL "$ZIP_URL" -o "$TMP/outil.zip"
+ditto -x -k "$TMP/outil.zip" "$TMP"
+SRC="$(find "$TMP" -maxdepth 1 -type d -name 'tableau-de-bord-sfl-*' | head -1)"
 for f in "$SRC"/*; do
   name="$(basename "$f")"
   # Ne jamais écraser tes réglages s'ils existent déjà
