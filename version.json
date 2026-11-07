@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.23",
- "nouveautes": "Mon compte : graphique retiré.",
+ "version": "2026-11-07.24",
+ "nouveautes": "Mon compte : valeur en dollars, cours du Flower noté à chaque dépôt et retrait.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

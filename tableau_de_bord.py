@@ -561,7 +561,17 @@ function compteurs(){
   <p class="plain">Tu as <b>déposé ${fr(L.deposited)} FLW</b> et <b>retiré ${fr(L.withdrawn)} FLW</b> depuis le début : ${net>=0?`tu as déjà récupéré <b class="pos">${fr(net)} FLW de plus</b> que ce que tu as mis.`:`il te reste <b class="neg">${fr(-net)} FLW</b> à récupérer pour rentrer dans tes frais.`}</p>
   <p class="plain">Dans le jeu (hors marché) tu as <b>dépensé ${fr(L.spent)} FLW</b> au total, dont <b>${fr(L.gemFees)} FLW en gems</b>.</p>
   <p class="plain">Depuis le ${F.date.split("-").reverse().join("/")} (premier relevé) : solde ${sg(d("solde"))} · déposé ${sg(d("deposited"))} · retiré ${sg(d("withdrawn"))} · dépensé en jeu ${sg(d("spent"))} · gems ${sg(d("gemFees"))}.</p></div>
- <div class="card scroll"><table><tr><th>Date</th><th>Solde Flower</th><th>Déposé</th><th>Retiré</th><th>Dépensé en jeu</th><th>Frais gems</th></tr>${c.slice().reverse().map(x=>`<tr><td>${x.date.split("-").reverse().join("/")}</td><td>${fr(x.solde)}</td><td>${fr(x.deposited)}</td><td>${fr(x.withdrawn)}</td><td>${fr(x.spent)}</td><td>${fr(x.gemFees)}</td></tr>`).join("")}</table>
+ ${(()=>{const usd=L.flower_usd,M=[];for(let i=1;i<c.length;i++){const a=c[i-1],b=c[i],r=b.flower_usd||usd;
+   const dd=(b.deposited||0)-(a.deposited||0),dw=(b.withdrawn||0)-(a.withdrawn||0);
+   if(dd>0.01)M.push({d:b.date,t:"📥 Dépôt",q:dd,r});if(dw>0.01)M.push({d:b.date,t:"📤 Retrait",q:dw,r});}
+  if(!usd)return "";const $=v=>fr(v)+" $";
+  return `<div class="card"><h2>💵 En dollars (USDC)</h2>
+  <p class="plain">Cours du Flower aujourd'hui : <b>1 FLW = ${fr(usd,4)} $</b>.</p>
+  <p class="plain">Ton solde de ${fr(L.solde)} FLW vaut <b>≈ ${$(L.solde*usd)}</b>.</p>
+  <p class="plain">Avant le suivi (jusqu'au ${F.date.split("-").reverse().join("/")}), les cours de l'époque ne sont pas connus : au cours d'aujourd'hui, tes ${fr(F.deposited)} FLW déposés vaudraient ≈ ${$(F.deposited*usd)} et tes ${fr(F.withdrawn)} FLW retirés ≈ ${$(F.withdrawn*usd)}.</p>
+  ${M.length?`<div class="scroll"><table><tr><th>Date</th><th>Mouvement</th><th>Flower</th><th>Cours ce jour-là</th><th>En dollars</th></tr>${M.slice().reverse().map(m=>`<tr><td>${m.d.split("-").reverse().join("/")}</td><td>${m.t}</td><td>${fr(m.q)}</td><td>${fr(m.r,4)} $</td><td><b>${$(m.q*m.r)}</b></td></tr>`).join("")}</table></div>
+   <p class="plain">Depuis le début du suivi : déposé <b>${$(sum(M.filter(m=>m.t.includes("Dépôt")),m=>m.q*m.r))}</b> · retiré <b>${$(sum(M.filter(m=>m.t.includes("Retrait")),m=>m.q*m.r))}</b>.</p>`:`<div class="sub">À partir de maintenant, chaque dépôt et chaque retrait sera noté ici avec le cours du Flower du jour, pour savoir ce qu'il t'a coûté ou rapporté en dollars.</div>`}</div>`;})()}
+ <div class="card scroll"><table><tr><th>Date</th><th>Solde Flower</th><th>Déposé</th><th>Retiré</th><th>Dépensé en jeu</th><th>Frais gems</th><th>Cours FLW</th></tr>${c.slice().reverse().map(x=>`<tr><td>${x.date.split("-").reverse().join("/")}</td><td>${fr(x.solde)}</td><td>${fr(x.deposited)}</td><td>${fr(x.withdrawn)}</td><td>${fr(x.spent)}</td><td>${fr(x.gemFees)}</td><td>${x.flower_usd?fr(x.flower_usd,4)+" $":"—"}</td></tr>`).join("")}</table>
  <div class="sub">Chiffres de ton compte relevés chaque jour (SFL Tool). « Dépensé en jeu » = Flower utilisés dans le jeu hors marché (gems, achats en boutique…).</div></div>`;
 }
 function totauxCard(){

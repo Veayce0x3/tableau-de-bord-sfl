@@ -509,6 +509,16 @@ def main():
                    | {k for k, v in holdings.items() if v and k not in NOT_FOR_SALE})
     watched += [i for i in extra if i not in watched]
     all_prices = collect_prices(fin)
+    # Cours du Flower en dollars (USDC) du jour, gardé avec les compteurs du compte
+    try:
+        usd = (try_json(RATES_URL) or {}).get("flowerUsd")
+        if usd:
+            for sn in snaps:
+                if sn["date"] == today:
+                    sn["flower_usd"] = usd
+            safe_write(SNAP_FILE, json.dumps(snaps, ensure_ascii=False, indent=1))
+    except Exception as e:
+        print(f"(cours du Flower indisponible : {e})", file=sys.stderr)
     today_prices = {i: all_prices.get(i) for i in watched}
     history = [h for h in load(PRICES_FILE, []) if h["date"] != today]
     history.append({"date": today, "prices": today_prices})
