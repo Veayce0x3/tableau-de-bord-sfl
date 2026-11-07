@@ -66,7 +66,20 @@ NAMES_FR = {
 }
 
 
+_CACHE = {}
+
+
 def get_json(url):
+    # Une même adresse n'est demandée qu'une fois par relevé (SFL Tool limite les demandes rapprochées)
+    if "/update/" in url:          # la vérification de mise à jour sfl.world doit être redemandée à chaque fois
+        return _get_json(url)
+    if url in _CACHE:
+        return _CACHE[url]
+    _CACHE[url] = _get_json(url)
+    return _CACHE[url]
+
+
+def _get_json(url):
     req = urllib.request.Request(url, headers={"User-Agent": "releve-hebdo-sfl"})
     try:
         with urllib.request.urlopen(req, timeout=60) as r:
@@ -817,11 +830,6 @@ def main():
         nft["ressources"] = {k: ressources_jour(jours, all_trades, all_prices, exclure, n, today) for k, n in (("1", 1), ("7", 7), ("30", 30))}
     except Exception as e:
         print(f"(ressources du jour indisponibles : {e})", file=sys.stderr)
-    try:
-        from nft_analyse import production
-        nft["production"] = production(load(DATA / "activite.json", []), holdings, all_prices, CONFIG.get("rendements"), today)
-    except Exception as e:
-        print(f"(production indisponible : {e})", file=sys.stderr)
     # Saisons : on note le début de chaque saison (avec tes compteurs) pour suivre tes objectifs
     try:
         from nft_analyse import objectifs_saison, objectifs_cycle
@@ -881,5 +889,8 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:  # message lisible si le site ne répond pas
-        print(f"Relevé impossible : {e}", file=sys.stderr)
+        if "429" in str(e):
+            print("SFL Tool reçoit trop de demandes en ce moment : réessaie dans 2 à 3 minutes (tes données sont gardées).", file=sys.stderr)
+        else:
+            print(f"Relevé impossible : {e}", file=sys.stderr)
         sys.exit(1)
