@@ -230,9 +230,11 @@ function apercu(){
   ${row("🧾 Taxe payée",x=>-x.tax,()=> "neg")}
   <tr><th>Nombre d'échanges</th>${T.map(([k,l,x])=>`<td>${x.n}</td>`).join("")}</tr>
  </table></div><div class="sub">Les gains sont comptés à partir du ${first} (ton nouveau départ, réglable avec <code>date_depart</code> dans <code>ma_ferme.json</code>). Les échanges plus anciens restent dans Historique et Échanges.</div></div>
- <div class="card"><h2>📦 Ressources gagnées et utilisées</h2><div class="controls" id="rj_chips">${[["1","Aujourd'hui"],["7","7 jours"],["30","30 jours"]].map(([k,l])=>`<button class="chip" data-k="${k}">${l}</button>`).join("")}</div><div id="rj_tab"></div>
- <div class="sub">Comme SFL Tool : stock en fin de journée − stock en début de journée, sans tes achats et ventes sur le marché. <b>Gagné</b> = ce que tu as récolté, miné, collecté… <b>Utilisé</b> = ce que tu as consommé (outils, nourriture, cuisine, bâtiments…). Valeur au prix du marché après taxe. Les jours sans relevé ne sont pas comptés.</div></div>
- <div class="card"><h2>Détail par ressource</h2><div class="controls" id="per_chips">${PERIODS.map(([k,l])=>`<button class="chip ${k===per?"on":""}" data-k="${k}">${l}</button>`).join("")}</div><div class="scroll" id="res_tab"></div></div>
+ <div class="card"><h2>📊 Tes ressources</h2>
+ <div class="controls"><button class="chip on" id="mode_ferme">🌾 Ma ferme (récolté / utilisé)</button><button class="chip" id="mode_marche">🏪 Le marché (vendu / acheté)</button></div>
+ <div class="controls" id="res_per"></div>
+ <div id="pane_ferme"><div id="rj_tab"></div><div class="sub">Comme SFL Tool : stock en fin de journée − stock en début de journée, sans tes achats et ventes sur le marché. <b>Gagné</b> = ce que tu as récolté, miné, collecté… <b>Utilisé</b> = ce que tu as consommé (outils, nourriture, cuisine, bâtiments…). Valeur au prix du marché après taxe. Les jours sans relevé ne sont pas comptés.</div></div>
+ <div id="pane_marche" style="display:none"><div class="scroll" id="res_tab"></div></div></div>
  <div class="card"><h2>Gagné par jour (30 derniers jours)</h2><div class="chart"><canvas id="c_ap"></canvas></div></div>
  <div class="card"><h2>⚠️ Ventes à plus de 10 % sous le prix du marché (30 jours)</h2><div id="warn"></div></div>`;
  const drawRes=k=>{const d=PERIODS.find(p=>p[0]===k)[2];const rows=byResource(tradesFor(d));
@@ -240,15 +242,23 @@ function apercu(){
   ${(()=>{const tv=sum(rows,r=>r.vs),tb=sum(rows,r=>r.gb),tn=tv-tb;return `<tr style="background:var(--card2,rgba(127,127,127,.12))"><td><b>🧮 TOTAL</b></td><td></td><td></td><td class="pos"><b>${sg(tv)}</b></td><td></td><td></td><td class="neg"><b>${sg(-tb)}</b></td><td class="${tn>=0?"pos":"neg"}"><b>${sg(tn)}</b></td><td></td></tr>`})()}
   ${rows.map(r=>`<tr><td>${nm(r.n)}</td><td>${r.qs?fr(r.qs,0):"—"}</td><td>${r.qs?fp(r.gs/r.qs):"—"}</td><td class="pos">${r.qs?sg(r.vs):"—"}</td><td>${r.qb?fr(r.qb,0):"—"}</td><td>${r.qb?fp(r.gb/r.qb):"—"}</td><td class="neg">${r.qb?sg(-r.gb):"—"}</td><td class="${r.net>=0?"pos":"neg"}"><b>${sg(r.net)}</b></td><td>${fp(D.now[r.n])}</td></tr>`).join("")}</table>
   <div class="sub">Prix moyens avant taxe. « Total ventes » est après la taxe de 7,5 %.</div>`:`<div class="empty">Aucun échange sur cette période.</div>`;};
- document.querySelectorAll("#per_chips .chip").forEach(b=>b.onclick=()=>{document.querySelectorAll("#per_chips .chip").forEach(x=>x.classList.toggle("on",x===b));try{localStorage.setItem("per",b.dataset.k)}catch(e){};drawRes(b.dataset.k);});
- drawRes(per);
- const drawRJ=k=>{const X=((D.nft||{}).ressources||{})[k],el=document.getElementById("rj_tab");document.querySelectorAll("#rj_chips .chip").forEach(b=>b.classList.toggle("on",b.dataset.k===k));
+ const drawRJ=k=>{const X=((D.nft||{}).ressources||{})[k],el=document.getElementById("rj_tab");
   if(!X||!X.jours){el.innerHTML='<div class="empty">Pas encore de données pour cette période.</div>';return;}
   const g=sum(X.gagne,r=>r.v),u=sum(X.utilise,r=>r.v);
   const tb=(L,c)=>L.length?`<table><tr><th style="text-align:left">Ressource</th><th>Quantité</th><th>Valeur (FLW)</th></tr>${L.map(r=>`<tr><td style="text-align:left">${nm(r.n)}</td><td class="${c}">${sg(r.q)}</td><td class="${c}">${sg(r.v)}</td></tr>`).join("")}</table>`:'<div class="empty">Rien.</div>';
   el.innerHTML=`<div class="hero" style="margin:8px 0"><div><div class="l">➕ Gagné</div><div class="big pos">${sg(g)} FLW</div></div><div><div class="l">➖ Utilisé</div><div class="big neg">${sg(u)} FLW</div></div><div><div class="l">= Bilan (${X.jours} jour${X.jours>1?"s":""})</div><div class="big ${g+u>=0?"pos":"neg"}">${sg(g+u)} FLW</div></div></div>
   <div class="grid2" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px"><div><h3>➕ Gagné</h3><div class="scroll">${tb(X.gagne,"pos")}</div></div><div><h3>➖ Utilisé</h3><div class="scroll">${tb(X.utilise,"neg")}</div></div></div>`;};
- document.querySelectorAll("#rj_chips .chip").forEach(b=>b.onclick=()=>drawRJ(b.dataset.k));drawRJ("1");
+ let RM="ferme";try{RM=localStorage.getItem("res_mode")||"ferme"}catch(e){}
+ const drawResCard=()=>{const ferme=RM==="ferme";document.getElementById("mode_ferme").classList.toggle("on",ferme);document.getElementById("mode_marche").classList.toggle("on",!ferme);
+  document.getElementById("pane_ferme").style.display=ferme?"":"none";document.getElementById("pane_marche").style.display=ferme?"none":"";
+  const P=ferme?[["1","Aujourd'hui"],["7","7 jours"],["30","30 jours"]]:PERIODS.map(([k,l])=>[k==="jour"?"1":k,l]);
+  let cur;try{cur=localStorage.getItem("res_per")||"1"}catch(e){cur="1"};if(!P.some(x=>x[0]===cur))cur="1";
+  document.getElementById("res_per").innerHTML=P.map(([k,l])=>`<button class="chip ${k===cur?"on":""}" data-k="${k}">${l}</button>`).join("");
+  document.querySelectorAll("#res_per .chip").forEach(x=>x.onclick=()=>{try{localStorage.setItem("res_per",x.dataset.k)}catch(e){};drawResCard();});
+  if(ferme)drawRJ(cur);else drawRes(cur==="1"?"jour":cur);};
+ document.getElementById("mode_ferme").onclick=()=>{RM="ferme";try{localStorage.setItem("res_mode",RM)}catch(e){};drawResCard();};
+ document.getElementById("mode_marche").onclick=()=>{RM="marche";try{localStorage.setItem("res_mode",RM)}catch(e){};drawResCard();};
+ drawResCard();
  const m=inLast(30);const agg={};m.filter(t=>t.s).forEach(t=>{agg[t.n]=agg[t.n]||{q:0,g:0};agg[t.n].q+=t.q;agg[t.n].g+=t.g;});
  const warn=Object.entries(agg).map(([n,a])=>{const u=a.g/a.q,mk=D.now[n];return {n,u,mk,gap:mk?(u-mk)/mk*100:null,lost:mk&&u<mk?(mk-u)*a.q*0.925:0}}).filter(x=>x.gap!=null&&x.gap<-10).sort((a,b)=>b.lost-a.lost);
  document.getElementById("warn").innerHTML=warn.length?`<table><tr><th>Ressource</th><th>Ton prix moyen</th><th>Marché aujourd'hui</th><th>Écart</th><th>Manque à gagner</th></tr>${warn.map(x=>`<tr><td>${nm(x.n)}</td><td>${fp(x.u)}</td><td>${fp(x.mk)}</td><td class="warn">${fr(x.gap,0)} %</td><td class="warn">${fr(x.lost)}</td></tr>`).join("")}</table>`:`<div class="empty">Aucune 👍</div>`;

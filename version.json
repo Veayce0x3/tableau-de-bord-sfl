@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.24",
- "nouveautes": "Mon compte : valeur en dollars, cours du Flower noté à chaque dépôt et retrait.",
+ "version": "2026-11-07.25",
+ "nouveautes": "Aperçu : un seul bloc Tes ressources (Ma ferme / Le marché).",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
