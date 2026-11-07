@@ -301,11 +301,17 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
     if other and other in owned and name not in owned:
         total, why = 0.0, [f"ne s'ajoute pas à ton {other}"]
     price = PRIX_COURANT.get(name)
-    if seuils and price and len(seuils) == 1:
+    if seuils and price and len(seuils) == 1 and prod.get("champs_total"):
         res, par_champ, saison_txt = seuils[0]
-        besoin = price * 0.35 / 365 / par_champ   # champs/jour pour atteindre 35 %/an
-        why.append(f"👉 rentable (35 %/an) si tu récoltes au moins {besoin:.0f} champs {de(res)} par jour "
-                   f"en moyenne sur l'année ({saison_txt})" + ("" if res == "Wheat" else " — à toi de voir si tu as la place à côté du blé pour tes animaux"))
+        plein = prod["champs_total"]
+        gain_plein = par_champ * plein                         # un champ complet récolté avec ce bonus
+        besoin_an = price * 0.35 / gain_plein                  # récoltes complètes par an pour 35 %/an
+        fait_4s = (total / gain_plein) * 28 if gain_plein else 0
+        why[:] = [w for w in why]
+        virg = lambda x, d=1: f"{x:.{d}f}".replace(".", ",")
+        why.append(f"🌾 1 récolte complète {de(res)} ({plein} champs) = +{virg(gain_plein, 2)} FLW avec ce bonus · "
+                   f"rentable (35 %/an) à partir de {virg(besoin_an / 13)} récoltes complètes toutes les 4 semaines "
+                   f"(saison : {saison_txt}) · avec tes habitudes tu en fais ~{virg(fait_4s)}")
     return total, " · ".join(why), xp
 
 

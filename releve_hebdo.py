@@ -688,6 +688,7 @@ def main():
     else:
         cfg_prod, source = CONFIG, "pas encore lue : sfl.world n'a pas répondu, réessaie Actualiser dans quelques minutes"
     nft = analyse_nft(holdings, all_prices, cfg_prod, source, fiable=not source.startswith("pas encore"))
+    nft["stock_hist"] = stock_hist[-9:]
     from competences import analyse_competences
     try:
         nft["skills"] = analyse_competences(land, all_prices, cfg_prod)

@@ -134,7 +134,7 @@ let FARM;try{FARM=localStorage.getItem("farm")}catch(e){}
 if(!D.farms.some(f=>f.id===FARM))FARM=D.farms[0].id;
 function setFarm(id){const f=D.farms.find(x=>x.id===id);FARM=id;D.trades=f.trades;D.counters=f.counters;try{localStorage.setItem("farm",id)}catch(e){}}
 setFarm(FARM);
-const TABS=[["apercu","Aperçu"],["objectifs","Objectifs"],["vente","Vente"],["rentabilite","Rentabilité"],["nft","NFT"],["skills","Compétences"],["ressources","Une ressource"],["historique","Historique"],["echanges","Échanges"],["compteurs","Compteurs"]];
+const TABS=[["apercu","Aperçu"],["objectifs","Objectifs"],["vente","Vente"],["rentabilite","Rentabilité"],["nft","NFT"],["skills","Compétences"],["ressources","Une ressource"],["historique","Historique"],["echanges","Échanges"],["compteurs","Mon compte"]];
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const fr=(x,d=2)=>x==null||isNaN(x)?"—":x.toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d});
 const fp=x=>x==null?"—":fr(x,x>=10?2:4);
@@ -208,8 +208,8 @@ function apercu(){
   <div><div class="l">Objectif</div><div class="big" style="font-size:20px">${wk.net>=0?"✅ Dans le vert":"⚠️ Dans le rouge"} cette semaine</div></div></div>
  ${(()=>{const R=(D.stock||[]).filter(r=>r.price&&r.stock).map(r=>({n:nm(r.n),v:r.stock*r.price*0.925})),N=((D.nft||{}).rows||[]).filter(r=>r.owned&&r.price).map(r=>({n:r.n,v:r.price*0.925}));
   const vr=sum(R,x=>x.v),vn=sum(N,x=>x.v),top=[...R,...N].sort((a,b)=>b.v-a.v).slice(0,6);
-  return `<div class="card"><h2>💼 Ce que vaut ton inventaire maintenant</h2><div class="hero" style="margin:0"><div><div class="l">Total (si tu vendais tout, après taxe)</div><div class="big">${fr(vr+vn)} FLW</div></div><div><div class="l">📦 Ressources</div><div class="big" style="font-size:22px">${fr(vr)} FLW</div></div><div><div class="l">🧾 NFT à bonus (prix plancher)</div><div class="big" style="font-size:22px">${fr(vn)} FLW</div></div></div>
-  <p class="plain">Ce qui pèse le plus : ${top.map(x=>`<b>${x.n}</b> ${fr(x.v)}`).join(" · ")}.</p><div class="sub">Prix du marché du jour − 7,5 % de taxe. Seuls les NFT à bonus sont comptés, au prix plancher (le moins cher en vente) ; les objets de déco, les vêtements non déclarés dans <code>nft_possedes</code> et les coins ne sont pas comptés. C'est une valeur indicative : vendre beaucoup d'un coup ferait baisser le prix.</div></div>`})()}
+  return `<details class="card"><summary style="cursor:pointer"><b>ℹ️ Informations : ce que vaut ton inventaire (${fr(vr+vn)} FLW)</b></summary><div class="hero" style="margin:8px 0 0"><div><div class="l">Total (si tu vendais tout, après taxe)</div><div class="big">${fr(vr+vn)} FLW</div></div><div><div class="l">📦 Ressources</div><div class="big" style="font-size:22px">${fr(vr)} FLW</div></div><div><div class="l">🧾 NFT à bonus (prix plancher)</div><div class="big" style="font-size:22px">${fr(vn)} FLW</div></div></div>
+  <p class="plain">Ce qui pèse le plus : ${top.map(x=>`<b>${x.n}</b> ${fr(x.v)}`).join(" · ")}.</p><div class="sub">Prix du marché du jour − 7,5 % de taxe. Seuls les NFT à bonus sont comptés, au prix plancher (le moins cher en vente) ; les objets de déco, les vêtements non déclarés dans <code>nft_possedes</code> et les coins ne sont pas comptés. C'est une valeur indicative : vendre beaucoup d'un coup ferait baisser le prix.</div></details>`})()}
  <div class="card"><h2>📈 Courbe de tes gains (cumul, comme un cours de bourse)</h2><div class="controls" id="cum_per">${[["7","7 jours"],["30","1 mois"],["tout",STARTFR?"Depuis le "+STARTFR.slice(0,5):"Depuis le début"]].map(([k,l])=>`<button class="chip" data-k="${k}">${l}</button>`).join("")}</div><div class="chart"><canvas id="c_cum"></canvas></div><div class="sub" id="cum_note"></div></div>
  <div class="card"><h2>Ton état global (marché, après la taxe de 7,5 %)</h2><div class="scroll"><table class="matrix">
   <tr><th></th>${T.map(([k,l])=>`<th>${l}</th>`).join("")}</tr>
@@ -219,6 +219,8 @@ function apercu(){
   ${row("🧾 Taxe payée",x=>-x.tax,()=> "neg")}
   <tr><th>Nombre d'échanges</th>${T.map(([k,l,x])=>`<td>${x.n}</td>`).join("")}</tr>
  </table></div><div class="sub">Les gains sont comptés à partir du ${first} (ton nouveau départ, réglable avec <code>date_depart</code> dans <code>ma_ferme.json</code>). Les échanges plus anciens restent dans Historique et Échanges.</div></div>
+ <div class="card"><h2>🌾 Ce que ta ferme a produit ou utilisé</h2><div class="controls" id="prod_chips">${[["1","Aujourd'hui"],["7","7 jours"]].map(([k,l])=>`<button class="chip" data-k="${k}">${l}</button>`).join("")}</div><div class="scroll" id="prod_tab"></div>
+ <div class="sub">Calcul : stock d'aujourd'hui − stock d'avant + ce que tu as vendu − ce que tu as acheté. <b>Positif</b> = tu as plus récolté qu'utilisé ; <b>négatif</b> = tu as plus utilisé (outils, nourriture, cuisine…) que récolté. Valeur au prix du marché du jour.</div></div>
  <div class="card"><h2>Détail par ressource</h2><div class="controls" id="per_chips">${PERIODS.map(([k,l])=>`<button class="chip ${k===per?"on":""}" data-k="${k}">${l}</button>`).join("")}</div><div class="scroll" id="res_tab"></div></div>
  <div class="card"><h2>Gagné par jour (30 derniers jours)</h2><div class="chart"><canvas id="c_ap"></canvas></div></div>
  <div class="card"><h2>⚠️ Ventes à plus de 10 % sous le prix du marché (30 jours)</h2><div id="warn"></div></div>`;
@@ -229,6 +231,17 @@ function apercu(){
   <div class="sub">Prix moyens avant taxe. « Total ventes » est après la taxe de 7,5 %.</div>`:`<div class="empty">Aucun échange sur cette période.</div>`;};
  document.querySelectorAll("#per_chips .chip").forEach(b=>b.onclick=()=>{document.querySelectorAll("#per_chips .chip").forEach(x=>x.classList.toggle("on",x===b));try{localStorage.setItem("per",b.dataset.k)}catch(e){};drawRes(b.dataset.k);});
  drawRes(per);
+ const drawProd=k=>{const H=(D.nft||{}).stock_hist||[];document.querySelectorAll("#prod_chips .chip").forEach(b=>b.classList.toggle("on",b.dataset.k===k));
+  const el=document.getElementById("prod_tab");if(H.length<2){el.innerHTML='<div class="empty">Il faut au moins 2 jours de relevés pour comparer ton stock.</div>';return;}
+  const fin=H[H.length-1],lim=new Date(fin.date);lim.setDate(lim.getDate()-(+k));const limS=lim.toISOString().slice(0,10);
+  const deb=[...H].reverse().find(h=>h.date<=limS)||H[0];const t0=new Date(deb.date+"T00:00:00").getTime(),t1=new Date(fin.date+"T23:59:59").getTime();
+  const fl={};D.trades.filter(t=>t.t>=t0&&t.t<=t1).forEach(t=>{fl[t.n]=(fl[t.n]||0)+(t.s?t.q:-t.q)});
+  const keys=new Set([...Object.keys(fin.stock),...Object.keys(deb.stock)]);
+  const R=[...keys].map(n=>{const d=(fin.stock[n]||0)-(deb.stock[n]||0)+(fl[n]||0);const p=D.now[n]||0;return {n,d,v:d*p*0.925}}).filter(r=>Math.abs(r.d)>=0.5&&D.now[r.n]).sort((a,b)=>b.v-a.v);
+  const plus=sum(R.filter(r=>r.v>0),r=>r.v),moins=sum(R.filter(r=>r.v<0),r=>r.v);
+  el.innerHTML=`<table><tr><th>Ressource</th><th>Produit (+) / utilisé (−)</th><th>Valeur (FLW)</th></tr><tr style="background:rgba(127,127,127,.12)"><td><b>🧮 TOTAL</b></td><td>du ${deb.date.split("-").reverse().join("/")} au ${fin.date.split("-").reverse().join("/")}</td><td><b class="pos">${sg(plus)}</b> / <b class="neg">${sg(moins)}</b> = <b class="${plus+moins>=0?"pos":"neg"}">${sg(plus+moins)}</b></td></tr>
+  ${R.map(r=>`<tr><td>${nm(r.n)}</td><td class="${r.d>=0?"pos":"neg"}">${sg(r.d)}</td><td class="${r.v>=0?"pos":"neg"}">${sg(r.v)}</td></tr>`).join("")}</table>`;};
+ document.querySelectorAll("#prod_chips .chip").forEach(b=>b.onclick=()=>drawProd(b.dataset.k));drawProd("1");
  const m=inLast(30);const agg={};m.filter(t=>t.s).forEach(t=>{agg[t.n]=agg[t.n]||{q:0,g:0};agg[t.n].q+=t.q;agg[t.n].g+=t.g;});
  const warn=Object.entries(agg).map(([n,a])=>{const u=a.g/a.q,mk=D.now[n];return {n,u,mk,gap:mk?(u-mk)/mk*100:null,lost:mk&&u<mk?(mk-u)*a.q*0.925:0}}).filter(x=>x.gap!=null&&x.gap<-10).sort((a,b)=>b.lost-a.lost);
  document.getElementById("warn").innerHTML=warn.length?`<table><tr><th>Ressource</th><th>Ton prix moyen</th><th>Marché aujourd'hui</th><th>Écart</th><th>Manque à gagner</th></tr>${warn.map(x=>`<tr><td>${nm(x.n)}</td><td>${fp(x.u)}</td><td>${fp(x.mk)}</td><td class="warn">${fr(x.gap,0)} %</td><td class="warn">${fr(x.lost)}</td></tr>`).join("")}</table>`:`<div class="empty">Aucune 👍</div>`;
@@ -483,7 +496,7 @@ function echanges(){
 
 function compteurs(){
  const c=D.counters,el=document.getElementById("compteurs");
- el.innerHTML=`<div class="card"><h2>Compteurs du jeu dans le temps</h2><div class="chart"><canvas id="c_cpt"></canvas></div></div>
+ el.innerHTML=`<div class="card"><h2>💳 Mon compte dans le temps</h2><p class="plain">L'argent de ton compte, relevé chaque jour : <b>solde de Flower</b>, <b>coins</b>, Flower <b>déposés</b> et <b>retirés</b> depuis le début, <b>dépensés en jeu</b> et <b>frais de gems</b>. Utile pour suivre tes retraits mensuels.</p><div class="chart"><canvas id="c_cpt"></canvas></div></div>
  <div class="card scroll"><table><tr><th>Date</th><th>Solde</th><th>Coins</th><th>Déposé</th><th>Retiré</th><th>Dépensé en jeu</th><th>Frais gems</th></tr>${c.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${fr(x.solde)}</td><td>${fr(x.coins,0)}</td><td>${fr(x.deposited)}</td><td>${fr(x.withdrawn)}</td><td>${fr(x.spent)}</td><td>${fr(x.gemFees)}</td></tr>`).join("")}</table></div>`;
  chart("c_cpt",{type:"line",data:{labels:c.map(x=>x.date),datasets:[{label:"Solde Flower",data:c.map(x=>x.solde),borderColor:css("--sell"),backgroundColor:css("--sell")},{label:"Retiré (cumul)",data:c.map(x=>x.withdrawn),borderColor:css("--market"),backgroundColor:css("--market")},{label:"Dépensé en jeu (cumul)",data:c.map(x=>x.spent),borderColor:css("--buy"),backgroundColor:css("--buy")}]},options:baseOpts()});
 }

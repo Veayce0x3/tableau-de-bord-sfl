@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.16",
- "nouveautes": "NFT de cultures calculés avec tes habitudes de plantation (ta part de chaque culture).",
+ "version": "2026-11-07.17",
+ "nouveautes": "NFT de cultures en récoltes complètes, production du jour et de la semaine, onglet Mon compte.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
