@@ -697,7 +697,7 @@ def main():
     nft["stock_hist"] = stock_hist[-9:]
     # Saisons : on note le début de chaque saison (avec tes compteurs) pour suivre tes objectifs
     try:
-        from nft_analyse import objectifs_saison
+        from nft_analyse import objectifs_saison, objectifs_cycle
         hs = load(DATA / "saisons.json", [])
         c_now = (load(DATA / "activite.json", []) or [{}])[-1].get("c", {})
         if saison and (not hs or hs[-1]["saison"] != saison):
@@ -711,11 +711,16 @@ def main():
                              "objectifs": objectifs_saison(owned, all_prices, cfg_prod.get("ma_production") or {}, cur["saison"],
                                                            cur["c"], c_now),
                              "historique": [{"saison": h["saison"], "debut": h["debut"]} for h in hs]}
+            nft["cycle"] = objectifs_cycle(owned, all_prices, cfg_prod.get("ma_production") or {}, hs, c_now, today)
     except Exception as e:
         print(f"(objectifs de saison indisponibles : {e})", file=sys.stderr)
     from competences import analyse_competences
     try:
         nft["skills"] = analyse_competences(land, all_prices, cfg_prod)
+        from nft_analyse import bonus_totaux
+        nft["totaux"] = bonus_totaux([r["n"] for r in nft["rows"] if r["owned"]],
+                                     [(r["n"], r["effet"].split(" · ")) for r in nft["skills"]["rows"] if r["owned"]],
+                                     all_prices, cfg_prod.get("ma_production") or {})
     except Exception as e:  # la page s'affiche même si sfl.world ne répond pas
         print(f"(compétences indisponibles : {e})", file=sys.stderr)
     dash = build_dashboard(ROOT, farms, history, WATCH, NAMES_FR, all_prices, costs, cost_hist, stock, goals_eval,

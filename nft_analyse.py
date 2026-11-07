@@ -527,3 +527,113 @@ def objectifs_saison(owned, prices, prod, saison, c_debut, c_now, jours_saison=7
             out.append({"nft": name, "texte": f"{cible:.1f} récoltes complètes {de(res)} ({plein} champs)".replace(".", ","),
                         "cible": cible, "fait": fait, "quoi": effet(name) if name in B else " · ".join(textes.get(name, []))})
     return out
+
+
+ORDRE_SAISONS = ["spring", "summer", "autumn", "winter"]
+
+
+def objectifs_cycle(owned, prices, prod, hs, c_now, aujourdhui):
+    """Bilan sur le cycle complet (printemps → hiver = une année du jeu) : en avance ou en retard ?"""
+    from datetime import date
+    if not hs:
+        return None
+    # début du cycle = dernier printemps noté, sinon le premier relevé (cycle partiel)
+    debut_idx = max([i for i, h in enumerate(hs) if h["saison"] == "spring"] or [0])
+    debut = hs[debut_idx]
+    saison_debut = debut["saison"]
+    k0 = ORDRE_SAISONS.index(saison_debut)
+    saisons_cycle = ORDRE_SAISONS[k0:]                  # cycle partiel si on n'a pas commencé au printemps
+    cur = hs[-1]["saison"]
+    k_cur = saisons_cycle.index(cur) if cur in saisons_cycle else 0
+    jours_cur = (date.fromisoformat(aujourdhui) - date.fromisoformat(hs[-1]["debut"])).days + 1
+    avance = min(1.0, jours_cur / 7)
+    par_saison = {s: {o["nft"]: o for o in objectifs_saison(owned, prices, prod, s, None, {})} for s in saisons_cycle}
+    out = []
+    for name in sorted(owned):
+        cibles = [(s, par_saison[s].get(name)) for s in saisons_cycle]
+        if not any(o and o["cible"] for _, o in cibles):
+            continue
+        total = sum(o["cible"] for _, o in cibles if o and o["cible"])
+        attendu = sum(o["cible"] for s, o in cibles[:k_cur] if o and o["cible"])
+        oc = cibles[k_cur][1]
+        attendu += (oc["cible"] if oc and oc["cible"] else 0) * avance
+        ref = next(o for _, o in cibles if o and o["cible"])
+        unite = re.sub(r"^[\d,\.]+ ", "", ref["texte"])
+        # fait = compteurs depuis le début du cycle
+        cle = None
+        for res, k in COMPTEUR.items():
+            if UNITE[res] in ref["texte"]:
+                cle = k
+        if "récoltes complètes" in ref["texte"]:
+            crop = next((c for c in CROPS if FR.get(c, c) in ref["texte"]), None)
+            fait = (c_now.get(f"{crop} Harvested", 0) - debut["c"].get(f"{crop} Harvested", 0)) / max(1, prod.get("champs_total") or 1) if crop else None
+        else:
+            fait = (c_now.get(cle, 0) - debut["c"].get(cle, 0)) if cle else None
+        out.append({"nft": name, "unite": unite, "total": total, "attendu": attendu, "fait": fait,
+                    "saisons": [{"s": s, "cible": (o["cible"] if o else None)} for s, o in cibles]})
+    return {"debut": debut["debut"], "saison_debut": saison_debut, "partiel": saison_debut != "spring", "nfts": out}
+
+
+def bonus_totaux(owned_nft, skills_owned, prices, prod):
+    """Tous tes bonus additionnés par ressource : +X par action, vitesse, chances…"""
+    textes = _effets_jeu()
+    R = {r: {"add": 0.0, "temps": 1.0, "mult": 1.0, "chances": [], "sources": []} for r in
+         ("Stone", "Iron", "Gold", "Crimstone", "Wood", "Milk", "Leather", "Egg", "Feather", "Cultures")}
+    def note(res, src):
+        if src not in R[res]["sources"]:
+            R[res]["sources"].append(src)
+    for name in owned_nft:
+        for e in (B.get(name) or effets_auto(textes.get(name, []))):
+            k, res = e[0], e[1]
+            if k == "add" and res in R:
+                R[res]["add"] += e[2] * (e[3] if len(e) > 3 else 1); note(res, name)
+            elif k == "chance" and res in R:
+                R[res]["chances"].append(f"{e[2]:.0%} de +{e[3]:g}"); note(res, name)
+            elif k == "mult" and res in R:
+                R[res]["mult"] *= e[2]; note(res, name)
+            elif k in ("animal", "hen") and res in R:
+                R[res]["add"] += e[2]; note(res, name)
+            elif k == "crops_mult":
+                R["Cultures"]["mult"] *= e[2]; note("Cultures", name)
+            elif k == "time" and res == "crops":
+                R["Cultures"]["temps"] *= e[2]; note("Cultures", name)
+    for name, effets in skills_owned:
+        for t in effets:
+            s = t.lower()
+            m = re.match(r"([+-]\d*\.?\d+) (stone|iron|gold|crimstone|wood) yield( on 5th)?", s)
+            if m:
+                res = {"stone": "Stone", "iron": "Iron", "gold": "Gold", "crimstone": "Crimstone", "wood": "Wood"}[m.group(2)]
+                if m.group(3):
+                    R[res]["chances"].append(f"+{float(m.group(1)):g} au 5e coup")
+                else:
+                    R[res]["add"] += float(m.group(1))
+                note(res, name); continue
+            m = re.match(r"x(0\.\d+) (stone|iron|gold|crimstone|tree) recovery time", s)
+            if m:
+                res = {"stone": "Stone", "iron": "Iron", "gold": "Gold", "crimstone": "Crimstone", "tree": "Wood"}[m.group(2)]
+                R[res]["temps"] *= float(m.group(1)); note(res, name); continue
+            m = re.match(r"x(0\.\d+) tree growth time", s)
+            if m:
+                R["Wood"]["temps"] *= float(m.group(1)); note("Wood", name); continue
+            m = re.match(r"1/10 chance of x3 wood", s)
+            if m:
+                R["Wood"]["chances"].append("10 % de ×3"); note("Wood", name); continue
+            m = re.match(r"([+-]\d*\.?\d+) (.*?) yield", s)
+            if m:
+                v = float(m.group(1))
+                for k, res in (("milk", "Milk"), ("leather", "Leather"), ("egg", "Egg"), ("feather", "Feather")):
+                    if k in m.group(2):
+                        R[res]["add"] += v; note(res, name)
+                if "crop" in m.group(2):
+                    note("Cultures", name)
+                continue
+            m = re.match(r"x(0\.\d+) (?:plot crop|advanced crop|crop) growth time", s)
+            if m:
+                R["Cultures"]["temps"] *= float(m.group(1)); note("Cultures", name)
+    out = []
+    for res, x in R.items():
+        if not x["sources"]:
+            continue
+        out.append({"res": res, "nom": FR.get(res, "cultures" if res == "Cultures" else res), "add": round(x["add"], 3),
+                    "temps": round(x["temps"], 3), "mult": round(x["mult"], 3), "chances": x["chances"], "sources": x["sources"]})
+    return out

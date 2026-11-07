@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.18",
- "nouveautes": "Objectifs de saison par NFT, onglet Mes bonus, compétences plus claires (pouvoirs chiffrés), Mon compte plus clair.",
+ "version": "2026-11-07.19",
+ "nouveautes": "Bilan du cycle complet, total des bonus par ressource, stock de départ, onglet Objectifs rangé.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
