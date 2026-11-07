@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.22",
- "nouveautes": "Onglets regroupés (Bonus et compétences, Historique), bilans des saisons et cycles rangés automatiquement dans Historique.",
+ "version": "2026-11-07.23",
+ "nouveautes": "Mon compte : graphique retiré.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

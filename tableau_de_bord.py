@@ -561,10 +561,8 @@ function compteurs(){
   <p class="plain">Tu as <b>déposé ${fr(L.deposited)} FLW</b> et <b>retiré ${fr(L.withdrawn)} FLW</b> depuis le début : ${net>=0?`tu as déjà récupéré <b class="pos">${fr(net)} FLW de plus</b> que ce que tu as mis.`:`il te reste <b class="neg">${fr(-net)} FLW</b> à récupérer pour rentrer dans tes frais.`}</p>
   <p class="plain">Dans le jeu (hors marché) tu as <b>dépensé ${fr(L.spent)} FLW</b> au total, dont <b>${fr(L.gemFees)} FLW en gems</b>.</p>
   <p class="plain">Depuis le ${F.date.split("-").reverse().join("/")} (premier relevé) : solde ${sg(d("solde"))} · déposé ${sg(d("deposited"))} · retiré ${sg(d("withdrawn"))} · dépensé en jeu ${sg(d("spent"))} · gems ${sg(d("gemFees"))}.</p></div>
- <div class="card"><h2>Évolution</h2><div class="chart"><canvas id="c_cpt"></canvas></div></div>
  <div class="card scroll"><table><tr><th>Date</th><th>Solde Flower</th><th>Déposé</th><th>Retiré</th><th>Dépensé en jeu</th><th>Frais gems</th></tr>${c.slice().reverse().map(x=>`<tr><td>${x.date.split("-").reverse().join("/")}</td><td>${fr(x.solde)}</td><td>${fr(x.deposited)}</td><td>${fr(x.withdrawn)}</td><td>${fr(x.spent)}</td><td>${fr(x.gemFees)}</td></tr>`).join("")}</table>
  <div class="sub">Chiffres de ton compte relevés chaque jour (SFL Tool). « Dépensé en jeu » = Flower utilisés dans le jeu hors marché (gems, achats en boutique…).</div></div>`;
- chart("c_cpt",{type:"line",data:{labels:c.map(x=>x.date.slice(8)+"/"+x.date.slice(5,7)),datasets:[{label:"Solde Flower",data:c.map(x=>x.solde),borderColor:css("--sell"),backgroundColor:css("--sell")},{label:"Retiré (cumul)",data:c.map(x=>x.withdrawn),borderColor:css("--market"),backgroundColor:css("--market")},{label:"Déposé (cumul)",data:c.map(x=>x.deposited),borderColor:css("--buy"),backgroundColor:css("--buy")}]},options:baseOpts()});
 }
 function totauxCard(){
  const T=(D.nft||{}).totaux||[];
