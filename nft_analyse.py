@@ -298,3 +298,13 @@ def lire_ferme_sflworld(page_html, skills):
     for c in ("Wheat", "Barley", "Corn", "Kale"):
         prod["recoltes"].setdefault(c, 0)
     return {"prod": prod, "noeuds": noeuds, "champs": champs}
+
+
+def lire_animaux_sflworld(page_html):
+    """Nombre de vaches et de poules (page publique sfl.world/land/<numéro>/animals)."""
+    import html as _h
+    t = re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", page_html)))
+    out = {}
+    for batiment, niveau, animal, n in re.findall(r"(Hen House|Barn) Level (\d+) Animal Amount ([A-Za-z]+) (\d+)", t):
+        out[animal] = {"nombre": int(n), "batiment": batiment, "niveau": int(niveau)}
+    return out
