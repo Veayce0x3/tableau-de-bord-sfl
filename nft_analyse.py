@@ -75,7 +75,11 @@ WEARABLES = {"Milk Apron", "Corn Silk Hair", "Corn Onesie"}
 
 FR = {"Stone": "pierre", "Iron": "fer", "Gold": "or", "Crimstone": "crimstone", "Wood": "bois", "Wheat": "blé",
       "Barley": "orge", "Corn": "maïs", "Kale": "chou kale", "Milk": "lait", "Leather": "cuir", "Egg": "œuf",
-      "Feather": "plume"}
+      "Feather": "plume", "Sunflower": "tournesol", "Potato": "pomme de terre", "Rhubarb": "rhubarbe",
+      "Pumpkin": "citrouille", "Zucchini": "courgette", "Carrot": "carotte", "Yam": "igname", "Cabbage": "chou",
+      "Broccoli": "brocoli", "Soybean": "soja", "Beetroot": "betterave", "Pepper": "poivron", "Cauliflower": "chou-fleur",
+      "Parsnip": "panais", "Eggplant": "aubergine", "Onion": "oignon", "Radish": "radis", "Turnip": "navet",
+      "Artichoke": "artichaut"}
 OUTIL = {"Stone": "coup de pioche sur un rocher de pierre", "Iron": "coup de pioche sur un rocher de fer",
          "Gold": "coup de pioche sur un rocher d'or", "Crimstone": "coup de pioche sur un rocher de crimstone",
          "Wood": "arbre coupé"}
@@ -122,6 +126,11 @@ def effet(name):
     txt = re.sub(r"(\d)\.(\d)", r"\1,\2", txt).replace("de orge", "d'orge").replace("(\d)%", "")
     return re.sub(r"(\d)%", r"\1 %", txt)
 
+
+# Saisons de chaque culture (code du jeu, seeds.ts → SEASONAL_SEEDS)
+SAISONS = {"Sunflower": ["spring", "summer"], "Potato": ["summer", "autumn", "winter"], "Rhubarb": ["spring"], "Pumpkin": ["autumn"], "Zucchini": ["summer"], "Carrot": ["spring", "autumn"], "Yam": ["autumn"], "Cabbage": ["spring", "winter"], "Broccoli": ["autumn"], "Soybean": ["spring", "autumn"], "Beetroot": ["summer", "winter"], "Pepper": ["summer"], "Cauliflower": ["summer", "winter"], "Parsnip": ["winter"], "Eggplant": ["summer"], "Corn": ["spring"], "Onion": ["winter"], "Radish": ["summer"], "Wheat": ["spring", "summer", "autumn", "winter"], "Turnip": ["winter"], "Kale": ["spring", "winter"], "Artichoke": ["autumn"], "Barley": ["spring", "autumn"]}
+SAISON_FR = {"spring": "printemps", "summer": "été", "autumn": "automne", "winter": "hiver"}
+PART_EN_SAISON = 0.5  # on suppose que tu mettrais la moitié de tes champs sur cette culture pendant sa saison
 
 RES_NODES = {"Stone", "Iron", "Gold", "Crimstone", "Wood"}
 CROPS = ["Sunflower", "Potato", "Rhubarb", "Pumpkin", "Zucchini", "Carrot", "Yam", "Cabbage", "Broccoli", "Soybean",
@@ -218,9 +227,16 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
         elif kind == "crop_add":
             res, v = e[1], e[2]
             share = e[3] if len(e) > 3 else 1
-            n = prod["recoltes"].get(res, 0) * share
+            ss = SAISONS.get(res, ["spring", "summer", "autumn", "winter"])
+            champs = prod.get("champs_total") or sum(prod["recoltes"].values()) / 1.7
+            # Moyenne sur l'année : ce qui est planté maintenant, ou ce que tu planterais pendant sa saison
+            n = max(prod["recoltes"].get(res, 0), champs * 1.7 * PART_EN_SAISON) * len(ss) / 4 * share
             g = v * n * pr(res)
-            why.append(f"+{v:g} × ~{n:g} champs de {res} récoltés/jour")
+            if len(ss) == 4:
+                why.append(f"+{v:g} × ~{n:.0f} champs de {FR.get(res, res)} récoltés/jour")
+            else:
+                why.append(f"+{v:g} × ~{n:.0f} champs/jour en moyenne sur l'année "
+                           f"(si tu plantes du {FR.get(res, res)} sur la moitié de tes champs en {' et '.join(SAISON_FR[x] for x in ss)})")
         elif kind == "crops_mult":
             m = e[2]
             g = sum(n * prod["rendement_culture"] * (1 - 1 / m) * pr(c) for c, n in prod["recoltes"].items())
@@ -237,7 +253,10 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
             elif target == "cow":
                 base = 0  # limité par les bounties de vaches
             else:
-                base = prod["recoltes"].get(target, 0) * prod["rendement_culture"] * pr(target)
+                ss = SAISONS.get(target, ["spring", "summer", "autumn", "winter"])
+                champs = prod.get("champs_total") or sum(prod["recoltes"].values()) / 1.7
+                n = max(prod["recoltes"].get(target, 0), champs * 1.7 * PART_EN_SAISON) * len(ss) / 4
+                base = n * prod["rendement_culture"] * pr(target)
             g = base * (1 / m - 1) * eff
             why.append(f"temps ×{m:g} (gain réduit de moitié : la nuit, tu ne récoltes pas)")
         elif kind == "animal":
@@ -385,6 +404,7 @@ def lire_ferme_sflworld(page_html, skills):
         if m:
             champs[c] = int(m[0])
     prod["recoltes"] = {c: round(n * 1.7, 1) for c, n in champs.items()}
+    prod["champs_total"] = sum(champs.values())
     for c in ("Wheat", "Barley", "Corn", "Kale"):
         prod["recoltes"].setdefault(c, 0)
     return {"prod": prod, "noeuds": noeuds, "champs": champs}

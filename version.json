@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.12",
- "nouveautes": "Tous les NFT en vente (effets du jeu) comparés à ta ferme, avec un filtre par prix.",
+ "version": "2026-11-07.13",
+ "nouveautes": "Valeur de ton inventaire dans Aperçu ; NFT de cultures jugés sur l année selon les saisons.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
