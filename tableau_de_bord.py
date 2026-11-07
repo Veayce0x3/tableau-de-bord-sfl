@@ -128,6 +128,7 @@ select,input{background:var(--card);color:var(--ink);border:1px solid var(--line
   <section id="ressources"></section>
   <section id="echanges"></section>
   <section id="compteurs"></section>
+  <section id="cycles"></section>
 </main>
 <script>
 const D = /*__DATA__*/null;
@@ -135,7 +136,8 @@ let FARM;try{FARM=localStorage.getItem("farm")}catch(e){}
 if(!D.farms.some(f=>f.id===FARM))FARM=D.farms[0].id;
 function setFarm(id){const f=D.farms.find(x=>x.id===id);FARM=id;D.trades=f.trades;D.counters=f.counters;try{localStorage.setItem("farm",id)}catch(e){}}
 setFarm(FARM);
-const TABS=[["apercu","Aperçu"],["objectifs","Objectifs"],["vente","Vente"],["rentabilite","Rentabilité"],["nft","NFT"],["skills","Compétences"],["bonus","Mes bonus"],["ressources","Une ressource"],["historique","Historique"],["echanges","Échanges"],["compteurs","Mon compte"]];
+const TABS=[["apercu","Aperçu"],["objectifs","Objectifs"],["vente","Vente"],["rentabilite","Rentabilité"],["nft","NFT"],["bonusgrp","Bonus et compétences"],["ressources","Une ressource"],["histgrp","Historique"]];
+const GROUPS={bonusgrp:[["bonus","🧮 Mes bonus"],["skills","🎓 Compétences"]],histgrp:[["historique","📈 Gains"],["echanges","🔁 Échanges"],["compteurs","💳 Mon compte"],["cycles","📅 Saisons et cycles passés"]]};
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const fr=(x,d=2)=>x==null||isNaN(x)?"—":x.toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d});
 const fp=x=>x==null?"—":fr(x,x>=10?2:4);
@@ -158,7 +160,13 @@ function updGen(){document.getElementById("gen").textContent="Mis à jour le "+D
 updGen();fsel.onchange=()=>{setFarm(fsel.value);updGen();render(document.querySelector("section.on").id);};
 const nav=document.getElementById("tabs");
 TABS.forEach(([id,l],i)=>{const b=document.createElement("button");b.textContent=l;b.onclick=()=>show(id);b.dataset.id=id;nav.appendChild(b);});
-function show(id){document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===id));nav.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.id===id));try{localStorage.setItem("tab",id)}catch(e){};render(id);}
+function show(id){const grp=Object.keys(GROUPS).find(g=>g===id||GROUPS[g].some(x=>x[0]===id));let sub=id;
+ if(grp&&grp===id){try{sub=localStorage.getItem("sub_"+grp)}catch(e){};if(!GROUPS[grp].some(x=>x[0]===sub))sub=GROUPS[grp][0][0];}
+ if(grp){try{localStorage.setItem("sub_"+grp,sub)}catch(e){}}
+ let sn=document.getElementById("subnav");if(!sn){sn=document.createElement("div");sn.id="subnav";sn.className="controls";sn.style.margin="0 0 12px";document.querySelector("main").prepend(sn);}
+ sn.innerHTML=grp?GROUPS[grp].map(([k,l])=>`<button class="chip ${k===sub?"on":""}" data-sub="${k}">${l}</button>`).join(""):"";sn.style.display=grp?"":"none";
+ sn.querySelectorAll("[data-sub]").forEach(b=>b.onclick=()=>show(b.dataset.sub));
+ document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===sub));nav.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.id===(grp||id)));try{localStorage.setItem("tab",grp||id)}catch(e){};render(sub);}
 document.getElementById("theme").onclick=()=>{const r=document.documentElement;const cur=r.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");r.dataset.theme=cur==="dark"?"light":"dark";try{localStorage.setItem("theme",r.dataset.theme)}catch(e){};render(document.querySelector("section.on").id);};
 try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}
 const rb=document.getElementById("refresh");
@@ -191,6 +199,7 @@ function render(id){
  if(id==="ressources")return ressources();
  if(id==="echanges")return echanges();
  if(id==="compteurs")return compteurs();
+ if(id==="cycles")return cyclesTab();
 }
 
 const PERIODS=[["jour","Aujourd'hui",1],["7","7 jours",7],["30","30 jours",30],["tout",STARTFR?"Depuis le "+STARTFR.slice(0,5):"Depuis le début",null]];
@@ -360,7 +369,7 @@ function skillsTab(){
  const tab=(t,L,d)=>L.length?`<div class="card"><h2>${t}</h2>${d?`<div class="sub">${d}</div>`:""}<div class="scroll"><table><tr><th style="text-align:left">Compétence et ce qu’elle fait</th><th>Arbre</th><th>Points</th><th>Rapporte</th><th style="text-align:left">Verdict</th></tr>${L.map(row).join("")}</table></div></div>`:"";
  const others=R.filter(r=>!r.owned&&(r.jour||0)>0.001).sort((a,b)=>(b.par_point||0)-(a.par_point||0)).slice(0,12);
  el.innerHTML=(/^pas encore/.test((D.nft||{}).source||"")?`<div class="card"><p class="plain">⚠️ <b>Ta ferme n'a pas pu être lue</b> : les gains ci-dessous sont approximatifs. Réessaie 🔄 Actualiser.</p></div>`:"")+
- `<div class="hero"><div><div class="l">Niveau ${K.niveau}</div><div class="big">${K.utilises} pts</div><div class="l">utilisés · ${K.libres} libre(s)</div></div><div><div class="l">Tes compétences rapportent</div><div class="big pos">+${fr(K.total_jour*30)} FLW/mois</div><div class="l">avec ta ferme et tes habitudes</div></div></div>
+ `<div class="hero"><div><div class="l">Niveau ${K.niveau}</div><div class="big">${K.utilises} pts</div><div class="l">utilisés · ${K.libres} libre(s)</div></div></div>
  <div class="card"><h2>💡 Ce que je te conseille</h2>${tips.map(t=>`<p class="plain">${t}</p>`).join("")}</div>
  ${totauxCard()}
  ${tab("💰 Celles qui te rapportent",earn,"Classées de celle qui rapporte le plus à celle qui rapporte le moins, avec ta ferme actuelle.")}
@@ -563,6 +572,14 @@ function totauxCard(){
   ${T.map(x=>`<tr><td style="text-align:left"><b>${x.nom}</b></td><td>${x.add_nft?sg(x.add_nft):"—"}</td><td>${x.add_comp?sg(x.add_comp):"—"}</td><td class="${x.add>0?"pos":x.add<0?"neg":""}"><b>${x.add?sg(x.add):"—"}</b></td><td>${x.mult!==1?"×"+fr(x.mult,2):"—"}</td><td>${x.temps!==1?"×"+fr(x.temps,2)+" ("+fr((1-x.temps)*100,0)+" % plus rapide)":"—"}</td><td style="text-align:left">${x.chances.join(" · ")||"—"}</td><td style="text-align:left;color:var(--muted);font-size:12px">${x.lignes.map(l=>"• "+l).join("<br>")}</td></tr>`).join("")}</table></div>
   <div class="sub">NFT <b>et</b> compétences additionnés. Ex. pierre « +0,85 » = à chaque coup de pioche, tu gagnes 0,85 pierre de plus que sans aucun bonus (+0,25 des NFT, +0,60 des compétences, Ferrous Favor enlevant 0,5). Temps de repousse ×0,8 = tes rochers reviennent 20 % plus vite. Les compétences sont comptées à leur effet de base (rang 1) ; les vêtements ne sont comptés que s'ils sont déclarés dans <code>nft_possedes</code>. Un total à 0 avec des lignes (ex. plumes) = un bonus et un malus qui s'annulent.</div></div>`:"";
 }
+function cyclesTab(){
+ const el=document.getElementById("cycles"),SP=(D.nft||{}).saisons_passees||[],CP=(D.nft||{}).cycles_passes||[];
+ const SFR={spring:"🌸 Printemps",summer:"☀️ Été",autumn:"🍂 Automne",winter:"❄️ Hiver"},dt=d=>d.split("-").reverse().join("/");
+ const cyc=CP.slice().reverse().map(c=>{const ok=c.nfts.filter(o=>o.fait!=null&&o.fait>=o.total).length;return `<div class="card"><h2>📅 Cycle du ${dt(c.debut)} au ${dt(c.fin)} <span class="msum">${ok}/${c.nfts.length} réussis</span></h2>${c.partiel?'<div class="sub">Cycle partiel (suivi commencé en cours d\'année).</div>':""}
+  <div class="scroll"><table><tr><th style="text-align:left">NFT</th><th>Objectif du cycle</th><th>Fait</th><th style="text-align:left">Résultat</th></tr>${c.nfts.map(o=>{const f=v=>fr(v,o.total<40?1:0);return `<tr><td style="text-align:left"><b>${o.nft}</b></td><td>${f(o.total)} ${o.unite}</td><td>${o.fait!=null?f(o.fait):"—"}</td><td style="text-align:left" class="${o.fait>=o.total?"pos":"neg"}">${o.fait>=o.total?"✅ réussi":"❌ manqué de "+f(o.total-o.fait)+" "+o.unite}</td></tr>`}).join("")}</table></div></div>`;}).join("");
+ const sai=SP.slice().reverse().map(z=>{const L=(z.objectifs||[]).filter(o=>o.cible);const ok=L.filter(o=>o.fait>=o.cible).length;return `<details class="card"><summary style="cursor:pointer"><b>${SFR[z.saison]||z.saison}</b> du ${dt(z.debut)} au ${dt(z.fin)} <span class="msum">${ok}/${L.length} réussis</span></summary><div class="scroll"><table><tr><th style="text-align:left">NFT</th><th>Objectif</th><th>Fait</th><th></th></tr>${L.map(o=>`<tr><td style="text-align:left">${o.nft}</td><td>${o.texte}</td><td>${o.fait!=null?fr(o.fait,o.cible<20?1:0):"—"}</td><td>${o.fait>=o.cible?"✅":"❌"}</td></tr>`).join("")}</table></div></details>`;}).join("");
+ el.innerHTML=(cyc||sai)?cyc+(sai?`<div class="card"><h2>🗓️ Saisons passées</h2><div class="sub">Clique sur une saison pour voir le détail.</div></div>`+sai:""):'<div class="card empty">Aucune saison terminée pour l\'instant. Le bilan de chaque saison sera rangé ici automatiquement à la fin de la saison, et celui du cycle complet à chaque nouveau printemps.</div>';
+}
 function bonusTab(){
  const el=document.getElementById("bonus"),N=((D.nft||{}).rows||[]).filter(r=>r.owned),K=(((D.nft||{}).skills||{}).rows||[]).filter(r=>r.owned);
  const CAT=[["⛏️ Mines",/stone|iron|gold|crimstone|mineral|pierre|fer\b|\bor\b|pioche|rocher|obsidian/i],["🌲 Bois",/wood|tree|bois|arbre|axe/i],["🌾 Cultures",/crop|plot|wheat|corn|kale|barley|cultur|champ|blé|maïs|orge|chou|seed|harvest/i],["🐄 Animaux",/cow|chicken|pig|sheep|milk|leather|egg|feather|wool|truffle|vache|poule|lait|cuir|œuf|plume|animal|feed/i],["🍎 Fruits et serre",/fruit|apple|orange|banana|tomato|lemon|grape|olive|rice|greenhouse|blueberry/i],["⭐ XP et cuisine",/xp|cook|meal|food|cuisine/i],["🎣 Pêche, abeilles, fleurs",/fish|reel|bee|honey|flower|lotus/i]];
@@ -573,7 +590,7 @@ function bonusTab(){
  const order=[...CAT.map(x=>x[0]),"✨ Autres"].filter(c=>G[c]);
  const tot=sum(N,r=>r.xp?0:r.jour)+sum(K,r=>r.jour||0);
  const tcard=totauxCard();
- el.innerHTML=tcard+`<div class="hero"><div><div class="l">Tous tes bonus</div><div class="big">${N.length+K.length}</div><div class="l">${N.length} NFT · ${K.length} compétences</div></div><div><div class="l">Ce qu'ils rapportent (chiffrable)</div><div class="big pos">+${fr(tot*30)} FLW/mois</div></div></div>
+ el.innerHTML=tcard+`<div class="hero"><div><div class="l">Tous tes bonus</div><div class="big">${N.length+K.length}</div><div class="l">${N.length} NFT · ${K.length} compétences</div></div></div>
  ${order.map(c=>`<div class="card"><h2>${c} <span class="msum">${G[c].length}</span></h2><div class="scroll"><table><tr><th style="text-align:left">Bonus</th><th>Source</th><th style="text-align:left">Effet</th><th>Rapporte</th></tr>${G[c].sort((a,b)=>(b.g||0)-(a.g||0)).map(x=>`<tr><td style="text-align:left"><b>${x.n}</b></td><td>${x.src}</td><td style="text-align:left;color:var(--muted)">${x.e}</td><td class="${x.g>0.001?"pos":""}">${x.g!=null&&x.g>0.001?sg(x.g*30)+" /mois":"—"}</td></tr>`).join("")}</table></div></div>`).join("")}
  <div class="sub">Résumé à titre d'information. NFT lus dans ton inventaire et compétences lues sur ta ferme à chaque relevé : un NFT acheté ou vendu apparaît ou disparaît au relevé suivant. « — » = effet qui ne se chiffre pas en Flower.</div>`;
 }

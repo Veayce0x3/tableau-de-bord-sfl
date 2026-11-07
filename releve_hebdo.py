@@ -778,9 +778,29 @@ def main():
         from nft_analyse import objectifs_saison, objectifs_cycle
         hs = load(DATA / "saisons.json", [])
         c_now = (load(DATA / "activite.json", []) or [{}])[-1].get("c", {})
+        owned_now = [r["n"] for r in nft["rows"] if r["owned"]]
+        prod_now = cfg_prod.get("ma_production") or {}
         if saison and (not hs or hs[-1]["saison"] != saison):
+            if hs:
+                # Saison terminée : on archive son bilan
+                prev = hs[-1]
+                bil = load(DATA / "saisons_bilan.json", [])
+                bil.append({"saison": prev["saison"], "debut": prev["debut"], "fin": today,
+                            "objectifs": objectifs_saison(owned_now, all_prices, prod_now, prev["saison"], prev["c"], c_now)})
+                safe_write(DATA / "saisons_bilan.json", json.dumps(bil, ensure_ascii=False, indent=1))
+                if saison == "spring":
+                    # Cycle terminé (hiver → printemps) : on archive le bilan du cycle complet
+                    cy = objectifs_cycle(owned_now, all_prices, prod_now, hs, c_now, today)
+                    if cy:
+                        for o in cy["nfts"]:
+                            o["attendu"] = o["total"]
+                        cyc = load(DATA / "cycles.json", [])
+                        cyc.append({**cy, "fin": today})
+                        safe_write(DATA / "cycles.json", json.dumps(cyc, ensure_ascii=False, indent=1))
             hs.append({"saison": saison, "debut": today, "c": c_now})
             safe_write(DATA / "saisons.json", json.dumps(hs, ensure_ascii=False))
+        nft["saisons_passees"] = load(DATA / "saisons_bilan.json", [])
+        nft["cycles_passes"] = load(DATA / "cycles.json", [])
         if hs:
             cur = hs[-1]
             premier = len(hs) == 1   # saison déjà commencée quand l'outil a été installé

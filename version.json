@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.21",
- "nouveautes": "Ressources gagnées/utilisées (jour, 7 j, 30 j), amortissement des NFT, bonus détaillés, Rentabilité plus claire, boutons d objectifs réparés.",
+ "version": "2026-11-07.22",
+ "nouveautes": "Onglets regroupés (Bonus et compétences, Historique), bilans des saisons et cycles rangés automatiquement dans Historique.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
