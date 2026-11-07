@@ -595,11 +595,19 @@ def main():
     goals = load(ROOT / "objectifs.json", [])
     goals_eval = evaluate_goals(goals, {**holdings, "Coins": fin.get("coins") or 0}, all_prices, all_trades,
                                 land, float(CONFIG.get("coins_par_flower", 1525))) if goals else []
-    from nft_analyse import analyse_nft
-    nft = analyse_nft(holdings, all_prices, CONFIG)
+    from nft_analyse import analyse_nft, mesure_production
+    # Production de TA ferme : réglée à la main (ma_production) > mesurée sur ton stock > valeurs par défaut
+    mesure, jours = mesure_production(stock_hist, all_trades, CONFIG.get("rendements"))
+    if CONFIG.get("ma_production"):
+        cfg_prod, source = CONFIG, "réglée dans ma_ferme.json"
+    elif mesure:
+        cfg_prod, source = {**CONFIG, "ma_production": mesure}, f"mesurée sur ta ferme ({jours} jours)"
+    else:
+        cfg_prod, source = CONFIG, f"pas encore mesurée ({jours} jour(s) sur 3) : chiffres d'une ferme type"
+    nft = analyse_nft(holdings, all_prices, cfg_prod, source)
     from competences import analyse_competences
     try:
-        nft["skills"] = analyse_competences(land, all_prices, CONFIG)
+        nft["skills"] = analyse_competences(land, all_prices, cfg_prod)
     except Exception as e:  # la page s'affiche même si sfl.world ne répond pas
         print(f"(compétences indisponibles : {e})", file=sys.stderr)
     dash = build_dashboard(ROOT, farms, history, WATCH, NAMES_FR, all_prices, costs, cost_hist, stock, goals_eval,

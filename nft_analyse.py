@@ -194,7 +194,7 @@ def gain_par_jour(name, prices, prod, owned):
     return total, " · ".join(why), xp
 
 
-def analyse_nft(holdings, prices, cfg):
+def analyse_nft(holdings, prices, cfg, source="défaut"):
     prod = _prod(cfg)
     owned = {n for n in B if (holdings.get(n) or 0) > 0} | set(cfg.get("nft_possedes") or [])
     rows = []
@@ -231,4 +231,35 @@ def analyse_nft(holdings, prices, cfg):
                      "mois": g * 30, "an_pct": an, "rembourse_jours": (price / g) if price and g > 0.001 else None,
                      "why": why, "xp": xp, "verdict": v, "cls": c})
     rows.sort(key=lambda r: (not r["owned"], -(r["an_pct"] or -1)))
-    return {"rows": rows, "prod": prod}
+    return {"rows": rows, "prod": prod, "source": source}
+
+
+def mesure_production(stock_hist, trades, rendements, jours_min=3):
+    """Production réelle par jour, mesurée sur ta ferme : (stock fin − stock début + vendu − acheté) ÷ jours.
+
+    Retourne (production, nb_jours). Sous-estime un peu ce que tu consommes toi-même (outils, nourriture).
+    """
+    from datetime import date
+    h = sorted(stock_hist, key=lambda x: x["date"])[-15:]
+    if len(h) < 2:
+        return {}, 0
+    a, b = h[0], h[-1]
+    d0, d1 = date.fromisoformat(a["date"]), date.fromisoformat(b["date"])
+    jours = (d1 - d0).days
+    if jours < jours_min:
+        return {}, jours
+    import datetime as _dt
+    t0 = _dt.datetime(d0.year, d0.month, d0.day).timestamp() * 1000
+    t1 = _dt.datetime(d1.year, d1.month, d1.day).timestamp() * 1000
+    flux = {}
+    for t in trades:
+        if t0 <= t["at"] < t1:
+            flux[t["name"]] = flux.get(t["name"], 0) + (t["quantity"] if t["sold"] else -t["quantity"])
+    par_jour = lambda k: max(0.0, ((b["stock"].get(k) or 0) - (a["stock"].get(k) or 0) + flux.get(k, 0)) / jours)
+    y = {"Stone": 4.13, "Iron": 1.93, "Gold": 1.81, "Crimstone": 4.2, "Wood": 3.2, **(rendements or {})}
+    prod = {k: round(par_jour(k) / y[k], 1) for k in ("Stone", "Iron", "Gold", "Crimstone", "Wood")}
+    prod["cycles_vaches"] = round(par_jour("Milk") / 3.6, 1)
+    prod["vaches"] = prod["cycles_vaches"]
+    prod["cycles_poules"] = round(par_jour("Egg") / 2, 1)
+    prod["recoltes"] = {c: round(par_jour(c) / 2.72, 1) for c in ("Wheat", "Barley", "Corn", "Kale")}
+    return prod, jours
