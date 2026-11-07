@@ -714,27 +714,56 @@ def ressources_jour(jours, trades, prices, exclure, n_jours, aujourdhui):
     return {"jours": nb, "gagne": [r for r in rows if r["q"] > 0], "utilise": sorted([r for r in rows if r["q"] < 0], key=lambda r: r["v"])}
 
 
-def amortissement(fichier_data, rows, aujourdhui):
-    """Combien chaque NFT t'a déjà rapporté depuis que l'outil le suit (comme si tu l'avais acheté ce jour-là),
-    et ce qu'il reste à amortir."""
-    from datetime import date
+def amortissement(fichier_data, rows, aujourdhui, c_now=None, prices=None, c_premier=None):
+    """Combien chaque NFT t'a déjà rapporté depuis que l'outil le suit (comme si tu l'avais acheté ce jour-là).
+    Calculé avec tes vraies actions (pierres minées, champs récoltés, œufs collectés…) dès qu'elles sont comptées,
+    sinon avec le gain moyen par jour."""
+    from datetime import datetime
+    c_now = c_now or {}
+    prices = prices or {}
+    pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
+    textes = _effets_jeu()
+    maintenant = datetime.now().isoformat(timespec="minutes")
     for r in rows:
         if not r["owned"] or not r.get("price") or r.get("xp") or not r.get("chiffrable"):
             continue
-        a = fichier_data.setdefault(r["n"], {"debut": aujourdhui, "prix": r["price"], "cumul": 0.0, "maj": aujourdhui})
-        jours = (date.fromisoformat(aujourdhui) - date.fromisoformat(a["maj"])).days
-        if jours > 0:
-            a["cumul"] += max(0.0, r["jour"]) * jours
-            a["maj"] = aujourdhui
-        reste = max(0.0, a["prix"] - a["cumul"])
-        r["amorti"] = {"debut": a["debut"], "prix": a["prix"], "fait": a["cumul"], "reste": reste,
-                       "pct": min(100.0, a["cumul"] / a["prix"] * 100) if a["prix"] else 0,
+        a = fichier_data.setdefault(r["n"], {"debut": aujourdhui, "prix": r["price"], "cumul": 0.0, "maj": maintenant})
+        a.setdefault("c_debut", c_premier if (c_premier and a["debut"] == aujourdhui) else c_now)
+        entries = B.get(r["n"]) or effets_auto(textes.get(r["n"], []))
+        fait, mesurable = 0.0, True
+        for e in entries:
+            k, res = e[0], e[1]
+            share = e[3] if k in ("add", "crop_add") and len(e) > 3 else 1
+            if k in ("add", "animal", "hen") and res in COMPTEUR:
+                d = c_now.get(COMPTEUR[res], 0) - a["c_debut"].get(COMPTEUR[res], 0)
+                fait += max(0.0, d) * e[2] * share * pr(res)
+            elif k == "chance" and res in COMPTEUR:
+                d = c_now.get(COMPTEUR[res], 0) - a["c_debut"].get(COMPTEUR[res], 0)
+                fait += max(0.0, d) * e[2] * e[3] * pr(res)
+            elif k == "crop_add":
+                d = c_now.get(f"{res} Harvested", 0) - a["c_debut"].get(f"{res} Harvested", 0)
+                fait += max(0.0, d) * e[2] * share * pr(res)
+            else:
+                mesurable = False
+        if not mesurable:
+            # effets en % ou en vitesse : gain moyen par jour × temps écoulé (à la minute près)
+            try:
+                h = (datetime.fromisoformat(maintenant) - datetime.fromisoformat(a["maj"] if "T" in a["maj"] else a["maj"] + "T00:00")).total_seconds() / 86400
+            except ValueError:
+                h = 0
+            a["cumul"] += max(0.0, r["jour"]) * max(0.0, h)
+            a["maj"] = maintenant
+            fait = a["cumul"]
+        else:
+            a["cumul"] = fait
+        reste = max(0.0, a["prix"] - fait)
+        r["amorti"] = {"debut": a["debut"], "prix": a["prix"], "fait": fait, "reste": reste, "mesure": mesurable,
+                       "pct": min(100.0, fait / a["prix"] * 100) if a["prix"] else 0,
                        "mois": (reste / (r["jour"] * 30)) if r["jour"] > 0.001 else None}
     for n in list(fichier_data):
         if not any(r["n"] == n and r["owned"] for r in rows):
             fichier_data.pop(n)   # NFT vendu : on arrête de le suivre
     return fichier_data
-
 
 def lire_vetements_sflworld(page_html):
     """Vêtements à bonus portés par ton Bumpkin et tes Farm Hands (page sfl.world/land/<numéro>)."""

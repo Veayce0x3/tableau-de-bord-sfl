@@ -508,6 +508,15 @@ def main():
     extra = sorted({t["name"] for t in all_trades} | set(PRODUCTION_INPUTS)
                    | {k for k, v in holdings.items() if v and k not in NOT_FOR_SALE})
     watched += [i for i in extra if i not in watched]
+    # Demande à sfl.world de relire ta ferme dans le jeu (même chose que son bouton « Update »)
+    try:
+        if (try_json(f"https://sfl.world/update/{FARM_ID}") or {}).get("status") == "OK":
+            for _ in range(30):
+                if (try_json(f"https://sfl.world/update/{FARM_ID}/check") or {}).get("status") == "OK":
+                    break
+                time.sleep(2)
+    except Exception as e:
+        print(f"(mise à jour sfl.world impossible : {e})", file=sys.stderr)
     all_prices = collect_prices(fin)
     # Taux coins → Flower du jour (SFL Tool, meilleur échange), sauf si tu l'as réglé toi-même
     if not CONFIG.get("coins_par_flower_manuel"):
@@ -785,7 +794,9 @@ def main():
     nft = analyse_nft(holdings, all_prices, cfg_prod, source, fiable=not source.startswith("pas encore"))
     try:
         from nft_analyse import amortissement
-        am = amortissement(load(DATA / "amortissement.json", {}), nft["rows"], today)
+        c_now_am = (load(DATA / "activite.json", []) or [{}])[-1].get("c", {})
+        c_premier = (load(DATA / "saisons.json", []) or [{}])[0].get("c")
+        am = amortissement(load(DATA / "amortissement.json", {}), nft["rows"], today, c_now_am, all_prices, c_premier)
         safe_write(DATA / "amortissement.json", json.dumps(am, ensure_ascii=False, indent=1))
     except Exception as e:
         print(f"(amortissement indisponible : {e})", file=sys.stderr)

@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.28",
- "nouveautes": "Tout est lu sur ta ferme : vêtements portés (toi et tes Farm Hands), rendements, taux des coins. Plus aucun réglage à la main.",
+ "version": "2026-11-07.29",
+ "nouveautes": "Actualiser met aussi à jour sfl.world : objectifs et amortissement avancent avec tes vraies actions.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
