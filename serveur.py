@@ -18,9 +18,18 @@ ROOT = Path(__file__).resolve().parent
 PORT = 8765
 URL = f"http://127.0.0.1:{PORT}/tableau_de_bord.html"
 _lock = threading.Lock()
+_DEMARRAGE = (Path(__file__).stat().st_mtime)
+
+
+def _relancer_si_mis_a_jour():
+    """Si l'outil vient d'être mis à jour, le serveur redémarre tout seul avec la nouvelle version."""
+    import os
+    if Path(__file__).stat().st_mtime != _DEMARRAGE:
+        threading.Timer(1.5, lambda: os.execv(sys.executable, [sys.executable, "-I", str(Path(__file__).resolve()), "--sans-navigateur"])).start()
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
+    allow_reuse_address = True
     def __init__(self, *a, **k):
         super().__init__(*a, directory=str(ROOT), **k)
 
@@ -69,6 +78,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             r = subprocess.run([sys.executable, "-I", str(ROOT / "releve_hebdo.py")],
                                cwd=ROOT, capture_output=True, text=True, timeout=600)
             ok = r.returncode == 0
+            _relancer_si_mis_a_jour()
             (ROOT / "journal.txt").write_text(r.stdout[-5000:] + "\n" + r.stderr[-5000:])
             msg = "Données mises à jour." if ok else (r.stderr.strip().splitlines() or ["Erreur inconnue"])[-1]
             self._json(200 if ok else 500, {"ok": ok, "message": msg})
@@ -125,6 +135,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 def main():
     try:
+        http.server.ThreadingHTTPServer.allow_reuse_address = True
         srv = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     except OSError:
         # Déjà lancé : on ouvre juste la page.

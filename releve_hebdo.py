@@ -746,6 +746,29 @@ def main():
         cfg_prod, source = CONFIG, "pas encore lue : sfl.world n'a pas répondu, réessaie Actualiser dans quelques minutes"
     nft = analyse_nft(holdings, all_prices, cfg_prod, source, fiable=not source.startswith("pas encore"))
     try:
+        from nft_analyse import amortissement
+        am = amortissement(load(DATA / "amortissement.json", {}), nft["rows"], today)
+        safe_write(DATA / "amortissement.json", json.dumps(am, ensure_ascii=False, indent=1))
+    except Exception as e:
+        print(f"(amortissement indisponible : {e})", file=sys.stderr)
+    try:
+        from nft_analyse import ressources_jour
+        jours = load(DATA / "jours.json", {})
+        for w in fin.get("wallet") or []:
+            d = w.get("day")
+            if not d:
+                continue
+            j = jours.setdefault(d, {})
+            if (w.get("opening") or {}).get("holdings") and not j.get("opening"):
+                j["opening"] = w["opening"]["holdings"]
+            if w.get("holdings"):
+                j["close"] = w["holdings"]
+        safe_write(DATA / "jours.json", json.dumps(jours, ensure_ascii=False))
+        exclure = {r["n"] for r in nft["rows"]}
+        nft["ressources"] = {k: ressources_jour(jours, all_trades, all_prices, exclure, n, today) for k, n in (("1", 1), ("7", 7), ("30", 30))}
+    except Exception as e:
+        print(f"(ressources du jour indisponibles : {e})", file=sys.stderr)
+    try:
         from nft_analyse import production
         nft["production"] = production(load(DATA / "activite.json", []), holdings, all_prices, CONFIG.get("rendements"), today)
     except Exception as e:

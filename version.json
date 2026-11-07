@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.20",
- "nouveautes": "Ajoute et enlève tes objectifs (détails calculés), 🎯 sur les NFT, bilan du cycle plus clair, ta production jour/7j/30j, bonus NFT + compétences séparés.",
+ "version": "2026-11-07.21",
+ "nouveautes": "Ressources gagnées/utilisées (jour, 7 j, 30 j), amortissement des NFT, bonus détaillés, Rentabilité plus claire, boutons d objectifs réparés.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
