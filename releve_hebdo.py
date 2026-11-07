@@ -767,6 +767,8 @@ def main():
             p["rendements_cultures"] = cultures
             p["rendement_culture"] = rd.get("Wheat") or sum(cultures.values()) / len(cultures)
         p["arbres"] = ferme["noeuds"]["Wood"]
+        p["noeuds"] = ferme["noeuds"]
+        p["max_actions"] = ferme.get("max_actions") or {}
         if animaux_lus:
             p["poules"] = (animaux_lus.get("Chicken") or {}).get("nombre", 0)
         n = ferme["noeuds"]

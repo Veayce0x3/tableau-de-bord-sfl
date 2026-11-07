@@ -318,6 +318,61 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
     return total, " · ".join(why), xp
 
 
+NOM_NOEUD = {"Stone": "rochers de pierre", "Iron": "rochers de fer", "Gold": "rochers d'or", "Crimstone": "rochers de crimstone",
+             "Wood": "arbres"}
+
+
+def _fr(x, d=0):
+    return f"{x:,.{d}f}".replace(",", " ").replace(".", ",")
+
+
+def potentiel(entries, prices, prod):
+    """Ce que tu fais aujourd'hui (en clair) et le gain par jour si tu optimises au maximum."""
+    pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
+    if not entries:
+        return None
+    e = entries[0]
+    k, res = e[0], e[1]
+    mesure = prod.get("mesure_reelle")
+    quand = "mesuré sur tes derniers jours" if mesure else "estimé, mesuré à partir du prochain relevé"
+    noeuds = (prod.get("noeuds") or {}).get(res) if res else None
+    if k in ("add", "chance") and res in NOM_NOEUD:
+        actu = prod.get(res, 0)
+        mx = (prod.get("max_actions") or {}).get(res) or actu
+        share = e[3] if k == "add" and len(e) > 3 else 1
+        par_action = (e[2] * share if k == "add" else e[2] * e[3]) * pr(res)
+        verbe = "coupes" if res == "Wood" else "mines"
+        txt = (f"Aujourd'hui tu {verbe} {_fr(actu)} fois par jour" + (f" sur tes {noeuds} {NOM_NOEUD[res]}" if noeuds else "")
+               + f" ({quand})")
+        opt = (f"si tu récoltes chacun de tes {noeuds} {NOM_NOEUD[res]} dès qu'il est prêt (~{_fr(mx)} fois par jour)"
+               if noeuds else None)
+        return {"actuel": txt, "g_max": mx * par_action, "opt": opt}
+    if k in ("animal", "hen"):
+        bete = "vache" if k == "animal" else "poule"
+        nb = prod.get("vaches" if k == "animal" else "poules") or 0
+        actu = prod.get("cycles_vaches" if k == "animal" else "cycles_poules", 0)
+        mx = nb * (1 if k == "animal" else 2)
+        txt = (f"Aujourd'hui tu récoltes une {bete} {_fr(actu)} fois par jour (chaque clic sur une {bete} qui a produit)"
+               + (f" · tu as {nb} {bete}s" if nb else "") + f" ({quand})")
+        opt = f"si tu récoltes tes {nb} {bete}s à chaque cycle (~{_fr(mx)} récoltes par jour)" if nb else None
+        return {"actuel": txt, "g_max": mx * e[2] * pr(res), "opt": opt}
+    if k == "crop_add":
+        ss = SAISONS.get(res, ["spring", "summer", "autumn", "winter"])
+        plein = prod.get("champs_total") or 0
+        freq = prod.get("frequence_recolte", 1.7)
+        share = e[3] if len(e) > 3 else 1
+        parts = prod.get("parts_vie") or {}
+        n_actu = sum(prod["recoltes"].values()) * parts.get(res, 0) if parts else prod["recoltes"].get(res, 0)
+        rec4 = n_actu * 28 / plein if plein else 0
+        mx = plein * freq * len(ss) / 4
+        mx4 = mx * 28 / plein if plein else 0
+        saison_txt = " et ".join(SAISON_FR[x] for x in ss) if len(ss) < 4 else "toute l'année"
+        txt = (f"Aujourd'hui tu fais ~{_fr(rec4, 1)} récoltes complètes {de(res)} ({plein} champs) toutes les 4 semaines ({quand})")
+        opt = f"si tu plantes tous tes champs en {FR.get(res, res)} pendant sa saison ({saison_txt}) : ~{_fr(mx4, 1)} récoltes complètes toutes les 4 semaines"
+        return {"actuel": txt, "g_max": mx * e[2] * share * pr(res), "opt": opt}
+    return None
+
+
 def analyse_nft(holdings, prices, cfg, source="défaut", fiable=True):
     prod = _prod(cfg)
     PRIX_COURANT.clear()
@@ -376,7 +431,14 @@ def analyse_nft(holdings, prices, cfg, source="défaut", fiable=True):
                 v, c = "❌ Trop cher pour ce qu'il rapporte", "neg"
         if not fiable and not mine:
             g, an = 0.0, None
-        rows.append({"n": name, "effet": effet(name) if name in B else texte_jeu, "owned": mine,
+        pot = potentiel(entries, prices, prod) if chiffrable and not xp else None
+        an_max = (pot["g_max"] * 365 / price * 100) if (pot and price and pot.get("opt")) else None
+        mois = (price / g / 30) if (price and g > 0.001) else None
+        note = ("🔴 Pas rentable" if mois is None else "🟢 Très rentable" if mois < 12 else "🟡 Correct" if mois < 24
+                else "🟠 Moyen" if mois < 36 else "🔴 Pas rentable")
+        rows.append({"note": note if chiffrable and not xp and fiable else None, "pot": pot, "an_max": an_max,
+                     "mois_max": (price / pot["g_max"] / 30) if (pot and price and pot["g_max"] > 0.001) else None,
+                     "n": name, "effet": effet(name) if name in B else texte_jeu, "owned": mine,
                      "wearable": name in WEARABLES, "price": price, "jour": g, "chiffrable": chiffrable,
                      "mois": g * 30, "an_pct": an, "rembourse_jours": (price / g) if price and g > 0.001 else None,
                      "why": why, "xp": xp, "verdict": v, "cls": c})
@@ -437,6 +499,7 @@ def lire_ferme_sflworld(page_html, skills):
            "Wood": 2 * (0.9 if "Tree Charge" in sk else 1)}
     par_noeud = lambda h: min(6.0, 16 / h + 1) if h < 16 else 24 / h
     prod = {k: round(noeuds[k] * par_noeud(rec[k]), 1) for k in noeuds}
+    max_actions = dict(prod)   # le maximum possible : chaque rocher/arbre récolté dès qu'il est prêt (7 h-23 h)
     champs = {}
     for c in CROPS:
         m = re.findall(r"(\d+)x " + c + r" \d", t)
@@ -446,7 +509,7 @@ def lire_ferme_sflworld(page_html, skills):
     prod["champs_total"] = sum(champs.values())
     for c in ("Wheat", "Barley", "Corn", "Kale"):
         prod["recoltes"].setdefault(c, 0)
-    return {"prod": prod, "noeuds": noeuds, "champs": champs}
+    return {"prod": prod, "noeuds": noeuds, "champs": champs, "max_actions": max_actions}
 
 
 def lire_animaux_sflworld(page_html):

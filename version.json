@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.30",
- "nouveautes": "Moins de demandes à SFL Tool (évite le blocage « trop de demandes »), message clair si ça arrive.",
+ "version": "2026-11-07.31",
+ "nouveautes": "NFT : une note claire, ce que tu fais aujourd hui, et jusqu où tu peux aller si tu optimises.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
