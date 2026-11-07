@@ -577,7 +577,7 @@ def objectifs_cycle(owned, prices, prod, hs, c_now, aujourdhui):
 def bonus_totaux(owned_nft, skills_owned, prices, prod):
     """Tous tes bonus additionnés par ressource : +X par action, vitesse, chances…"""
     textes = _effets_jeu()
-    R = {r: {"add": 0.0, "temps": 1.0, "mult": 1.0, "chances": [], "sources": []} for r in
+    R = {r: {"add": 0.0, "add_nft": 0.0, "add_comp": 0.0, "temps": 1.0, "mult": 1.0, "chances": [], "sources": []} for r in
          ("Stone", "Iron", "Gold", "Crimstone", "Wood", "Milk", "Leather", "Egg", "Feather", "Cultures")}
     def note(res, src):
         if src not in R[res]["sources"]:
@@ -586,13 +586,14 @@ def bonus_totaux(owned_nft, skills_owned, prices, prod):
         for e in (B.get(name) or effets_auto(textes.get(name, []))):
             k, res = e[0], e[1]
             if k == "add" and res in R:
-                R[res]["add"] += e[2] * (e[3] if len(e) > 3 else 1); note(res, name)
+                v = e[2] * (e[3] if len(e) > 3 else 1)
+                R[res]["add"] += v; R[res]["add_nft"] += v; note(res, name)
             elif k == "chance" and res in R:
                 R[res]["chances"].append(f"{e[2]:.0%} de +{e[3]:g}"); note(res, name)
             elif k == "mult" and res in R:
                 R[res]["mult"] *= e[2]; note(res, name)
             elif k in ("animal", "hen") and res in R:
-                R[res]["add"] += e[2]; note(res, name)
+                R[res]["add"] += e[2]; R[res]["add_nft"] += e[2]; note(res, name)
             elif k == "crops_mult":
                 R["Cultures"]["mult"] *= e[2]; note("Cultures", name)
             elif k == "time" and res == "crops":
@@ -606,7 +607,7 @@ def bonus_totaux(owned_nft, skills_owned, prices, prod):
                 if m.group(3):
                     R[res]["chances"].append(f"+{float(m.group(1)):g} au 5e coup")
                 else:
-                    R[res]["add"] += float(m.group(1))
+                    R[res]["add"] += float(m.group(1)); R[res]["add_comp"] += float(m.group(1))
                 note(res, name); continue
             m = re.match(r"x(0\.\d+) (stone|iron|gold|crimstone|tree) recovery time", s)
             if m:
@@ -623,7 +624,7 @@ def bonus_totaux(owned_nft, skills_owned, prices, prod):
                 v = float(m.group(1))
                 for k, res in (("milk", "Milk"), ("leather", "Leather"), ("egg", "Egg"), ("feather", "Feather")):
                     if k in m.group(2):
-                        R[res]["add"] += v; note(res, name)
+                        R[res]["add"] += v; R[res]["add_comp"] += v; note(res, name)
                 if "crop" in m.group(2):
                     note("Cultures", name)
                 continue
@@ -634,6 +635,50 @@ def bonus_totaux(owned_nft, skills_owned, prices, prod):
     for res, x in R.items():
         if not x["sources"]:
             continue
-        out.append({"res": res, "nom": FR.get(res, "cultures" if res == "Cultures" else res), "add": round(x["add"], 3),
+        out.append({"res": res, "nom": FR.get(res, "cultures" if res == "Cultures" else res), "add": round(x["add"], 3), "add_nft": round(x["add_nft"], 3), "add_comp": round(x["add_comp"], 3),
                     "temps": round(x["temps"], 3), "mult": round(x["mult"], 3), "chances": x["chances"], "sources": x["sources"]})
     return out
+
+
+FRUITS = ["Tomato", "Lemon", "Blueberry", "Orange", "Apple", "Banana", "Grape", "Rice", "Olive"]
+PRODUITS = (  # ressource, compteur du jeu, quantité par action (par défaut)
+    [("Stone", "Stone Mined", 4.13), ("Iron", "Iron Mined", 1.93), ("Gold", "Gold Mined", 1.81),
+     ("Crimstone", "Crimstone Mined", 4.2), ("Obsidian", "Obsidian Collected", 1), ("Wood", "Tree Chopped", 3.2)]
+    + [(c, f"{c} Harvested", 2.72) for c in CROPS]
+    + [(f, f"{f} Harvested", 1.1) for f in FRUITS]
+    + [("Milk", "Milk Collected", 3.6), ("Leather", "Leather Collected", 2.45), ("Egg", "Egg Collected", 2.5),
+       ("Feather", "Feather Collected", 1.25), ("Wool", "Wool Collected", 2), ("Truffle", "Truffle Collected", 2),
+       ("Honey", "Honey Harvested", 1)])
+
+
+def production(act, stock, prices, rendements, aujourdhui):
+    """Ce que tu as produit aujourd'hui / 7 jours / 30 jours, ressource par ressource (compteurs du jeu × quantité par action)."""
+    from datetime import date, timedelta
+    if not act:
+        return []
+    fin = act[-1]
+    d1 = date.fromisoformat(fin["date"])
+    def avant(n):
+        lim = (d1 - timedelta(days=n)).isoformat()
+        older = [a for a in act[:-1] if a["date"] <= lim]
+        return older[-1] if older else None
+    refs = {"1": avant(1), "7": avant(7), "30": avant(30)}
+    y = {**{r: q for r, _, q in PRODUITS}, **(rendements or {})}
+    rows = []
+    for res, cle, _ in PRODUITS:
+        if not fin["c"].get(cle):
+            continue  # jamais produit : on ne l'affiche pas
+        p = (prices.get(res) or 0) * (1 - TAX)
+        row = {"res": res, "stock": stock.get(res, 0), "valeur_stock": stock.get(res, 0) * p}
+        for k, ref in refs.items():
+            if ref is None:
+                row["a" + k] = row["q" + k] = row["v" + k] = None
+                continue
+            a = max(0.0, fin["c"].get(cle, 0) - ref["c"].get(cle, 0))
+            row["a" + k] = a
+            row["q" + k] = a * y.get(res, 1)
+            row["v" + k] = a * y.get(res, 1) * p
+        if row["stock"] >= 1 or any((row.get("a" + k) or 0) > 0 for k in ("1", "7", "30")):
+            rows.append(row)
+    rows.sort(key=lambda r: -((r["v30"] or r["v7"] or r["v1"] or 0) or r["valeur_stock"]))
+    return rows

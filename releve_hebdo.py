@@ -374,6 +374,51 @@ def sell_advice(holdings, prices, history, costs, cfg, trades=()):
 
 
 # --- Objectifs ----------------------------------------------------------------
+BATIMENTS = {"porcherie": "Pigpen", "pigpen": "Pigpen", "cochon": "Pigpen", "grange": "Barn", "barn": "Barn",
+             "vache": "Barn", "poulailler": "Hen House", "hen house": "Hen House", "poule": "Hen House"}
+ANIMAUX_PAR_NIVEAU = {"Pigpen": (3, "cochons"), "Barn": (5, "vaches"), "Hen House": (5, "poules")}
+NOM_BAT = {"Pigpen": "Porcherie", "Barn": "Grange", "Hen House": "Poulailler"}
+
+
+def interpreter_objectif(g, nft_names, skill_names, expansions):
+    """Objectif écrit librement (« augmenter la porcherie ») → objectif détaillé que l'outil sait suivre."""
+    if g.get("type") not in (None, "auto"):
+        return g
+    t = g.get("titre", "")
+    tl = t.lower()
+    g = {**g, "type": "manuel", "groupe": g.get("groupe") or "Mes objectifs"}
+    try:
+        bat_costs = json.loads((ROOT / "batiments_jeu.json").read_text())
+    except Exception:
+        bat_costs = {}
+    for mot, bat in BATIMENTS.items():
+        if mot in tl and bat in bat_costs:
+            m = re.search(r"(?:niveau|niv\.?|lvl|level)\s*(\d)", tl) or re.search(r"\b([23])\b", tl)
+            niv = int(m.group(1)) if m else 3
+            c = bat_costs[bat].get(str(niv))
+            if c:
+                par, quoi = ANIMAUX_PAR_NIVEAU.get(bat, (0, ""))
+                g.update({"ressources": {"coins": c["coins"], **c["items"]}, "groupe": "Bâtiments",
+                          "note": f"{NOM_BAT.get(bat, bat)} niveau {niv}" + (f" : jusqu'à {par * niv} {quoi}" if par else "")
+                                  + " (coûts tirés du code du jeu)"})
+            return g
+    m = re.search(r"niveau\s*(\d+)", tl)
+    if m:
+        return {**g, "type": "niveau", "valeur": int(m.group(1)), "groupe": "Niveau"}
+    if any(w in tl for w in ("agrandi", "expansion", "extension")) and expansions:
+        nxt = next(iter(expansions.values()))
+        return {**g, "ressources": {"coins": nxt.get("coins", 0), **nxt.get("resources", {})}, "groupe": "Ferme",
+                "note": "Prochain agrandissement (coûts lus sur ta ferme)"}
+    for n in sorted(nft_names, key=len, reverse=True):
+        if n.lower() in tl:
+            vend = tl.startswith("vend")
+            return {**g, "type": "vendre" if vend else "nft", "nom": n, "groupe": "NFT à vendre" if vend else "NFT à acheter"}
+    for n in skill_names:
+        if n.lower() in tl:
+            return {**g, "type": "competence", "nom": n, "groupe": "Compétences"}
+    return g
+
+
 def evaluate_goals(goals, holdings, prices, trades, land, coin_rate):
     """Valide automatiquement ce qui peut l'être et calcule prix / coûts restants."""
     skills = (land.get("bumpkin") or {}).get("skills") or {}
@@ -594,6 +639,12 @@ def main():
     safe_write((DATA / "stock.json"), json.dumps(stock_hist, ensure_ascii=False, indent=1))
     land = try_json(f"https://sfl.world/api/v1.1/land/{FARM_ID}")  # niveau et compétences
     goals = load(ROOT / "objectifs.json", [])
+    try:
+        skn = list(json.loads((ROOT / "competences_jeu.json").read_text()).keys())
+    except Exception:
+        skn = []
+    goals = [interpreter_objectif(g, [k for k, v in all_prices.items() if k not in RESOURCE_KEYS], skn,
+                                  fin.get("expansions") or {}) for g in goals]
     goals_eval = evaluate_goals(goals, {**holdings, "Coins": fin.get("coins") or 0}, all_prices, all_trades,
                                 land, float(CONFIG.get("coins_par_flower", 1525))) if goals else []
     from nft_analyse import analyse_nft, mesure_production, lire_ferme_sflworld, lire_animaux_sflworld, lire_activite_sflworld, rythme_reel, DEFAULT_PROD
@@ -694,7 +745,11 @@ def main():
     else:
         cfg_prod, source = CONFIG, "pas encore lue : sfl.world n'a pas répondu, réessaie Actualiser dans quelques minutes"
     nft = analyse_nft(holdings, all_prices, cfg_prod, source, fiable=not source.startswith("pas encore"))
-    nft["stock_hist"] = stock_hist[-9:]
+    try:
+        from nft_analyse import production
+        nft["production"] = production(load(DATA / "activite.json", []), holdings, all_prices, CONFIG.get("rendements"), today)
+    except Exception as e:
+        print(f"(production indisponible : {e})", file=sys.stderr)
     # Saisons : on note le début de chaque saison (avec tes compteurs) pour suivre tes objectifs
     try:
         from nft_analyse import objectifs_saison, objectifs_cycle

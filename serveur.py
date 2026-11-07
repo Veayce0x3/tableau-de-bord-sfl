@@ -56,6 +56,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         return super().do_GET()
 
     def do_POST(self):
+        if self.path == "/objectifs":
+            return self._objectifs()
         if self.path != "/actualiser":
             self.send_error(404)
             return
@@ -74,6 +76,43 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._json(504, {"ok": False, "message": "Le relevé a pris trop de temps, réessaie plus tard."})
         finally:
             _lock.release()
+
+    def _objectifs(self):
+        """Ajouter, cocher ou enlever un objectif (fichier objectifs.json)."""
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+            req = json.loads(self.rfile.read(n) or b"{}")
+            f = ROOT / "objectifs.json"
+            try:
+                goals = json.loads(f.read_text())
+            except FileNotFoundError:
+                goals = []
+            act = req.get("action")
+            if act == "add":
+                g = {k: v for k, v in req.items() if k in ("titre", "type", "nom", "groupe", "valeur") and v not in (None, "")}
+                if not g.get("titre"):
+                    return self._json(400, {"ok": False, "message": "Écris ton objectif."})
+                g.setdefault("type", "auto")
+                goals.append(g)
+            elif act in ("del", "fait"):
+                i = int(req.get("index", -1))
+                if not 0 <= i < len(goals):
+                    return self._json(400, {"ok": False, "message": "Objectif introuvable."})
+                if act == "del":
+                    goals.pop(i)
+                else:
+                    goals[i]["fait"] = not goals[i].get("fait")
+                    if goals[i].get("type") not in ("manuel", "auto"):
+                        goals[i]["type_avant"] = goals[i]["type"]
+                        goals[i]["type"] = "manuel"
+            else:
+                return self._json(400, {"ok": False, "message": "Action inconnue."})
+            tmp = f.with_name("objectifs.json.tmp")
+            tmp.write_text(json.dumps(goals, ensure_ascii=False, indent=1))
+            tmp.replace(f)
+            return self._json(200, {"ok": True})
+        except Exception as e:
+            return self._json(500, {"ok": False, "message": str(e)})
 
     def _json(self, code, obj):
         body = json.dumps(obj, ensure_ascii=False).encode()
