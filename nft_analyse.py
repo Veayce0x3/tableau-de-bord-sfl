@@ -35,7 +35,7 @@ B = {
     "Apprentice Beaver": [("mult", "Wood", 1.2)],
     "Tiki Totem": [("add", "Wood", 0.1)],
     "Wood Nymph Wendy": [("add", "Wood", 0.2)],
-    "Scarecrow": [("crops_mult", None, 1.2)],
+    "Scarecrow": [("crops_mult", None, 1.2), ("time", "crops", 0.85)],
     "Nancy": [("time", "crops", 0.85)],
     "Lunar Calendar": [("time", "crops", 0.9)],
     "Kernaldo": [("time", "Corn", 0.75)],
@@ -211,6 +211,16 @@ def _prod(cfg):
     return p
 
 
+def _base_cultures(prod, pr):
+    """Valeur de tes récoltes par jour, avec TON mélange de cultures (habitudes) et tes rendements."""
+    rc = prod.get("rendements_cultures") or {}
+    parts = prod.get("parts_vie") or {}
+    total = sum(prod["recoltes"].values())
+    if parts and total:
+        return sum(total * p * rc.get(c, prod["rendement_culture"]) * pr(c) for c, p in parts.items())
+    return sum(n * rc.get(c, prod["rendement_culture"]) * pr(c) for c, n in prod["recoltes"].items())
+
+
 def gain_par_jour(name, prices, prod, owned, entries=None):
     """Gain net (après taxe) en Flower par jour, et une phrase d'explication."""
     pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
@@ -259,17 +269,15 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
                 seuils.append((res, v * pr(res), saison_txt))
         elif kind == "crops_mult":
             m = e[2]
-            rc = prod.get("rendements_cultures") or {}
-            g = sum(n * rc.get(c, prod["rendement_culture"]) * (1 - 1 / m) * pr(c) for c, n in prod["recoltes"].items())
-            why.append(f"×{m:g} sur toutes tes récoltes")
+            g = _base_cultures(prod, pr) * (1 - 1 / m)
+            why.append(f"×{m:g} sur toutes tes récoltes (avec ton mélange habituel de cultures)")
         elif kind == "time":
             target, m = e[1], e[2]
             eff = 0.5  # la nuit et tes horaires limitent le gain de vitesse
             if target in RES_NODES:
                 base = 0  # rochers et arbres : tu passes déjà ~6 fois par jour, plus de vitesse ne change presque rien
             elif target == "crops":
-                rc = prod.get("rendements_cultures") or {}
-                base = sum(n * rc.get(c, prod["rendement_culture"]) * pr(c) for c, n in prod["recoltes"].items())
+                base = _base_cultures(prod, pr)
             elif target == "hen":
                 base = prod["cycles_poules"] * 2 * pr("Egg")
             elif target == "cow":

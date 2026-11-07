@@ -768,6 +768,11 @@ def main():
             p["rendement_culture"] = rd.get("Wheat") or sum(cultures.values()) / len(cultures)
         p["arbres"] = ferme["noeuds"]["Wood"]
         p["noeuds"] = ferme["noeuds"]
+        # Nombre total de champs : le plus grand jamais vu (un champ vide au moment du relevé n'est pas « perdu »)
+        fmax = load(DATA / "ferme_max.json", {})
+        fmax["champs"] = max(fmax.get("champs", 0), p.get("champs_total") or 0)
+        safe_write(DATA / "ferme_max.json", json.dumps(fmax))
+        p["champs_total"] = fmax["champs"]
         p["max_actions"] = ferme.get("max_actions") or {}
         if animaux_lus:
             p["poules"] = (animaux_lus.get("Chicken") or {}).get("nombre", 0)
