@@ -662,6 +662,12 @@ def main():
             for k in ("Stone", "Iron", "Gold", "Crimstone", "Wood", "cycles_vaches", "cycles_poules"):
                 p[k] = reel[k]
             p["recoltes"] = reel["recoltes"]
+            p["mesure_reelle"] = True
+            vie = act[-1]["c"]
+            from nft_analyse import CROPS
+            tot = sum(vie.get(f"{c} Harvested", 0) for c in CROPS)
+            if tot:
+                p["parts_vie"] = {c: vie.get(f"{c} Harvested", 0) / tot for c in CROPS}
             if p.get("champs_total"):
                 p["frequence_recolte"] = round(sum(reel["recoltes"].values()) / p["champs_total"], 2)
             source = (f"mesurée sur ce que tu as vraiment fait ces {jours_reel} dernier(s) jour(s) : "

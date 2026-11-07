@@ -132,6 +132,8 @@ SAISONS = {"Sunflower": ["spring", "summer"], "Potato": ["summer", "autumn", "wi
 SAISON_FR = {"spring": "printemps", "summer": "été", "autumn": "automne", "winter": "hiver"}
 PART_EN_SAISON = 0.5  # on suppose que tu mettrais la moitié de tes champs sur cette culture pendant sa saison
 
+PRIX_COURANT = {}
+
 RES_NODES = {"Stone", "Iron", "Gold", "Crimstone", "Wood"}
 CROPS = ["Sunflower", "Potato", "Rhubarb", "Pumpkin", "Zucchini", "Carrot", "Yam", "Cabbage", "Broccoli", "Soybean",
          "Beetroot", "Pepper", "Cauliflower", "Parsnip", "Eggplant", "Corn", "Onion", "Radish", "Wheat", "Turnip",
@@ -208,6 +210,7 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
     """Gain net (après taxe) en Flower par jour, et une phrase d'explication."""
     pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
     total, why, xp = 0.0, [], None
+    seuils = []
     for e in (entries if entries is not None else B[name]):
         kind = e[0]
         if kind == "add":
@@ -228,15 +231,26 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
             res, v = e[1], e[2]
             share = e[3] if len(e) > 3 else 1
             ss = SAISONS.get(res, ["spring", "summer", "autumn", "winter"])
-            champs = prod.get("champs_total") or sum(prod["recoltes"].values()) / 1.7
-            # Moyenne sur l'année : ce qui est planté maintenant, ou ce que tu planterais pendant sa saison
-            n = max(prod["recoltes"].get(res, 0), champs * prod.get("frequence_recolte", 1.7) * PART_EN_SAISON) * len(ss) / 4 * share
-            g = v * n * pr(res)
-            if len(ss) == 4:
-                why.append(f"+{v:g} × ~{n:.0f} champs de {FR.get(res, res)} récoltés/jour")
+            saison_txt = " et ".join(SAISON_FR[x] for x in ss) if len(ss) < 4 else "toute l'année"
+            parts = prod.get("parts_vie") or {}
+            if prod.get("mesure_reelle") and len(ss) < 4 and parts:
+                # Culture de saison : ta part habituelle (depuis le début de ta ferme) × ton rythme actuel de récolte
+                part = parts.get(res, 0)
+                n = sum(prod["recoltes"].values()) * part * share
+                why.append(f"+{v:g} × ~{n:.0f} champs/jour en moyenne sur l'année : le {FR.get(res, res)} fait {part:.0%} "
+                           f"de tout ce que tu as récolté depuis le début ({saison_txt})")
+            elif prod.get("mesure_reelle"):
+                # Ce que tu récoltes vraiment (moyenne des derniers jours), sans hypothèse
+                n = prod["recoltes"].get(res, 0) * share
+                why.append(f"+{v:g} × {n:g} champs de {FR.get(res, res)} que tu récoltes vraiment par jour (moyenne mesurée)")
             else:
-                why.append(f"+{v:g} × ~{n:.0f} champs/jour en moyenne sur l'année "
-                           f"(si tu plantes du {FR.get(res, res)} sur la moitié de tes champs en {' et '.join(SAISON_FR[x] for x in ss)})")
+                champs = prod.get("champs_total") or sum(prod["recoltes"].values()) / 1.7
+                n = max(prod["recoltes"].get(res, 0), champs * 1.7 * PART_EN_SAISON) * len(ss) / 4 * share
+                why.append(f"⏳ hypothèse : +{v:g} × ~{n:.0f} champs/jour (moitié de tes champs en {FR.get(res, res)} en "
+                           f"{saison_txt}) — remplacé par tes vraies récoltes dès demain")
+            g = v * n * pr(res)
+            if pr(res) > 0:
+                seuils.append((res, v * pr(res), saison_txt))
         elif kind == "crops_mult":
             m = e[2]
             g = sum(n * prod["rendement_culture"] * (1 - 1 / m) * pr(c) for c, n in prod["recoltes"].items())
@@ -281,11 +295,19 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
     other = CONFLITS.get(name)
     if other and other in owned and name not in owned:
         total, why = 0.0, [f"ne s'ajoute pas à ton {other}"]
+    price = PRIX_COURANT.get(name)
+    if seuils and price and len(seuils) == 1:
+        res, par_champ, saison_txt = seuils[0]
+        besoin = price * 0.35 / 365 / par_champ   # champs/jour pour atteindre 35 %/an
+        why.append(f"👉 rentable (35 %/an) si tu récoltes au moins {besoin:.0f} champs de {FR.get(res, res)} par jour "
+                   f"en moyenne sur l'année ({saison_txt})" + ("" if res == "Wheat" else " — à toi de voir si tu as la place à côté du blé pour tes animaux"))
     return total, " · ".join(why), xp
 
 
 def analyse_nft(holdings, prices, cfg, source="défaut", fiable=True):
     prod = _prod(cfg)
+    PRIX_COURANT.clear()
+    PRIX_COURANT.update({k: v for k, v in prices.items() if isinstance(v, (int, float))})
     textes = _effets_jeu()
     noms = set(B) | {n for n in textes if prices.get(n) or (holdings.get(n) or 0) > 0}
     owned = {n for n in noms if (holdings.get(n) or 0) > 0} | set(cfg.get("nft_possedes") or [])
