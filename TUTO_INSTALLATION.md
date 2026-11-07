@@ -18,8 +18,8 @@ Pas de zip, pas de blocage de macOS.
    ```
 4. Tape ton **numéro de ferme** quand il est demandé, puis Entrée.
 
-C'est tout : l'outil s'installe dans `Documents/Tableau-de-bord-SFL`, un raccourci **« Ferme SFL »** apparaît sur ton Bureau, et le tableau de bord s'ouvre.
-Ensuite, chaque jour : double-clic sur **« Ferme SFL »** sur le Bureau.
+C'est tout : l'outil s'installe dans `Documents/Tableau-de-bord-SFL`, une appli **« Ferme SFL »** apparaît sur ton Bureau, et le tableau de bord s’ouvre.
+Ensuite, chaque jour : double-clic sur l’appli **« Ferme SFL »** sur le Bureau (pas besoin du Terminal).
 (Si un jour quelque chose est cassé, relance la même ligne : elle répare l'outil sans toucher à tes données.)
 
 ---
