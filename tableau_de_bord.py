@@ -13,7 +13,7 @@ def _slim(trades):
              "g": t.get("gross") or 0, "net": t.get("net") or 0} for t in trades]
 
 
-def build_dashboard(root: Path, farms, price_history, watch, names_fr, prices_now, costs=None, cost_hist=None, stock=None, goals=None, start=None):
+def build_dashboard(root: Path, farms, price_history, watch, names_fr, prices_now, costs=None, cost_hist=None, stock=None, goals=None, start=None, nft=None):
     data = {
         "generatedAt": datetime.now().strftime("%d/%m/%Y %H:%M"),
         "farms": [{"id": f["id"], "nom": f["nom"], "trades": _slim(f["trades"]), "counters": f["counters"]}
@@ -26,6 +26,7 @@ def build_dashboard(root: Path, farms, price_history, watch, names_fr, prices_no
         "stock": stock or [],
         "goals": goals or [],
         "start": start,
+        "nft": nft or {"rows": [], "prod": {}},
         "watch": watch,
         "names": names_fr,
         "now": {k: v for k, v in prices_now.items() if isinstance(v, (int, float))},
@@ -121,6 +122,7 @@ select,input{background:var(--card);color:var(--ink);border:1px solid var(--line
   <section id="objectifs"></section>
   <section id="vente"></section>
   <section id="rentabilite"></section>
+  <section id="nft"></section>
   <section id="ressources"></section>
   <section id="echanges"></section>
   <section id="compteurs"></section>
@@ -131,7 +133,7 @@ let FARM;try{FARM=localStorage.getItem("farm")}catch(e){}
 if(!D.farms.some(f=>f.id===FARM))FARM=D.farms[0].id;
 function setFarm(id){const f=D.farms.find(x=>x.id===id);FARM=id;D.trades=f.trades;D.counters=f.counters;try{localStorage.setItem("farm",id)}catch(e){}}
 setFarm(FARM);
-const TABS=[["apercu","Aperçu"],["objectifs","Objectifs"],["vente","Vente"],["rentabilite","Rentabilité"],["ressources","Une ressource"],["historique","Historique"],["echanges","Échanges"],["compteurs","Compteurs"]];
+const TABS=[["apercu","Aperçu"],["objectifs","Objectifs"],["vente","Vente"],["rentabilite","Rentabilité"],["nft","NFT"],["ressources","Une ressource"],["historique","Historique"],["echanges","Échanges"],["compteurs","Compteurs"]];
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const fr=(x,d=2)=>x==null||isNaN(x)?"—":x.toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d});
 const fp=x=>x==null?"—":fr(x,x>=10?2:4);
@@ -181,6 +183,7 @@ function render(id){
  if(id==="objectifs")return objectifs();
  if(id==="vente")return vente();
  if(id==="rentabilite")return rentabilite();
+ if(id==="nft")return nftTab();
  if(id==="ressources")return ressources();
  if(id==="echanges")return echanges();
  if(id==="compteurs")return compteurs();
@@ -246,16 +249,58 @@ function historique(){
 
 function objectifs(){
  const el=document.getElementById("objectifs"),G=D.goals;
- if(!G.length){el.innerHTML='<div class="card empty">Aucun objectif. Ajoute-les dans objectifs.json.</div>';return;}
+ if(!G.length){el.innerHTML=conseilCard()+'<div class="card empty">Aucun objectif détaillé. Ajoute-les dans objectifs.json.</div>';bindConseil();return;}
  const done=G.filter(g=>g.fait).length,pct=Math.round(done/G.length*100);
  const groups={};G.forEach(g=>{(groups[g.groupe||"Autres"]=groups[g.groupe||"Autres"]||[]).push(g)});
  const nftLeft=sum(G.filter(g=>g.type==="nft"&&!g.fait&&g.prix),g=>g.prix);
- el.innerHTML=`<div class="hero"><div><div class="l">Objectifs validés</div><div class="big">${done} / ${G.length}</div><div class="bar"><span style="width:${pct}%"></span></div></div>
+ el.innerHTML=conseilCard()+`<div class="hero"><div><div class="l">Objectifs validés</div><div class="big">${done} / ${G.length}</div><div class="bar"><span style="width:${pct}%"></span></div></div>
   <div><div class="l">NFT encore à acheter</div><div class="big">${fr(nftLeft)} FLW</div><div class="l">au prix du jour</div></div></div>
  ${Object.entries(groups).map(([n,a])=>`<div class="card"><h2>${n} <span class="msum">${a.filter(g=>g.fait).length}/${a.length}</span></h2>
   ${a.map(g=>`<div class="goal ${g.fait?"ok":""}"><div class="gchk">${g.fait?"✅":"⬜"}</div><div class="gtxt"><div class="gt">${g.titre}</div>${g.info?`<div class="why">${g.info}</div>`:""}${g.note?`<div class="why">ℹ️ ${g.note}</div>`:""}</div>
    <div class="gcost">${g.type==="nft"&&!g.fait&&g.prix?`<b>${fr(g.prix)}</b> FLW`:g.cout_restant!=null&&!g.fait?`<b>${fr(g.cout_restant)}</b> FLW<div class="why">en ressources manquantes (sur ${fr(g.cout_total)})</div>`:""}</div></div>`).join("")}</div>`).join("")}
  <div class="sub">Validés automatiquement à chaque relevé : NFT achetés ou vendus, compétences, niveau, objectifs de la semaine. Les autres (« manuel ») se cochent dans <code>objectifs.json</code> en mettant <code>"fait": true</code>. Coûts au prix du marché du jour (coins au taux de 1 525, huile ≈ 0,10).</div>`;
+ bindConseil();
+}
+const BUTS=[["flower","💰 Gagner plus de Flower (rendement)"],["niveau","⭐ Monter de niveau"],["agrandir","🏡 Agrandir la ferme"]];
+function getBut(){let b;try{b=localStorage.getItem("but")}catch(e){};return BUTS.some(x=>x[0]===b)?b:(D.but||"flower");}
+function conseilCard(){const b=getBut();return `<div class="card"><h2>🎯 Ton objectif principal</h2><div class="controls" id="but_chips">${BUTS.map(([k,l])=>`<button class="chip ${k===b?"on":""}" data-k="${k}">${l}</button>`).join("")}</div><div id="conseils">${conseils(b)}</div><div class="sub">Conseils calculés par l'outil à chaque relevé, avec ta production et les prix du jour.</div></div>`;}
+function bindConseil(){document.querySelectorAll("#but_chips .chip").forEach(x=>x.onclick=()=>{try{localStorage.setItem("but",x.dataset.k)}catch(e){};document.querySelectorAll("#but_chips .chip").forEach(y=>y.classList.toggle("on",y===x));document.getElementById("conseils").innerHTML=conseils(x.dataset.k);});}
+function conseils(b){
+ const N=(D.nft||{}).rows||[],li=[];
+ const buys=N.filter(r=>!r.owned&&!r.xp&&r.an_pct>=35&&r.jour>0.001).sort((a,b)=>b.an_pct-a.an_pct);
+ const xpOwned=N.filter(r=>r.owned&&r.xp);
+ if(b==="flower"){
+  if(buys.length){const t=buys.slice(0,3);li.push(`🛒 <b>Meilleurs NFT à acheter</b> : ${t.map(r=>`<b>${r.n}</b> (${fr(r.price)} FLW → +${fp(r.jour)}/jour, ${fr(r.an_pct,0)} %/an, remboursé en ~${fr(r.rembourse_jours/30,0)} mois)`).join(" · ")}. Total : ${fr(sum(t,r=>r.price))} FLW pour +${fr(sum(t,r=>r.mois))} FLW/mois.`);}
+  if(xpOwned.length)li.push(`💤 <b>À vendre</b> (ne rapportent que de l'XP) : ${xpOwned.map(r=>`${r.n} (~${fr(r.price)} FLW)`).join(", ")} → ${fr(sum(xpOwned,r=>r.price))} FLW à réinvestir.`);
+  const al=(D.stock||[]).filter(r=>r.alert);if(al.length)li.push(`⚠️ <b>Tu vends trop bas</b> : ${al.map(r=>nm(r.n)).join(", ")} → regarde le « prix mini conseillé » dans l'onglet Vente.`);
+  const bad=(D.costs||[]).filter(r=>r.cycle&&r.marge<0);if(bad.length)li.push(`🐄 <b>À perte</b> : ${bad.map(r=>r.item).join(", ")} (${bad.map(r=>fp(r.marge)).join(" / ")} par cycle). Ne les nourris que si une bounty les attend.`);
+  const tr=(D.costs||[]).filter(r=>r.trade);if(tr.length)li.push(`🐷 <b>Cochons</b> : échange chaque cochon contre ses poils au niveau 10 (+${fp(tr[0].marge)} FLW chacun) ou 15 (+${fp(tr[1]?tr[1].marge:0)}), puis rachète-en un.`);
+  const neg=(D.costs||[]).filter(r=>!r.cycle&&!r.trade&&r.marge<0);if(neg.length)li.push(`⛏️ <b>Produire coûte plus que vendre</b> : ${neg.map(r=>nm(r.item)).join(", ")} → ne les vends pas, garde-les pour tes outils (ou achète-les moins cher que ton coût).`);
+ }else if(b==="niveau"){
+  const xpAll=N.filter(r=>r.xp);
+  li.push(`⭐ <b>NFT d'XP</b> : ${xpAll.map(r=>`${r.n} ${r.xp} — ${r.owned?"✅ tu l'as, garde-le":r.price?`${fr(r.price)} FLW`:"prix inconnu"}`).join(" · ")}.`);
+  li.push(`🍳 L'XP vient surtout de la <b>cuisine</b> : cuisine avec tes propres cultures (pas achetées), en priorité les plats qui servent aussi aux livraisons.`);
+  li.push(`💡 Monter de niveau donne des points de compétence : vise ceux qui rapportent des ressources (voir onglet Rentabilité), pas ceux qui donnent des coins si tu en as assez.`);
+ }else{
+  const keep=["Wood","Stone","Iron","Gold","Crimstone","Obsidian","Oil"];const st=(D.stock||[]).filter(r=>keep.includes(r.n));
+  li.push(`🏡 <b>Garde tes matériaux</b> : un agrandissement demande surtout du bois, de la pierre, du fer et de l'or. Ne vends pas ces ressources tant que l'agrandissement n'est pas fait.`);
+  if(st.length)li.push(`📦 Tu as : ${st.map(r=>`${nm(r.n)} ${fr(r.stock,0)}`).join(" · ")}.`);
+  const mines=N.filter(r=>!r.xp&&/Mole|Golem|Nugget|Idol|Turtle|Beaver|Totem|Wendy|Peckster/.test(r.n)&&!r.owned&&r.an_pct>=35);
+  if(mines.length)li.push(`⛏️ NFT qui produisent ces matériaux et restent rentables : ${mines.map(r=>`<b>${r.n}</b> (${fr(r.an_pct,0)} %/an)`).join(", ")}.`);
+  li.push(`📝 Ajoute ton prochain agrandissement dans <code>objectifs.json</code> avec ses ressources : l'outil calcule ce qu'il te manque et combien ça coûterait au marché.`);
+ }
+ return li.length?li.map(x=>`<p class="plain">${x}</p>`).join(""):'<div class="empty">Rien à signaler 👍</div>';
+}
+function nftTab(){
+ const el=document.getElementById("nft"),N=(D.nft||{}).rows||[],P=(D.nft||{}).prod||{};
+ const own=N.filter(r=>r.owned),buy=N.filter(r=>!r.owned);
+ const ownDay=sum(own,r=>r.jour),ownVal=sum(own,r=>r.price||0);
+ const row=r=>`<tr><td><b>${r.n}</b>${r.wearable?' <span class="why">(vêtement)</span>':""}</td><td>${r.price?fr(r.price):"—"}</td><td class="${r.jour>0.001?"pos":""}">${r.xp?"XP":"+"+fp(r.jour)}</td><td>${r.xp?"—":"+"+fr(r.mois)}</td><td class="${r.cls}"><b>${r.an_pct!=null&&!r.xp?fr(r.an_pct,0)+" %":"—"}</b></td><td>${r.rembourse_jours?fr(r.rembourse_jours/30,0)+" mois":"—"}</td><td style="text-align:left"><span class="${r.cls}">${r.verdict}</span><div class="why">${r.why}</div></td></tr>`;
+ const head=`<tr><th>NFT</th><th>Prix (FLW)</th><th>Gain / jour</th><th>Gain / mois</th><th>Rendement / an</th><th>Remboursé en</th><th style="text-align:left">Verdict</th></tr>`;
+ el.innerHTML=`<div class="hero"><div><div class="l">Tes NFT à bonus rapportent</div><div class="big pos">+${fr(ownDay*30)} FLW/mois</div><div class="l">+${fp(ownDay)} par jour</div></div><div><div class="l">Ils valent (prix plancher)</div><div class="big">${fr(ownVal)} FLW</div><div class="l">soit ${ownVal?fr(ownDay*365/ownVal*100,0):"—"} %/an en moyenne</div></div></div>
+ <div class="card"><h2>🧾 Tes NFT</h2><div class="sub">Rendement / an = ce qu'il rapporte en un an ÷ son prix. Un NFT reste à toi et se revend : au-dessus de ~35-40 %/an, c'est un bon placement.</div><div class="scroll"><table>${head}${own.map(row).join("")||'<tr><td colspan="7" class="empty">Aucun NFT à bonus détecté.</td></tr>'}</table></div></div>
+ <div class="card"><h2>🛒 NFT que tu pourrais acheter (du plus rentable au moins rentable)</h2><div class="scroll"><table>${head}${buy.sort((a,b)=>(b.an_pct||-1)-(a.an_pct||-1)).map(row).join("")}</table></div></div>
+ <div class="card"><h2>⚙️ Calculé avec ta production par jour</h2><p class="plain">Pierre ${fr(P.Stone,0)} · Fer ${fr(P.Iron,0)} · Or ${fr(P.Gold,0)} · Crimstone ${fr(P.Crimstone,1)} · Bois ${fr(P.Wood,0)} coups/jour · ${fr(P.cycles_vaches,0)} cycles de vaches · ${fr(P.cycles_poules,0)} cycles de poules · champs/jour : ${Object.entries(P.recoltes||{}).map(([k,v])=>nm(k)+" "+fr(v,0)).join(", ")}.</p><div class="sub">Si ta ferme est différente, règle ces nombres dans <code>ma_ferme.json</code> → <code>"ma_production"</code>. Les vêtements (Milk Apron…) ne sont pas détectés : ajoute-les dans <code>"nft_possedes"</code>. Effets des NFT tirés du code du jeu ; prix plancher du jour. Les bonus de vitesse comptent pour moitié (la nuit, tu ne récoltes pas).</div></div>`;
 }
 
 const SIG={vendre:["🟢","Bon moment pour vendre","good"],normal:["⚪","Prix normal","mid"],attendre:["🟠","Attends si tu peux","wait"],garder:["🔵","À garder","keep"],cout:["🔴","Sous ton coût","bad"]};

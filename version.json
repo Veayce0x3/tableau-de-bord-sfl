@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.2",
- "nouveautes": "Mise à jour automatique.",
+ "version": "2026-11-07.3",
+ "nouveautes": "Nouvel onglet NFT (rentabilité de chaque NFT) et conseils selon ton objectif dans Objectifs.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
@@ -9,6 +9,7 @@
   "LISEZMOI.md",
   "TUTO_INSTALLATION.md",
   "Lancer le relevé.command",
-  "Lancer le relevé.bat"
+  "Lancer le relevé.bat",
+  "nft_analyse.py"
  ]
 }

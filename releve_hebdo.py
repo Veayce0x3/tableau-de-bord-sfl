@@ -586,7 +586,10 @@ def main():
     goals = load(ROOT / "objectifs.json", [])
     goals_eval = evaluate_goals(goals, {**holdings, "Coins": fin.get("coins") or 0}, all_prices, all_trades,
                                 land, float(CONFIG.get("coins_par_flower", 1525))) if goals else []
-    dash = build_dashboard(ROOT, farms, history, WATCH, NAMES_FR, all_prices, costs, cost_hist, stock, goals_eval, CONFIG.get("date_depart"))
+    from nft_analyse import analyse_nft
+    nft = analyse_nft(holdings, all_prices, CONFIG)
+    dash = build_dashboard(ROOT, farms, history, WATCH, NAMES_FR, all_prices, costs, cost_hist, stock, goals_eval,
+                           CONFIG.get("date_depart"), nft)
     print(report)
     print(dash)
     print("\n".join(L[:14]))
