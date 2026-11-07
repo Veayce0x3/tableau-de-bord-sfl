@@ -650,8 +650,8 @@ def main():
     elif mesure:
         cfg_prod, source = {**CONFIG, "ma_production": mesure}, f"mesurée sur ta ferme ({jours} jours)"
     else:
-        cfg_prod, source = CONFIG, f"pas encore mesurée ({jours} jour(s) sur 3) : chiffres d'une ferme type"
-    nft = analyse_nft(holdings, all_prices, cfg_prod, source)
+        cfg_prod, source = CONFIG, "pas encore lue : sfl.world n'a pas répondu, réessaie Actualiser dans quelques minutes"
+    nft = analyse_nft(holdings, all_prices, cfg_prod, source, fiable=not source.startswith("pas encore"))
     from competences import analyse_competences
     try:
         nft["skills"] = analyse_competences(land, all_prices, cfg_prod)

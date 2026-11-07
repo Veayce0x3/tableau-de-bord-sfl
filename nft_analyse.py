@@ -196,7 +196,7 @@ def gain_par_jour(name, prices, prod, owned):
     return total, " · ".join(why), xp
 
 
-def analyse_nft(holdings, prices, cfg, source="défaut"):
+def analyse_nft(holdings, prices, cfg, source="défaut", fiable=True):
     prod = _prod(cfg)
     owned = {n for n in B if (holdings.get(n) or 0) > 0} | set(cfg.get("nft_possedes") or [])
     rows = []
@@ -219,16 +219,20 @@ def analyse_nft(holdings, prices, cfg, source="défaut"):
         else:
             if xp:
                 v, c = "Seulement si ton objectif est l'XP", "neutral"
+            elif not fiable:
+                v, c = "⚠️ Pas calculable : ta ferme n'a pas pu être lue (réessaie Actualiser)", "neutral"
+            elif g <= 0.001:
+                v, c = "❌ N'apporte rien sur ta ferme (tu ne produis pas ce qu'il améliore)", "neg"
             elif an is None:
                 v, c = "Prix inconnu", "neutral"
-            elif g <= 0.001:
-                v, c = "❌ N'apporte rien sur ta ferme", "neg"
             elif an >= 60:
                 v, c = "🟢 Bon achat", "pos"
             elif an >= 35:
                 v, c = "🟡 Correct", "neutral"
             else:
                 v, c = "❌ Trop cher pour ce qu'il rapporte", "neg"
+        if not fiable and not mine:
+            g, an = 0.0, None
         rows.append({"n": name, "effet": effet(name), "owned": mine, "wearable": name in WEARABLES, "price": price, "jour": g,
                      "mois": g * 30, "an_pct": an, "rembourse_jours": (price / g) if price and g > 0.001 else None,
                      "why": why, "xp": xp, "verdict": v, "cls": c})
