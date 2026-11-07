@@ -5,6 +5,10 @@ URL="http://127.0.0.1:8765/tableau_de_bord.html"
 PY="$(command -v python3 || echo /usr/bin/python3)"
 # Serveur déjà lancé (depuis la dernière fois) : on ouvre juste la page.
 if curl -fs -o /dev/null "$URL" 2>/dev/null; then
+  # Déjà lancé : mise à jour de l'outil + nouveau relevé, puis on ouvre la page
+  osascript -e 'display notification "Mise à jour de tes données (30 s à 1 min)…" with title "Ferme SFL"' 2>/dev/null
+  "$PY" -I maj.py > journal.txt 2>&1
+  curl -fs -X POST "http://127.0.0.1:8765/actualiser" -o /dev/null --max-time 600
   open "$URL"; exit 0
 fi
 osascript -e 'display notification "Relevé de ta ferme en cours (30 s à 1 min)…" with title "Ferme SFL"' 2>/dev/null

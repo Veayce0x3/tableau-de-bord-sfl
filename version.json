@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.9",
- "nouveautes": "Vaches et poules lues sur ta ferme (grange, poulailler).",
+ "version": "2026-11-07.10",
+ "nouveautes": "Actualiser récupère aussi la dernière version de l outil.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
