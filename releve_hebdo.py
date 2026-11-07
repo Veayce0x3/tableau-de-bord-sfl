@@ -595,7 +595,7 @@ def main():
     goals = load(ROOT / "objectifs.json", [])
     goals_eval = evaluate_goals(goals, {**holdings, "Coins": fin.get("coins") or 0}, all_prices, all_trades,
                                 land, float(CONFIG.get("coins_par_flower", 1525))) if goals else []
-    from nft_analyse import analyse_nft, mesure_production, lire_ferme_sflworld, lire_animaux_sflworld, DEFAULT_PROD
+    from nft_analyse import analyse_nft, mesure_production, lire_ferme_sflworld, lire_animaux_sflworld, lire_activite_sflworld, rythme_reel, DEFAULT_PROD
     # Production de TA ferme : réglée à la main (ma_production) > lue sur ta ferme (sfl.world) > mesurée > ferme type
     mesure, jours = mesure_production(stock_hist, all_trades, CONFIG.get("rendements"))
     ferme = None
@@ -625,6 +625,17 @@ def main():
         animaux_lus = lire_animaux_sflworld(page_sfl(f"https://sfl.world/land/{FARM_ID}/animals"))
     except Exception as e:
         print(f"(animaux non lus sur sfl.world : {e})", file=sys.stderr)
+    # Compteurs réels (minés, coupés, récoltés, collectés) : enregistrés à chaque relevé pour mesurer ton rythme
+    reel, jours_reel = None, 0
+    try:
+        compteurs = lire_activite_sflworld(page_sfl(f"https://sfl.world/land/{FARM_ID}/activity"))
+        if compteurs:
+            act = [a for a in load(DATA / "activite.json", []) if a["date"] != today]
+            act.append({"date": today, "c": compteurs})
+            safe_write(DATA / "activite.json", json.dumps(act, ensure_ascii=False))
+            reel, jours_reel = rythme_reel(act)
+    except Exception as e:
+        print(f"(activité non lue sur sfl.world : {e})", file=sys.stderr)
     if CONFIG.get("ma_production"):
         cfg_prod, source = CONFIG, "réglée dans ma_ferme.json"
     elif ferme:
@@ -632,7 +643,7 @@ def main():
         if animaux_lus:
             vaches = (animaux_lus.get("Cow") or {}).get("nombre", 0)
             poules = (animaux_lus.get("Chicken") or {}).get("nombre", 0)
-            animaux = {"vaches": vaches, "cycles_vaches": vaches, "cycles_poules": poules * 2}
+            animaux = {"vaches": vaches, "cycles_vaches": vaches, "cycles_poules": poules}
         elif mesure:
             animaux = {k: mesure[k] for k in ("cycles_vaches", "cycles_poules", "vaches")}
         else:
@@ -646,6 +657,20 @@ def main():
                                          f"({'grange' if v['batiment'] == 'Barn' else 'poulailler'} niv. {v['niveau']})"
                                          for k, v in animaux_lus.items()) if animaux_lus
                      else f" · animaux mesurés sur {jours} jours" if mesure else " · animaux : estimés (mesurés après 3 jours)"))
+        if reel:
+            # Ton vrai rythme remplace l'estimation (rochers × passages) dès qu'on a 1 jour d'écart
+            for k in ("Stone", "Iron", "Gold", "Crimstone", "Wood", "cycles_vaches", "cycles_poules"):
+                p[k] = reel[k]
+            p["recoltes"] = reel["recoltes"]
+            if p.get("champs_total"):
+                p["frequence_recolte"] = round(sum(reel["recoltes"].values()) / p["champs_total"], 2)
+            source = (f"mesurée sur ce que tu as vraiment fait ces {jours_reel} dernier(s) jour(s) : "
+                      f"{reel['Stone']:g} pierres minées, {reel['Iron']:g} fer, {reel['Gold']:g} or, {reel['Crimstone']:g} crimstone, "
+                      f"{reel['Wood']:g} arbres coupés, {sum(reel['recoltes'].values()):g} champs récoltés, "
+                      f"{reel['cycles_poules']:g} récoltes d'œufs et {reel['cycles_vaches']:g} de lait par jour · " + source)
+        else:
+            source = ("⏳ estimation (rochers × ~6 passages/jour) : ton vrai rythme sera mesuré au prochain relevé, demain · "
+                      + source)
         cfg_prod = {**CONFIG, "ma_production": p}
     elif mesure:
         cfg_prod, source = {**CONFIG, "ma_production": mesure}, f"mesurée sur ta ferme ({jours} jours)"

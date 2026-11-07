@@ -230,7 +230,7 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
             ss = SAISONS.get(res, ["spring", "summer", "autumn", "winter"])
             champs = prod.get("champs_total") or sum(prod["recoltes"].values()) / 1.7
             # Moyenne sur l'année : ce qui est planté maintenant, ou ce que tu planterais pendant sa saison
-            n = max(prod["recoltes"].get(res, 0), champs * 1.7 * PART_EN_SAISON) * len(ss) / 4 * share
+            n = max(prod["recoltes"].get(res, 0), champs * prod.get("frequence_recolte", 1.7) * PART_EN_SAISON) * len(ss) / 4 * share
             g = v * n * pr(res)
             if len(ss) == 4:
                 why.append(f"+{v:g} × ~{n:.0f} champs de {FR.get(res, res)} récoltés/jour")
@@ -255,18 +255,18 @@ def gain_par_jour(name, prices, prod, owned, entries=None):
             else:
                 ss = SAISONS.get(target, ["spring", "summer", "autumn", "winter"])
                 champs = prod.get("champs_total") or sum(prod["recoltes"].values()) / 1.7
-                n = max(prod["recoltes"].get(target, 0), champs * 1.7 * PART_EN_SAISON) * len(ss) / 4
+                n = max(prod["recoltes"].get(target, 0), champs * prod.get("frequence_recolte", 1.7) * PART_EN_SAISON) * len(ss) / 4
                 base = n * prod["rendement_culture"] * pr(target)
             g = base * (1 / m - 1) * eff
             why.append(f"temps ×{m:g} (gain réduit de moitié : la nuit, tu ne récoltes pas)")
         elif kind == "animal":
             res, v = e[1], e[2]
             g = v * prod["cycles_vaches"] * pr(res)
-            why.append(f"+{v:g} × {prod['cycles_vaches']:g} cycles de vaches/jour")
+            why.append(f"+{v:g} × {prod['cycles_vaches']:g} récoltes de lait/jour")
         elif kind == "hen":
             res, v = e[1], e[2]
             g = v * prod["cycles_poules"] * pr(res)
-            why.append(f"+{v:g} × {prod['cycles_poules']:g} cycles de poules/jour")
+            why.append(f"+{v:g} × {prod['cycles_poules']:g} récoltes d'œufs/jour")
         elif kind == "feed":
             g = prod["cycles_poules"] * 1.92 * (prices.get("Wheat") or 0) * (1 - e[2])
             why.append(f"−{1 - e[2]:.0%} de nourriture pour les poules")
@@ -418,3 +418,35 @@ def lire_animaux_sflworld(page_html):
     for batiment, niveau, animal, n in re.findall(r"(Hen House|Barn) Level (\d+) Animal Amount ([A-Za-z]+) (\d+)", t):
         out[animal] = {"nombre": int(n), "batiment": batiment, "niveau": int(niveau)}
     return out
+
+
+def lire_activite_sflworld(page_html):
+    """Compteurs à vie de la ferme (page sfl.world/land/<numéro>/activity) : « Iron Mined 2089 », « Egg Collected »…"""
+    import html as _h
+    t = re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", page_html)))
+    return {f"{n.strip()} {v}": float(x) for n, v, x in
+            re.findall(r"([A-Z][A-Za-z' ]*?) (Mined|Harvested|Chopped|Collected) (\d+(?:\.\d+)?)", t)}
+
+
+def rythme_reel(hist, jours_max=30):
+    """Ce que tu fais vraiment par jour : écart des compteurs entre aujourd'hui et un relevé d'il y a 1 à 30 jours."""
+    from datetime import date
+    if len(hist) < 2:
+        return None, 0
+    fin = hist[-1]
+    d1 = date.fromisoformat(fin["date"])
+    debut = None
+    for h in hist[:-1]:
+        d = (d1 - date.fromisoformat(h["date"])).days
+        if 1 <= d <= jours_max:
+            debut = h
+            break
+    if not debut:
+        return None, 0
+    jours = (d1 - date.fromisoformat(debut["date"])).days
+    r = lambda k: max(0.0, (fin["c"].get(k, 0) - debut["c"].get(k, 0)) / jours)
+    prod = {"Stone": r("Stone Mined"), "Iron": r("Iron Mined"), "Gold": r("Gold Mined"),
+            "Crimstone": r("Crimstone Mined"), "Wood": r("Tree Chopped"),
+            "cycles_vaches": r("Milk Collected"), "cycles_poules": r("Egg Collected"),
+            "recoltes": {c: r(f"{c} Harvested") for c in CROPS}}
+    return {k: (round(v, 1) if isinstance(v, float) else {c: round(x, 1) for c, x in v.items()}) for k, v in prod.items()}, jours

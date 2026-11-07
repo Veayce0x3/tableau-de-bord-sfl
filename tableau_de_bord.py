@@ -325,9 +325,17 @@ function nftTab(){
  const own=N.filter(r=>r.owned),buy=N.filter(r=>!r.owned);
  const ownDay=sum(own,r=>r.jour),ownVal=sum(own,r=>r.price||0);
  const row=r=>`<tr><td style="text-align:left;min-width:190px"><b>${r.n}</b>${r.wearable?' <span class="why">(vêtement)</span>':""}<div class="why">🎁 ${r.effet||""}</div></td><td>${r.price?fr(r.price):"—"}</td><td class="${r.jour>0.001?"pos":""}">${r.xp?"XP":"+"+fp(r.jour)}</td><td>${r.xp?"—":"+"+fr(r.mois)}</td><td class="${r.cls}"><b>${r.an_pct!=null&&!r.xp?fr(r.an_pct,0)+" %":"—"}</b></td><td>${r.rembourse_jours?fr(r.rembourse_jours/30,0)+" mois":"—"}</td><td style="text-align:left"><span class="${r.cls}">${r.verdict}</span><div class="why">Calcul : ${r.why}</div></td></tr>`;
- const head=`<tr><th style="text-align:left">NFT et ce qu’il fait</th><th>Prix (FLW)</th><th>Gain / jour</th><th>Gain / mois</th><th>Rendement / an</th><th>Remboursé en</th><th style="text-align:left">Verdict</th></tr>`;
+ const SK=[["n","NFT et ce qu’il fait"],["price","Prix (FLW)"],["jour","Gain / jour"],["mois","Gain / mois"],["an_pct","Rendement / an"],["rembourse_jours","Remboursé en"],[null,"Verdict"]];
+ const head=`<tr>${SK.map(([k,l],i)=>`<th ${k?`data-sort="${k}" style="cursor:pointer;user-select:none;${i===0?"text-align:left":""}" title="Clique pour trier"`:'style="text-align:left"'}>${l}<span class="sarr"></span></th>`).join("")}</tr>`;
+ let SORT={k:null,dir:0};
+ const sorter=(a,b)=>{if(!SORT.k)return (b.chiffrable-a.chiffrable)||((b.an_pct??-1)-(a.an_pct??-1));const va=a[SORT.k],vb=b[SORT.k];
+  if(SORT.k==="n")return SORT.dir*a.n.localeCompare(b.n);if(va==null&&vb==null)return 0;if(va==null)return 1;if(vb==null)return -1;return SORT.dir*(va-vb);};
+ const bindSort=()=>document.querySelectorAll("#nft th[data-sort]").forEach(th=>{th.onclick=()=>{const k=th.dataset.sort;
+  if(SORT.k!==k)SORT={k,dir:1};else if(SORT.dir===1)SORT={k,dir:-1};else SORT={k:null,dir:0};
+  document.querySelectorAll("#nft th[data-sort] .sarr").forEach(x=>x.textContent="");if(SORT.k)document.querySelectorAll(`#nft th[data-sort="${SORT.k}"] .sarr`).forEach(x=>x.textContent=SORT.dir>0?" ▲":" ▼");
+  drawOwn();draw();};});
  el.innerHTML=(/^pas encore/.test((D.nft||{}).source||"")?`<div class="card"><p class="plain">⚠️ <b>Ta ferme n'a pas pu être lue</b> (sfl.world n'a pas répondu). Les conseils d'achat sont masqués pour ne pas te conseiller un NFT inutile. Réessaie 🔄 Actualiser dans quelques minutes.</p></div>`:"")+`<div class="hero"><div><div class="l">Tes NFT à bonus rapportent</div><div class="big pos">+${fr(ownDay*30)} FLW/mois</div><div class="l">+${fp(ownDay)} par jour</div></div><div><div class="l">Ils valent (prix plancher)</div><div class="big">${fr(ownVal)} FLW</div><div class="l">soit ${ownVal?fr(ownDay*365/ownVal*100,0):"—"} %/an en moyenne</div></div></div>
- <div class="card"><h2>🧾 Tes NFT</h2><div class="sub">Rendement / an = ce qu'il rapporte en un an ÷ son prix. Un NFT reste à toi et se revend : au-dessus de ~35-40 %/an, c'est un bon placement.</div><div class="scroll"><table>${head}${own.map(row).join("")||'<tr><td colspan="7" class="empty">Aucun NFT à bonus détecté.</td></tr>'}</table></div></div>
+ <div class="card"><h2>🧾 Tes NFT</h2><div class="sub">Rendement / an = ce qu'il rapporte en un an ÷ son prix. Un NFT reste à toi et se revend : au-dessus de ~35-40 %/an, c'est un bon placement.</div><div class="scroll"><table>${head}<tbody id="own_rows"></tbody></table></div></div>
  <div class="card"><h2>🛒 Tous les NFT en vente, comparés à ta ferme</h2>
  <div class="controls" style="flex-wrap:wrap;gap:8px;align-items:center">
   <span>Prix de</span><input id="nf_min" type="number" min="0" step="10" style="width:90px"> <span>à</span><input id="nf_max" type="number" min="0" step="50" style="width:90px"><span>FLW</span>
@@ -344,13 +352,14 @@ function nftTab(){
  mn.value=F.min||0;mx.value=F.max||"";ok.checked=!!F.ok;q.value=F.q||"";
  const draw=()=>{F={min:+mn.value||0,max:+mx.value||0,ok:ok.checked,q:q.value.trim().toLowerCase()};try{localStorage.setItem("nf",JSON.stringify(F))}catch(e){}
   const L=buy.filter(r=>r.price&&r.price>=F.min&&(!F.max||r.price<=F.max)&&(!F.ok||(r.jour>0.001&&!r.xp))&&(!F.q||r.n.toLowerCase().includes(F.q)||(r.effet||"").toLowerCase().includes(F.q)))
-   .sort((a,b)=>(b.chiffrable-a.chiffrable)||((b.an_pct??-1)-(a.an_pct??-1)));
+   .sort(sorter);
   document.getElementById("nf_rows").innerHTML=L.map(row).join("")||'<tr><td colspan="7" class="empty">Aucun NFT dans cette tranche de prix.</td></tr>';
   document.getElementById("nf_count").textContent=`${L.length} NFT entre ${fr(F.min,0)} et ${F.max?fr(F.max,0):"∞"} FLW · ${L.filter(r=>r.jour>0.001&&r.an_pct>=35).length} rentables pour ta ferme (≥ 35 %/an)`;
   document.querySelectorAll("#nft .chip[data-min]").forEach(b=>b.classList.toggle("on",+b.dataset.min===F.min&&+b.dataset.max===F.max));};
  [mn,mx,ok].forEach(x=>x.onchange=draw);q.oninput=draw;mn.oninput=draw;mx.oninput=draw;
  document.querySelectorAll("#nft .chip[data-min]").forEach(b=>b.onclick=()=>{mn.value=b.dataset.min;mx.value=+b.dataset.max||"";draw();});
- draw();
+ const drawOwn=()=>{document.getElementById("own_rows").innerHTML=[...own].sort(sorter).map(row).join("")||'<tr><td colspan="7" class="empty">Aucun NFT à bonus détecté.</td></tr>';};
+ bindSort();drawOwn();draw();
 }
 
 const SIG={vendre:["🟢","Bon moment pour vendre","good"],normal:["⚪","Prix normal","mid"],attendre:["🟠","Attends si tu peux","wait"],garder:["🔵","À garder","keep"],cout:["🔴","Sous ton coût","bad"]};
