@@ -67,8 +67,17 @@ NAMES_FR = {
 
 def get_json(url):
     req = urllib.request.Request(url, headers={"User-Agent": "releve-hebdo-sfl"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return json.load(r)
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            return json.load(r)
+    except urllib.error.URLError as e:
+        # Python de python.org sur Mac sans certificats : on passe par curl (toujours présent sur Mac)
+        if "CERTIFICATE" not in str(e).upper() and "SSL" not in str(e).upper():
+            raise
+        import subprocess
+        out = subprocess.run(["curl", "-fsSL", "-A", "releve-hebdo-sfl", "--max-time", "60", url],
+                             capture_output=True, check=True).stdout
+        return json.loads(out)
 
 
 def try_json(url):

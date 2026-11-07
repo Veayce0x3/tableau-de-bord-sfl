@@ -6,6 +6,7 @@ Sans internet ou si GitHub ne répond pas, l'outil continue avec la version actu
 """
 import json
 import sys
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -16,8 +17,15 @@ JAMAIS = {"ma_ferme.json", "objectifs.json"}
 
 def lire(url):
     req = urllib.request.Request(url, headers={"User-Agent": "tableau-de-bord-sfl"})
-    with urllib.request.urlopen(req, timeout=20) as r:
-        return r.read()
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return r.read()
+    except urllib.error.URLError as e:
+        # Python de python.org sur Mac sans certificats : on passe par curl
+        if "CERTIFICATE" not in str(e).upper() and "SSL" not in str(e).upper():
+            raise
+        import subprocess
+        return subprocess.run(["curl", "-fsSL", "--max-time", "20", url], capture_output=True, check=True).stdout
 
 
 def main():

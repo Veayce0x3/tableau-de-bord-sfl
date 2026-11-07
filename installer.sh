@@ -50,18 +50,18 @@ json.dump(c, open(p, "w"), ensure_ascii=False, indent=2)
 PY
 fi
 
-# Raccourci sur le Bureau
-LANCEUR="$HOME/Desktop/Ferme SFL.command"
-cat > "$LANCEUR" <<EOF
-#!/bin/bash
-cd "$DEST" && ./"Lancer le relevé.command"
-EOF
-chmod +x "$LANCEUR"
+chmod +x "$DEST/lancer_app.sh"
+# Appli « Ferme SFL » sur le Bureau : double-clic, pas de Terminal
+rm -f "$HOME/Desktop/Ferme SFL.command"
+APP="$HOME/Desktop/Ferme SFL.app"
+rm -rf "$APP"
+osacompile -o "$APP" -e "do shell script quoted form of \"$DEST/lancer_app.sh\" & \" > /dev/null 2>&1 &\"" >/dev/null
 
 echo
 echo "✅ Installé dans : $DEST"
-echo "✅ Raccourci sur ton Bureau : « Ferme SFL » (double-clic chaque jour)"
+echo "✅ Appli sur ton Bureau : « Ferme SFL » (double-clic chaque jour, pas besoin du Terminal)"
 echo
 [ -n "$NOLAUNCH" ] && exit 0
-echo "Premier relevé en cours…"
-cd "$DEST" && ./"Lancer le relevé.command"
+echo "Premier relevé en cours… le tableau de bord va s'ouvrir dans ton navigateur (30 s à 1 min)."
+"$DEST/lancer_app.sh"
+echo "✅ Terminé. Tu peux fermer cette fenêtre. La prochaine fois : double-clic sur « Ferme SFL » sur ton Bureau."

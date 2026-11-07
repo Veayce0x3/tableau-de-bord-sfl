@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.5",
- "nouveautes": "Nouvel onglet Compétences : tes skills, ce qu'ils rapportent et quoi changer.",
+ "version": "2026-11-07.6",
+ "nouveautes": "Marche sans certificats Python, page d'aide si le relevé échoue, appli sans Terminal.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
@@ -12,6 +12,7 @@
   "Lancer le relevé.bat",
   "nft_analyse.py",
   "competences.py",
-  "competences_jeu.json"
+  "competences_jeu.json",
+  "lancer_app.sh"
  ]
 }

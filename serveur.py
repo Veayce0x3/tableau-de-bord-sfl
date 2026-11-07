@@ -31,6 +31,30 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         super().end_headers()
 
+    def do_GET(self):
+        # Pas encore de tableau de bord (relevé raté) : on explique pourquoi au lieu d'une page d'erreur.
+        if self.path.split("?")[0] in ("/", "/tableau_de_bord.html") and not (ROOT / "tableau_de_bord.html").exists():
+            try:
+                journal = (ROOT / "journal.txt").read_text(errors="replace")[-3000:]
+            except FileNotFoundError:
+                journal = "(pas de journal)"
+            import html
+            body = f"""<!doctype html><meta charset="utf-8"><title>Ferme SFL</title>
+<body style="font-family:system-ui;max-width:720px;margin:40px auto;padding:0 16px;background:#faf8f2;color:#222">
+<h1>🌻 Le premier relevé n'a pas marché</h1>
+<p>Vérifie ton <b>numéro de ferme</b> dans <code>ma_ferme.json</code> (seulement des chiffres, entre guillemets) et ta connexion internet, puis clique :</p>
+<p><button onclick="this.disabled=true;this.textContent='Relevé en cours… (30 s à 1 min)';fetch('/actualiser',{{method:'POST'}}).then(r=>r.json()).then(j=>{{if(j.ok)location.reload();else{{alert(j.message);location.reload()}}}})" style="font-size:18px;padding:10px 18px">🔄 Réessayer</button></p>
+<p>Message de l'outil (à envoyer si ça ne marche toujours pas) :</p><pre style="white-space:pre-wrap;background:#eee;padding:12px">{html.escape(journal)}</pre></body>""".encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        if self.path == "/":
+            self.path = "/tableau_de_bord.html"
+        return super().do_GET()
+
     def do_POST(self):
         if self.path != "/actualiser":
             self.send_error(404)
@@ -41,6 +65,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             r = subprocess.run([sys.executable, "-I", str(ROOT / "releve_hebdo.py")],
                                cwd=ROOT, capture_output=True, text=True, timeout=600)
             ok = r.returncode == 0
+            (ROOT / "journal.txt").write_text(r.stdout[-5000:] + "\n" + r.stderr[-5000:])
             msg = "Données mises à jour." if ok else (r.stderr.strip().splitlines() or ["Erreur inconnue"])[-1]
             self._json(200 if ok else 500, {"ok": ok, "message": msg})
         except subprocess.TimeoutExpired:
