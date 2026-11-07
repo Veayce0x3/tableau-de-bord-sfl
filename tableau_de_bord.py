@@ -124,6 +124,7 @@ select,input{background:var(--card);color:var(--ink);border:1px solid var(--line
   <section id="rentabilite"></section>
   <section id="nft"></section>
   <section id="skills"></section>
+  <section id="bonus"></section>
   <section id="ressources"></section>
   <section id="echanges"></section>
   <section id="compteurs"></section>
@@ -134,7 +135,7 @@ let FARM;try{FARM=localStorage.getItem("farm")}catch(e){}
 if(!D.farms.some(f=>f.id===FARM))FARM=D.farms[0].id;
 function setFarm(id){const f=D.farms.find(x=>x.id===id);FARM=id;D.trades=f.trades;D.counters=f.counters;try{localStorage.setItem("farm",id)}catch(e){}}
 setFarm(FARM);
-const TABS=[["apercu","Aperçu"],["objectifs","Objectifs"],["vente","Vente"],["rentabilite","Rentabilité"],["nft","NFT"],["skills","Compétences"],["ressources","Une ressource"],["historique","Historique"],["echanges","Échanges"],["compteurs","Mon compte"]];
+const TABS=[["apercu","Aperçu"],["objectifs","Objectifs"],["vente","Vente"],["rentabilite","Rentabilité"],["nft","NFT"],["skills","Compétences"],["bonus","Mes bonus"],["ressources","Une ressource"],["historique","Historique"],["echanges","Échanges"],["compteurs","Mon compte"]];
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const fr=(x,d=2)=>x==null||isNaN(x)?"—":x.toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d});
 const fp=x=>x==null?"—":fr(x,x>=10?2:4);
@@ -186,6 +187,7 @@ function render(id){
  if(id==="rentabilite")return rentabilite();
  if(id==="nft")return nftTab();
  if(id==="skills")return skillsTab();
+ if(id==="bonus")return bonusTab();
  if(id==="ressources")return ressources();
  if(id==="echanges")return echanges();
  if(id==="compteurs")return compteurs();
@@ -268,11 +270,17 @@ function historique(){
 
 function objectifs(){
  const el=document.getElementById("objectifs"),G=D.goals;
- if(!G.length){el.innerHTML=conseilCard()+'<div class="card empty">Aucun objectif détaillé. Ajoute-les dans objectifs.json.</div>';bindConseil();return;}
+ const SZ=(D.nft||{}).saison,SFR={spring:"🌸 Printemps",summer:"☀️ Été",autumn:"🍂 Automne",winter:"❄️ Hiver"};
+ const saisonCard=SZ?`<div class="card"><h2>🗓️ Objectifs de la saison : ${SFR[SZ.nom]||SZ.nom}</h2>
+  <div class="controls">${["spring","summer","autumn","winter"].map(k=>`<span class="chip ${k===SZ.nom?"on":""}">${SFR[k]}</span>`).join(" → ")}</div>
+  <div class="sub">Le cycle recommence chaque printemps. Pour chaque NFT que tu possèdes : ce qu'il faut faire <b>cette saison</b> pour qu'il te rapporte au moins 35 %/an. Suivi avec tes vrais compteurs depuis le ${SZ.debut.split("-").reverse().join("/")}${SZ.partielle?" (saison déjà commencée quand l'outil a commencé à la suivre : objectif indicatif)":""}.</div>
+  ${(SZ.objectifs||[]).map(o=>{const pct=o.cible&&o.fait!=null?Math.min(100,o.fait/o.cible*100):0,ok=o.cible&&o.fait!=null&&o.fait>=o.cible;
+   return `<div class="goal ${ok?"ok":""}"><div class="gchk">${o.cible==null?"💤":ok?"✅":"⬜"}</div><div class="gtxt"><div class="gt"><b>${o.nft}</b> : ${o.cible==null?o.texte:"faire au moins "+o.texte}</div><div class="why">🎁 ${o.quoi}</div>${o.cible!=null?`<div class="bar"><span style="width:${pct}%"></span></div><div class="why">${o.fait!=null?fr(o.fait,o.cible<20?1:0)+" / "+fr(o.cible,o.cible<20?1:0)+" ("+fr(pct,0)+" %)":"progression visible au prochain relevé"}</div>`:""}</div></div>`}).join("")||'<div class="empty">Aucun NFT à bonus chiffrable dans ton inventaire.</div>'}</div>`:"";
+ if(!G.length){el.innerHTML=saisonCard+conseilCard()+'<div class="card empty">Aucun objectif détaillé. Ajoute-les dans objectifs.json.</div>';bindConseil();return;}
  const done=G.filter(g=>g.fait).length,pct=Math.round(done/G.length*100);
  const groups={};G.forEach(g=>{(groups[g.groupe||"Autres"]=groups[g.groupe||"Autres"]||[]).push(g)});
  const nftLeft=sum(G.filter(g=>g.type==="nft"&&!g.fait&&g.prix),g=>g.prix);
- el.innerHTML=conseilCard()+`<div class="hero"><div><div class="l">Objectifs validés</div><div class="big">${done} / ${G.length}</div><div class="bar"><span style="width:${pct}%"></span></div></div>
+ el.innerHTML=saisonCard+conseilCard()+`<div class="hero"><div><div class="l">Objectifs validés</div><div class="big">${done} / ${G.length}</div><div class="bar"><span style="width:${pct}%"></span></div></div>
   <div><div class="l">NFT encore à acheter</div><div class="big">${fr(nftLeft)} FLW</div><div class="l">au prix du jour</div></div></div>
  ${Object.entries(groups).map(([n,a])=>`<div class="card"><h2>${n} <span class="msum">${a.filter(g=>g.fait).length}/${a.length}</span></h2>
   ${a.map(g=>`<div class="goal ${g.fait?"ok":""}"><div class="gchk">${g.fait?"✅":"⬜"}</div><div class="gtxt"><div class="gt">${g.titre}</div>${g.info?`<div class="why">${g.info}</div>`:""}${g.note?`<div class="why">ℹ️ ${g.note}</div>`:""}</div>
@@ -314,24 +322,30 @@ function skillsTab(){
  const el=document.getElementById("skills"),K=(D.nft||{}).skills;
  if(!K){el.innerHTML='<div class="card empty">Compétences indisponibles (sfl.world n\'a pas répondu). Réessaie avec Actualiser.</div>';return;}
  const R=K.rows,own=R.filter(r=>r.owned),by=n=>R.find(r=>r.n===n);
- const best=K.meilleurs.map(by).filter(Boolean),weak=K.faibles.map(by).filter(Boolean);
- const ptsWeak=sum(weak,r=>r.points);
+ const weak=K.faibles.map(by).filter(Boolean),plan=(K.plan||[]).map(by).filter(Boolean);
+ const pow=own.filter(r=>r.par_util!=null).sort((a,b)=>b.jour-a.jour);
+ const earn=own.filter(r=>r.par_util==null&&r.jour!=null&&r.jour>0.001).sort((a,b)=>b.jour-a.jour);
+ const lock=own.filter(r=>r.bloquant&&!earn.includes(r)&&!pow.includes(r));
+ const other=own.filter(r=>!earn.includes(r)&&!pow.includes(r)&&!lock.includes(r));
  const tips=[];
- if(K.libres>0)tips.push(`🎁 <b>Tu as ${K.libres} point(s) à placer.</b> ${best.length?"Meilleur choix : "+best.slice(0,3).map(r=>`<b>${r.n}</b> (${r.arbre}, ${r.points} pt → +${fp(r.jour)}/jour)`).join(", "):""}`);
- else tips.push(`✅ Tous tes points sont placés (${K.utilises} / ${K.niveau}).`);
- if(weak.length)tips.push(`🔄 <b>Au prochain reset</b>, ces compétences rapportent peu ou pas de Flower et ne bloquent rien : ${weak.map(r=>`${r.n} (${r.points} pt)`).join(", ")} → <b>${ptsWeak} point(s)</b> récupérables. Garde celles de confort si le temps gagné compte pour toi.`);
- if(best.length)tips.push(`📈 <b>Où les remettre</b> (les plus rentables par point, accessibles) : ${best.map(r=>`<b>${r.n}</b> (${r.arbre}, ${r.points} pt, +${fp(r.jour)}/jour)`).join(" · ")}.`);
- const lock=own.filter(r=>r.bloquant);if(lock.length)tips.push(`🔒 <b>À ne pas enlever</b> (elles débloquent le palier supérieur de leur arbre) : ${lock.map(r=>r.n).join(", ")}.`);
- const neg=own.filter(r=>r.jour!=null&&r.jour<0);if(neg.length)tips.push(`⚠️ <b>Te coûtent plus qu'elles ne rapportent</b> : ${neg.map(r=>r.n).join(", ")}.`);
- const row=r=>`<tr><td style="text-align:left;min-width:190px"><b>${r.n}</b>${r.rang>1?` <span class="why">rang ${r.rang}</span>`:""}<div class="why">🎁 ${r.effet}</div></td><td>${r.arbre}</td><td>${r.palier}</td><td>${r.points}</td><td>${r.type}</td><td class="${r.jour>0.001?"pos":r.jour<0?"neg":""}">${r.jour!=null?sg(r.jour):"—"}</td><td style="text-align:left">${r.verdict}</td></tr>`;
- const head=`<tr><th style="text-align:left">Compétence et ce qu’elle fait</th><th>Arbre</th><th>Palier</th><th>Points</th><th>Type</th><th>Gain / jour</th><th style="text-align:left">Verdict</th></tr>`;
- const others=R.filter(r=>!r.owned&&(r.jour||0)>0.001).sort((a,b)=>(b.par_point||0)-(a.par_point||0));
- el.innerHTML=(/^pas encore/.test((D.nft||{}).source||"")?`<div class="card"><p class="plain">⚠️ <b>Ta ferme n'a pas pu être lue</b> (sfl.world n'a pas répondu) : les gains en Flower ci-dessous sont approximatifs. Réessaie 🔄 Actualiser dans quelques minutes.</p></div>`:"")+`<div class="hero"><div><div class="l">Niveau et points</div><div class="big">${K.niveau}</div><div class="l">${K.utilises} points utilisés · ${K.libres} libre(s)</div></div><div><div class="l">Tes compétences chiffrables rapportent</div><div class="big pos">+${fr(K.total_jour*30)} FLW/mois</div><div class="l">+${fp(K.total_jour)} par jour (estimation)</div></div></div>
- <div class="card"><h2>💡 Conseils pour optimiser</h2>${tips.map(t=>`<p class="plain">${t}</p>`).join("")}</div>
- <div class="card"><h2>🌳 Tes arbres</h2><div class="scroll"><table><tr><th>Arbre</th><th>Points (paliers 1-2)</th><th>Palier atteint</th><th>Palier 2 à</th><th>Palier 3 à</th></tr>${K.arbres.map(a=>`<tr><td>${a.arbre}</td><td>${a.points}</td><td><b>${a.palier}</b></td><td>${a.seuil2} pts</td><td>${a.seuil3} pts</td></tr>`).join("")}</table></div></div>
- <div class="card"><h2>🧾 Tes compétences</h2><div class="scroll"><table>${head}${own.map(row).join("")}</table></div></div>
- <div class="card"><h2>🛒 Compétences qui rapporteraient des Flower (les plus rentables par point d'abord)</h2><div class="scroll"><table>${head}${others.map(row).join("")||'<tr><td colspan="7" class="empty">Rien de chiffrable à ajouter.</td></tr>'}</table></div>
- <div class="sub">Gains estimés avec ta production par jour (onglet NFT, en bas) et les prix du jour. Effets en anglais, tels qu'écrits dans le jeu. Le gain est calculé sur l'effet de base (rang 1). Les bonus de vitesse comptent pour moitié (la nuit, tu ne récoltes pas). « — » = effet qu'on ne peut pas chiffrer en Flower (confort, coins, XP, nourriture).</div></div>`;
+ if(K.libres>0)tips.push(`🎁 <b>${K.libres} point(s) à placer maintenant.</b>`);
+ if(pow.length)tips.push(`⚡ <b>Active tes pouvoirs dès qu'ils sont prêts</b> : ${pow.map(r=>`${r.n} (+${fp(r.par_util)} FLW à chaque fois)`).join(" · ")}. Ensemble ≈ +${fr(sum(pow,r=>r.jour)*30)} FLW/mois si tu n'en rates aucun.`);
+ if(plan.length&&K.plan_gain>0.05)tips.push(`🔄 <b>Au prochain reset</b> : lâche ${weak.map(r=>r.n).join(", ")} (${K.plan_points} points qui rapportent peu ou pas de Flower) et prends <b>${plan.map(r=>r.n).join(", ")}</b> → <b>+${fr(K.plan_gain*30)} FLW/mois</b>.`);
+ else if(weak.length)tips.push(`✅ <b>Rien d'important à changer au reset.</b> Les compétences qui rapportent peu (${weak.map(r=>r.n).join(", ")}) n'ont pas de meilleur remplaçant rentable pour ta ferme : garde-les si elles te font gagner du temps.`);
+ if(lock.length)tips.push(`🔒 <b>Ne les enlève pas</b>, elles débloquent les compétences fortes de leur arbre : ${lock.map(r=>r.n).join(", ")}.`);
+ const row=r=>`<tr><td style="text-align:left;min-width:200px"><b>${r.n}</b>${r.rang>1?` <span class="why">rang ${r.rang}</span>`:""}<div class="why">🎁 ${r.effet}</div></td><td>${r.arbre}</td><td>${r.points}</td><td class="${r.jour>0.001?"pos":r.jour<0?"neg":""}">${r.jour!=null?sg(r.jour*30)+" /mois":"—"}</td><td style="text-align:left">${r.verdict}</td></tr>`;
+ const tab=(t,L,d)=>L.length?`<div class="card"><h2>${t}</h2>${d?`<div class="sub">${d}</div>`:""}<div class="scroll"><table><tr><th style="text-align:left">Compétence et ce qu’elle fait</th><th>Arbre</th><th>Points</th><th>Rapporte</th><th style="text-align:left">Verdict</th></tr>${L.map(row).join("")}</table></div></div>`:"";
+ const others=R.filter(r=>!r.owned&&(r.jour||0)>0.001).sort((a,b)=>(b.par_point||0)-(a.par_point||0)).slice(0,12);
+ el.innerHTML=(/^pas encore/.test((D.nft||{}).source||"")?`<div class="card"><p class="plain">⚠️ <b>Ta ferme n'a pas pu être lue</b> : les gains ci-dessous sont approximatifs. Réessaie 🔄 Actualiser.</p></div>`:"")+
+ `<div class="hero"><div><div class="l">Niveau ${K.niveau}</div><div class="big">${K.utilises} pts</div><div class="l">utilisés · ${K.libres} libre(s)</div></div><div><div class="l">Tes compétences rapportent</div><div class="big pos">+${fr(K.total_jour*30)} FLW/mois</div><div class="l">avec ta ferme et tes habitudes</div></div></div>
+ <div class="card"><h2>💡 Ce que je te conseille</h2>${tips.map(t=>`<p class="plain">${t}</p>`).join("")}</div>
+ ${tab("💰 Celles qui te rapportent",earn,"Classées de celle qui rapporte le plus à celle qui rapporte le moins, avec ta ferme actuelle.")}
+ ${tab("⚡ Tes pouvoirs à activer",pow,"Ils ne rapportent que si tu les actives. Gain par mois si tu les utilises à chaque fois qu'ils sont prêts.")}
+ ${tab("🔒 Celles qui débloquent un palier",lock,"Elles rapportent peu, mais les enlever bloquerait les compétences fortes de leur arbre.")}
+ ${tab("🖐️ Les autres (confort, coins, nourriture, XP)",other,"Pas de gain direct en Flower : elles font gagner du temps, des coins, de l'XP ou changent la nourriture des animaux.")}
+ ${tab("🛒 Compétences qui rapporteraient le plus si tu les prenais",others,"Les plus rentables par point, avec ta ferme actuelle. « 🔒 » = il faut d'abord plus de points dans l'arbre.")}
+ <div class="card"><h2>🌳 Tes arbres</h2><div class="scroll"><table><tr><th>Arbre</th><th>Points</th><th>Palier atteint</th><th>Palier 2 à</th><th>Palier 3 à</th></tr>${K.arbres.map(a=>`<tr><td>${a.arbre}</td><td>${a.points}</td><td><b>${a.palier}</b></td><td>${a.seuil2} pts</td><td>${a.seuil3} pts</td></tr>`).join("")}</table></div>
+ <div class="sub">Gains calculés avec ta ferme (rochers, arbres, champs, animaux) et tes habitudes, aux prix du jour, sur l'effet de base (rang 1). Les pouvoirs ne comptent pas la nourriture des animaux.</div></div>`;
 }
 function nftTab(){
  const el=document.getElementById("nft"),N=(D.nft||{}).rows||[],P=(D.nft||{}).prod||{};
@@ -496,9 +510,33 @@ function echanges(){
 
 function compteurs(){
  const c=D.counters,el=document.getElementById("compteurs");
- el.innerHTML=`<div class="card"><h2>💳 Mon compte dans le temps</h2><p class="plain">L'argent de ton compte, relevé chaque jour : <b>solde de Flower</b>, <b>coins</b>, Flower <b>déposés</b> et <b>retirés</b> depuis le début, <b>dépensés en jeu</b> et <b>frais de gems</b>. Utile pour suivre tes retraits mensuels.</p><div class="chart"><canvas id="c_cpt"></canvas></div></div>
- <div class="card scroll"><table><tr><th>Date</th><th>Solde</th><th>Coins</th><th>Déposé</th><th>Retiré</th><th>Dépensé en jeu</th><th>Frais gems</th></tr>${c.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${fr(x.solde)}</td><td>${fr(x.coins,0)}</td><td>${fr(x.deposited)}</td><td>${fr(x.withdrawn)}</td><td>${fr(x.spent)}</td><td>${fr(x.gemFees)}</td></tr>`).join("")}</table></div>`;
- chart("c_cpt",{type:"line",data:{labels:c.map(x=>x.date),datasets:[{label:"Solde Flower",data:c.map(x=>x.solde),borderColor:css("--sell"),backgroundColor:css("--sell")},{label:"Retiré (cumul)",data:c.map(x=>x.withdrawn),borderColor:css("--market"),backgroundColor:css("--market")},{label:"Dépensé en jeu (cumul)",data:c.map(x=>x.spent),borderColor:css("--buy"),backgroundColor:css("--buy")}]},options:baseOpts()});
+ if(!c.length){el.innerHTML='<div class="card empty">Pas encore de relevé.</div>';return;}
+ const L=c[c.length-1],F=c[0],d=k=>(L[k]||0)-(F[k]||0);
+ const net=(L.withdrawn||0)-(L.deposited||0);
+ el.innerHTML=`<div class="hero"><div><div class="l">💰 Flower sur ton compte</div><div class="big">${fr(L.solde)}</div></div>
+  <div><div class="l">📥 Déposés (depuis le début)</div><div class="big" style="font-size:22px">${fr(L.deposited)}</div></div>
+  <div><div class="l">📤 Retirés (depuis le début)</div><div class="big" style="font-size:22px">${fr(L.withdrawn)}</div></div></div>
+ <div class="card"><h2>💳 Ton compte en clair</h2>
+  <p class="plain">Tu as <b>déposé ${fr(L.deposited)} FLW</b> et <b>retiré ${fr(L.withdrawn)} FLW</b> depuis le début : ${net>=0?`tu as déjà récupéré <b class="pos">${fr(net)} FLW de plus</b> que ce que tu as mis.`:`il te reste <b class="neg">${fr(-net)} FLW</b> à récupérer pour rentrer dans tes frais.`}</p>
+  <p class="plain">Dans le jeu (hors marché) tu as <b>dépensé ${fr(L.spent)} FLW</b> au total, dont <b>${fr(L.gemFees)} FLW en gems</b>.</p>
+  <p class="plain">Depuis le ${F.date.split("-").reverse().join("/")} (premier relevé) : solde ${sg(d("solde"))} · déposé ${sg(d("deposited"))} · retiré ${sg(d("withdrawn"))} · dépensé en jeu ${sg(d("spent"))} · gems ${sg(d("gemFees"))}.</p></div>
+ <div class="card"><h2>Évolution</h2><div class="chart"><canvas id="c_cpt"></canvas></div></div>
+ <div class="card scroll"><table><tr><th>Date</th><th>Solde Flower</th><th>Déposé</th><th>Retiré</th><th>Dépensé en jeu</th><th>Frais gems</th></tr>${c.slice().reverse().map(x=>`<tr><td>${x.date.split("-").reverse().join("/")}</td><td>${fr(x.solde)}</td><td>${fr(x.deposited)}</td><td>${fr(x.withdrawn)}</td><td>${fr(x.spent)}</td><td>${fr(x.gemFees)}</td></tr>`).join("")}</table>
+ <div class="sub">Chiffres de ton compte relevés chaque jour (SFL Tool). « Dépensé en jeu » = Flower utilisés dans le jeu hors marché (gems, achats en boutique…).</div></div>`;
+ chart("c_cpt",{type:"line",data:{labels:c.map(x=>x.date.slice(8)+"/"+x.date.slice(5,7)),datasets:[{label:"Solde Flower",data:c.map(x=>x.solde),borderColor:css("--sell"),backgroundColor:css("--sell")},{label:"Retiré (cumul)",data:c.map(x=>x.withdrawn),borderColor:css("--market"),backgroundColor:css("--market")},{label:"Déposé (cumul)",data:c.map(x=>x.deposited),borderColor:css("--buy"),backgroundColor:css("--buy")}]},options:baseOpts()});
+}
+function bonusTab(){
+ const el=document.getElementById("bonus"),N=((D.nft||{}).rows||[]).filter(r=>r.owned),K=(((D.nft||{}).skills||{}).rows||[]).filter(r=>r.owned);
+ const CAT=[["⛏️ Mines",/stone|iron|gold|crimstone|mineral|pierre|fer\b|\bor\b|pioche|rocher|obsidian/i],["🌲 Bois",/wood|tree|bois|arbre|axe/i],["🌾 Cultures",/crop|plot|wheat|corn|kale|barley|cultur|champ|blé|maïs|orge|chou|seed|harvest/i],["🐄 Animaux",/cow|chicken|pig|sheep|milk|leather|egg|feather|wool|truffle|vache|poule|lait|cuir|œuf|plume|animal|feed/i],["🍎 Fruits et serre",/fruit|apple|orange|banana|tomato|lemon|grape|olive|rice|greenhouse|blueberry/i],["⭐ XP et cuisine",/xp|cook|meal|food|cuisine/i],["🎣 Pêche, abeilles, fleurs",/fish|reel|bee|honey|flower|lotus/i]];
+ const cat=t=>{for(const[c,re]of CAT)if(re.test(t))return c;return "✨ Autres"};
+ const G={};
+ N.forEach(r=>{const c=cat(r.n+" "+(r.effet||""));(G[c]=G[c]||[]).push({src:"🧾 NFT",n:r.n,e:r.effet||"",g:r.xp?null:r.jour})});
+ K.forEach(r=>{const c=cat(r.arbre+" "+r.effet);(G[c]=G[c]||[]).push({src:"🎓 Compétence",n:r.n+(r.rang>1?` (rang ${r.rang})`:""),e:r.effet,g:r.jour})});
+ const order=[...CAT.map(x=>x[0]),"✨ Autres"].filter(c=>G[c]);
+ const tot=sum(N,r=>r.xp?0:r.jour)+sum(K,r=>r.jour||0);
+ el.innerHTML=`<div class="hero"><div><div class="l">Tous tes bonus</div><div class="big">${N.length+K.length}</div><div class="l">${N.length} NFT · ${K.length} compétences</div></div><div><div class="l">Ce qu'ils rapportent (chiffrable)</div><div class="big pos">+${fr(tot*30)} FLW/mois</div></div></div>
+ ${order.map(c=>`<div class="card"><h2>${c} <span class="msum">${G[c].length}</span></h2><div class="scroll"><table><tr><th style="text-align:left">Bonus</th><th>Source</th><th style="text-align:left">Effet</th><th>Rapporte</th></tr>${G[c].sort((a,b)=>(b.g||0)-(a.g||0)).map(x=>`<tr><td style="text-align:left"><b>${x.n}</b></td><td>${x.src}</td><td style="text-align:left;color:var(--muted)">${x.e}</td><td class="${x.g>0.001?"pos":""}">${x.g!=null&&x.g>0.001?sg(x.g*30)+" /mois":"—"}</td></tr>`).join("")}</table></div></div>`).join("")}
+ <div class="sub">Résumé à titre d'information. NFT lus dans ton inventaire et compétences lues sur ta ferme à chaque relevé : un NFT acheté ou vendu apparaît ou disparaît au relevé suivant. « — » = effet qui ne se chiffre pas en Flower.</div>`;
 }
 
 let start="apercu";try{start=localStorage.getItem("tab")||"apercu"}catch(e){}

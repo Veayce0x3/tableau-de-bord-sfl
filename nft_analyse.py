@@ -483,3 +483,47 @@ def rythme_reel(hist, jours_max=30):
             "cycles_vaches": r("Milk Collected"), "cycles_poules": r("Egg Collected"),
             "recoltes": {c: r(f"{c} Harvested") for c in CROPS}}
     return {k: (round(v, 1) if isinstance(v, float) else {c: round(x, 1) for c, x in v.items()}) for k, v in prod.items()}, jours
+
+
+COMPTEUR = {"Stone": "Stone Mined", "Iron": "Iron Mined", "Gold": "Gold Mined", "Crimstone": "Crimstone Mined",
+            "Wood": "Tree Chopped", "Milk": "Milk Collected", "Leather": "Milk Collected", "Egg": "Egg Collected",
+            "Feather": "Egg Collected"}
+UNITE = {"Stone": "pierres minées", "Iron": "coups sur le fer", "Gold": "coups sur l'or", "Crimstone": "coups sur la crimstone",
+         "Wood": "arbres coupés", "Milk": "récoltes de lait", "Leather": "récoltes de lait", "Egg": "récoltes d'œufs",
+         "Feather": "récoltes d'œufs"}
+
+
+def objectifs_saison(owned, prices, prod, saison, c_debut, c_now, jours_saison=7):
+    """Pour chaque NFT que tu possèdes : ce qu'il faut faire cette saison pour qu'il rapporte au moins 35 %/an."""
+    pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
+    textes = _effets_jeu()
+    out = []
+    for name in sorted(owned):
+        price = prices.get(name)
+        entries = B.get(name) or effets_auto(textes.get(name, []))
+        if not price or not entries:
+            continue
+        e = entries[0]
+        kind, res, v = e[0], e[1], e[2] if len(e) > 2 else 0
+        share = e[3] if kind in ("add", "crop_add") and len(e) > 3 else 1
+        if kind == "chance":
+            v = e[2] * e[3]
+        par_jour_35 = price * 0.35 / 365
+        if kind in ("add", "chance", "animal", "hen") and res in COMPTEUR and pr(res) > 0 and v:
+            cible = par_jour_35 / (v * share * pr(res)) * jours_saison
+            fait = (c_now.get(COMPTEUR[res], 0) - c_debut.get(COMPTEUR[res], 0)) if c_debut else None
+            out.append({"nft": name, "texte": f"{cible:.0f} {UNITE[res]}", "cible": cible, "fait": fait,
+                        "quoi": f"{effet(name) if name in B else ' · '.join(textes.get(name, []))}"})
+        elif kind == "crop_add" and pr(res) > 0 and prod.get("champs_total"):
+            ss = SAISONS.get(res, ["spring", "summer", "autumn", "winter"])
+            plein = prod["champs_total"]
+            if saison not in ss:
+                out.append({"nft": name, "texte": f"hors saison ({FR.get(res, res)} : {' et '.join(SAISON_FR[x] for x in ss)})",
+                            "cible": None, "fait": None, "quoi": effet(name) if name in B else " · ".join(textes.get(name, []))})
+                continue
+            par_recolte = v * share * plein * pr(res)
+            cible = par_jour_35 * 365 / par_recolte / (52 * len(ss) / 4)        # récoltes complètes par semaine de saison
+            fait = ((c_now.get(f"{res} Harvested", 0) - c_debut.get(f"{res} Harvested", 0)) / plein) if c_debut else None
+            out.append({"nft": name, "texte": f"{cible:.1f} récoltes complètes {de(res)} ({plein} champs)".replace(".", ","),
+                        "cible": cible, "fait": fait, "quoi": effet(name) if name in B else " · ".join(textes.get(name, []))})
+    return out

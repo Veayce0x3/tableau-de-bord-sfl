@@ -37,6 +37,11 @@ def valeur(effets, prices, prod):
             g += v * prod[r] * pr(r) / (5 if m.group(3) else 1)
             calc = True
             continue
+        m = re.match(r"(\d+)% chance for trees to grow instantly", s)
+        if m:
+            g += float(m.group(1)) / 100 * prod["Wood"] * prod["rendement_bois"] * pr("Wood") * 0.5
+            calc = True
+            continue
         m = re.match(r"1/10 chance of x3 wood", s)
         if m:
             g += 0.2 * prod["Wood"] * prod["rendement_bois"] * pr("Wood")
@@ -70,17 +75,38 @@ def valeur(effets, prices, prod):
             continue
     if "coin" in txt:
         typ = "🪙 Coins"
-    elif "xp" in txt and not calc:
+    elif "xp" in txt and not calc and "animal" not in txt:
         typ = "⭐ XP"
     elif calc:
         typ = "📦 Production"
-    elif "feed" in txt:
+    elif "feed" in txt or "animal xp" in txt:
         typ = "🐄 Nourriture des animaux"
     elif any(w in txt for w in ("instantly", "instant", "1 tap", "ability to", "stock", "wakes up")):
         typ = "🖐️ Confort / temps gagné"
     else:
         typ = "➖ Autre (non chiffré)"
     return (g if calc else None), typ
+
+
+POUVOIRS = {"Instant Growth": 72, "Tree Blitz": 24, "Barnyard Rouse": 120}   # heures de recharge (code du jeu)
+
+
+def valeur_pouvoir(n, prices, prod):
+    """Ce que rapporte UNE utilisation d'un pouvoir, en Flower (après taxe)."""
+    pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
+    if n == "Instant Growth":   # une récolte complète de tous tes champs en plus
+        parts = prod.get("parts_vie") or {}
+        rec = prod.get("recoltes") or {}
+        poids = parts or {c: v for c, v in rec.items() if v}
+        tot = sum(poids.values()) or 1
+        prix_champ = sum(w * pr(c) for c, w in poids.items()) / tot * prod.get("rendement_culture", 2.72)
+        return (prod.get("champs_total") or 0) * prix_champ, "1 récolte complète de tous tes champs en plus"
+    if n == "Tree Blitz":       # tous tes arbres repoussent d'un coup
+        return (prod.get("arbres") or 0) * prod.get("rendement_bois", 3.2) * pr("Wood"), "tous tes arbres repoussent d'un coup"
+    if n == "Barnyard Rouse":   # un cycle de plus pour tous tes animaux
+        v = (prod.get("vaches") or 0) * (3.6 * pr("Milk") + 2.5 * pr("Leather")) + (prod.get("poules") or 0) * 2.5 * pr("Egg")
+        return v, "un cycle de production en plus pour toutes tes vaches et poules"
+    return 0, ""
 
 
 def analyse_competences(land, prices, cfg):
@@ -114,11 +140,16 @@ def analyse_competences(land, prices, cfg):
         if s["off"] or not s["tier"] or "coming soon" in " ".join(s["effets"]).lower():
             continue
         g, typ = valeur(s["effets"], prices, prod)
+        par_util, quoi = None, ""
+        if n in POUVOIRS:
+            par_util, quoi = valeur_pouvoir(n, prices, prod)
+            g = par_util * 24 / POUVOIRS[n]
+            typ = f"⚡ Pouvoir (toutes les {POUVOIRS[n] // 24 if POUVOIRS[n] >= 48 else POUVOIRS[n]} {'jours' if POUVOIRS[n] >= 48 else 'h'})"
         owned = n in mine
         rows.append({"n": n, "arbre": ARBRES.get(s["tree"], s["tree"]), "tree": s["tree"], "palier": s["tier"],
                      "points": s["points"], "rang": mine.get(n, 0), "rang_max": s["max"], "owned": owned,
                      "effet": " · ".join(e for e in s["effets"] if e), "jour": g, "par_point": (g / s["points"]) if g is not None and s["points"] else None,
-                     "type": typ})
+                     "type": typ, "par_util": par_util, "quoi": quoi})
 
     # Compétences qui tiennent un palier : les enlever bloquerait des compétences de palier supérieur
     bloquant = set()
@@ -135,7 +166,9 @@ def analyse_competences(land, prices, cfg):
     for r in rows:
         r["bloquant"] = r["n"] in bloquant
         if r["owned"]:
-            if r["bloquant"]:
+            if r["par_util"] is not None:
+                r["verdict"] = f"⚡ +{r['par_util']:.2f} FLW à chaque utilisation ({r['quoi']}) : pense à l'activer dès qu'il est prêt".replace(".", ",", 1)
+            elif r["bloquant"]:
                 r["verdict"] = "🔒 Garde-le : il débloque le palier supérieur de l'arbre"
             elif r["jour"] is not None and r["jour"] > 0.3:
                 r["verdict"] = "✅ Rapporte bien"
@@ -160,10 +193,18 @@ def analyse_competences(land, prices, cfg):
     free = level - used
     best = sorted([r for r in rows if not r["owned"] and r["par_point"] and r["par_point"] > 0.02],
                   key=lambda r: -r["par_point"])
-    weak = [r for r in rows if r["owned"] and not r["bloquant"] and not r["type"].startswith("🐄") and (r["jour"] is None or r["jour"] < 0.05)]
+    weak = [r for r in rows if r["owned"] and not r["bloquant"] and not r["type"].startswith("🐄")
+            and r["par_util"] is None and (r["jour"] is None or r["jour"] < 0.05)]
+    # Plan de reset : on libère les points faibles et on les remet sur les meilleures compétences accessibles
+    libres_reset = sum(r["points"] for r in weak) + max(0, level - used)
+    plan, reste = [], libres_reset
+    for r in best:
+        if r.get("accessible") and r["points"] <= reste:
+            plan.append(r["n"]); reste -= r["points"]
+    gain_plan = sum(r["jour"] for r in rows if r["n"] in plan) - sum(r["jour"] or 0 for r in weak)
     arbres = [{"arbre": ARBRES.get(t, t), "points": p, "palier": palier(t, p), "seuil2": seuils[t][2], "seuil3": seuils[t][3]}
               for t, p in sorted(per_tree.items(), key=lambda x: -x[1])]
     rows.sort(key=lambda r: (not r["owned"], r["arbre"], -(r["jour"] or -9)))
-    return {"rows": rows, "niveau": level, "utilises": used, "libres": free, "ile": island,
+    return {"plan": plan, "plan_points": libres_reset, "plan_gain": gain_plan, "rows": rows, "niveau": level, "utilises": used, "libres": free, "ile": island,
             "meilleurs": [r["n"] for r in best[:6]], "faibles": [r["n"] for r in weak], "arbres": arbres,
             "total_jour": sum(r["jour"] or 0 for r in rows if r["owned"])}

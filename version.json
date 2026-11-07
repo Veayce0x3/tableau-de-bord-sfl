@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.17",
- "nouveautes": "NFT de cultures en récoltes complètes, production du jour et de la semaine, onglet Mon compte.",
+ "version": "2026-11-07.18",
+ "nouveautes": "Objectifs de saison par NFT, onglet Mes bonus, compétences plus claires (pouvoirs chiffrés), Mon compte plus clair.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

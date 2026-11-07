@@ -9,6 +9,7 @@ Usage : python3 releve_hebdo.py
 """
 import csv
 import json
+import re
 import sys
 import time
 import urllib.error
@@ -598,7 +599,7 @@ def main():
     from nft_analyse import analyse_nft, mesure_production, lire_ferme_sflworld, lire_animaux_sflworld, lire_activite_sflworld, rythme_reel, DEFAULT_PROD
     # Production de TA ferme : réglée à la main (ma_production) > lue sur ta ferme (sfl.world) > mesurée > ferme type
     mesure, jours = mesure_production(stock_hist, all_trades, CONFIG.get("rendements"))
-    ferme = None
+    ferme, saison = None, None
     try:
         req = urllib.request.Request(f"https://sfl.world/land/{FARM_ID}", headers={"User-Agent": "releve-hebdo-sfl"})
         try:
@@ -609,6 +610,8 @@ def main():
             page = subprocess.run(["curl", "-fsSL", "-A", "releve-hebdo-sfl", f"https://sfl.world/land/{FARM_ID}"],
                                   capture_output=True, check=True).stdout.decode("utf-8", "replace")
         ferme = lire_ferme_sflworld(page, ((land or {}).get("bumpkin") or {}).get("skills"))
+        m_s = re.search(r"Current season\s+(spring|summer|autumn|winter)", re.sub(r"<[^>]+>", " ", page))
+        saison = m_s.group(1) if m_s else None
     except Exception as e:
         print(f"(ferme non lue sur sfl.world : {e})", file=sys.stderr)
     def page_sfl(url):
@@ -652,6 +655,9 @@ def main():
         else:
             animaux = {k: DEFAULT_PROD[k] for k in ("cycles_vaches", "cycles_poules", "vaches")}
         p.update(animaux)
+        p["arbres"] = ferme["noeuds"]["Wood"]
+        if animaux_lus:
+            p["poules"] = (animaux_lus.get("Chicken") or {}).get("nombre", 0)
         n = ferme["noeuds"]
         source = (f"lue sur ta ferme : {n['Stone']} rochers de pierre, {n['Iron']} de fer, {n['Gold']} d'or, "
                   f"{n['Crimstone']} de crimstone, {n['Wood']} arbres, champs : "
@@ -689,6 +695,24 @@ def main():
         cfg_prod, source = CONFIG, "pas encore lue : sfl.world n'a pas répondu, réessaie Actualiser dans quelques minutes"
     nft = analyse_nft(holdings, all_prices, cfg_prod, source, fiable=not source.startswith("pas encore"))
     nft["stock_hist"] = stock_hist[-9:]
+    # Saisons : on note le début de chaque saison (avec tes compteurs) pour suivre tes objectifs
+    try:
+        from nft_analyse import objectifs_saison
+        hs = load(DATA / "saisons.json", [])
+        c_now = (load(DATA / "activite.json", []) or [{}])[-1].get("c", {})
+        if saison and (not hs or hs[-1]["saison"] != saison):
+            hs.append({"saison": saison, "debut": today, "c": c_now})
+            safe_write(DATA / "saisons.json", json.dumps(hs, ensure_ascii=False))
+        if hs:
+            cur = hs[-1]
+            premier = len(hs) == 1   # saison déjà commencée quand l'outil a été installé
+            owned = [r["n"] for r in nft["rows"] if r["owned"]]
+            nft["saison"] = {"nom": cur["saison"], "debut": cur["debut"], "partielle": premier,
+                             "objectifs": objectifs_saison(owned, all_prices, cfg_prod.get("ma_production") or {}, cur["saison"],
+                                                           cur["c"], c_now),
+                             "historique": [{"saison": h["saison"], "debut": h["debut"]} for h in hs]}
+    except Exception as e:
+        print(f"(objectifs de saison indisponibles : {e})", file=sys.stderr)
     from competences import analyse_competences
     try:
         nft["skills"] = analyse_competences(land, all_prices, cfg_prod)
