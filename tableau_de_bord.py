@@ -123,6 +123,7 @@ select,input{background:var(--card);color:var(--ink);border:1px solid var(--line
   <section id="vente"></section>
   <section id="rentabilite"></section>
   <section id="nft"></section>
+  <section id="skills"></section>
   <section id="ressources"></section>
   <section id="echanges"></section>
   <section id="compteurs"></section>
@@ -133,7 +134,7 @@ let FARM;try{FARM=localStorage.getItem("farm")}catch(e){}
 if(!D.farms.some(f=>f.id===FARM))FARM=D.farms[0].id;
 function setFarm(id){const f=D.farms.find(x=>x.id===id);FARM=id;D.trades=f.trades;D.counters=f.counters;try{localStorage.setItem("farm",id)}catch(e){}}
 setFarm(FARM);
-const TABS=[["apercu","Aperçu"],["objectifs","Objectifs"],["vente","Vente"],["rentabilite","Rentabilité"],["nft","NFT"],["ressources","Une ressource"],["historique","Historique"],["echanges","Échanges"],["compteurs","Compteurs"]];
+const TABS=[["apercu","Aperçu"],["objectifs","Objectifs"],["vente","Vente"],["rentabilite","Rentabilité"],["nft","NFT"],["skills","Compétences"],["ressources","Une ressource"],["historique","Historique"],["echanges","Échanges"],["compteurs","Compteurs"]];
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const fr=(x,d=2)=>x==null||isNaN(x)?"—":x.toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d});
 const fp=x=>x==null?"—":fr(x,x>=10?2:4);
@@ -184,6 +185,7 @@ function render(id){
  if(id==="vente")return vente();
  if(id==="rentabilite")return rentabilite();
  if(id==="nft")return nftTab();
+ if(id==="skills")return skillsTab();
  if(id==="ressources")return ressources();
  if(id==="echanges")return echanges();
  if(id==="compteurs")return compteurs();
@@ -290,6 +292,29 @@ function conseils(b){
   li.push(`📝 Ajoute ton prochain agrandissement dans <code>objectifs.json</code> avec ses ressources : l'outil calcule ce qu'il te manque et combien ça coûterait au marché.`);
  }
  return li.length?li.map(x=>`<p class="plain">${x}</p>`).join(""):'<div class="empty">Rien à signaler 👍</div>';
+}
+function skillsTab(){
+ const el=document.getElementById("skills"),K=(D.nft||{}).skills;
+ if(!K){el.innerHTML='<div class="card empty">Compétences indisponibles (sfl.world n\'a pas répondu). Réessaie avec Actualiser.</div>';return;}
+ const R=K.rows,own=R.filter(r=>r.owned),by=n=>R.find(r=>r.n===n);
+ const best=K.meilleurs.map(by).filter(Boolean),weak=K.faibles.map(by).filter(Boolean);
+ const ptsWeak=sum(weak,r=>r.points);
+ const tips=[];
+ if(K.libres>0)tips.push(`🎁 <b>Tu as ${K.libres} point(s) à placer.</b> ${best.length?"Meilleur choix : "+best.slice(0,3).map(r=>`<b>${r.n}</b> (${r.arbre}, ${r.points} pt → +${fp(r.jour)}/jour)`).join(", "):""}`);
+ else tips.push(`✅ Tous tes points sont placés (${K.utilises} / ${K.niveau}).`);
+ if(weak.length)tips.push(`🔄 <b>Au prochain reset</b>, ces compétences rapportent peu ou pas de Flower et ne bloquent rien : ${weak.map(r=>`${r.n} (${r.points} pt)`).join(", ")} → <b>${ptsWeak} point(s)</b> récupérables. Garde celles de confort si le temps gagné compte pour toi.`);
+ if(best.length)tips.push(`📈 <b>Où les remettre</b> (les plus rentables par point, accessibles) : ${best.map(r=>`<b>${r.n}</b> (${r.arbre}, ${r.points} pt, +${fp(r.jour)}/jour)`).join(" · ")}.`);
+ const lock=own.filter(r=>r.bloquant);if(lock.length)tips.push(`🔒 <b>À ne pas enlever</b> (elles débloquent le palier supérieur de leur arbre) : ${lock.map(r=>r.n).join(", ")}.`);
+ const neg=own.filter(r=>r.jour!=null&&r.jour<0);if(neg.length)tips.push(`⚠️ <b>Te coûtent plus qu'elles ne rapportent</b> : ${neg.map(r=>r.n).join(", ")}.`);
+ const row=r=>`<tr><td style="text-align:left;min-width:190px"><b>${r.n}</b>${r.rang>1?` <span class="why">rang ${r.rang}</span>`:""}<div class="why">🎁 ${r.effet}</div></td><td>${r.arbre}</td><td>${r.palier}</td><td>${r.points}</td><td>${r.type}</td><td class="${r.jour>0.001?"pos":r.jour<0?"neg":""}">${r.jour!=null?sg(r.jour):"—"}</td><td style="text-align:left">${r.verdict}</td></tr>`;
+ const head=`<tr><th style="text-align:left">Compétence et ce qu’elle fait</th><th>Arbre</th><th>Palier</th><th>Points</th><th>Type</th><th>Gain / jour</th><th style="text-align:left">Verdict</th></tr>`;
+ const others=R.filter(r=>!r.owned&&(r.jour||0)>0.001).sort((a,b)=>(b.par_point||0)-(a.par_point||0));
+ el.innerHTML=`<div class="hero"><div><div class="l">Niveau et points</div><div class="big">${K.niveau}</div><div class="l">${K.utilises} points utilisés · ${K.libres} libre(s)</div></div><div><div class="l">Tes compétences chiffrables rapportent</div><div class="big pos">+${fr(K.total_jour*30)} FLW/mois</div><div class="l">+${fp(K.total_jour)} par jour (estimation)</div></div></div>
+ <div class="card"><h2>💡 Conseils pour optimiser</h2>${tips.map(t=>`<p class="plain">${t}</p>`).join("")}</div>
+ <div class="card"><h2>🌳 Tes arbres</h2><div class="scroll"><table><tr><th>Arbre</th><th>Points (paliers 1-2)</th><th>Palier atteint</th><th>Palier 2 à</th><th>Palier 3 à</th></tr>${K.arbres.map(a=>`<tr><td>${a.arbre}</td><td>${a.points}</td><td><b>${a.palier}</b></td><td>${a.seuil2} pts</td><td>${a.seuil3} pts</td></tr>`).join("")}</table></div></div>
+ <div class="card"><h2>🧾 Tes compétences</h2><div class="scroll"><table>${head}${own.map(row).join("")}</table></div></div>
+ <div class="card"><h2>🛒 Compétences qui rapporteraient des Flower (les plus rentables par point d'abord)</h2><div class="scroll"><table>${head}${others.map(row).join("")||'<tr><td colspan="7" class="empty">Rien de chiffrable à ajouter.</td></tr>'}</table></div>
+ <div class="sub">Gains estimés avec ta production par jour (onglet NFT, en bas) et les prix du jour. Effets en anglais, tels qu'écrits dans le jeu. Le gain est calculé sur l'effet de base (rang 1). Les bonus de vitesse comptent pour moitié (la nuit, tu ne récoltes pas). « — » = effet qu'on ne peut pas chiffrer en Flower (confort, coins, XP, nourriture).</div></div>`;
 }
 function nftTab(){
  const el=document.getElementById("nft"),N=(D.nft||{}).rows||[],P=(D.nft||{}).prod||{};

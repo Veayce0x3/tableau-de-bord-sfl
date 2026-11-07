@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.4",
- "nouveautes": "Onglet NFT : ce que fait chaque NFT, en clair.",
+ "version": "2026-11-07.5",
+ "nouveautes": "Nouvel onglet Compétences : tes skills, ce qu'ils rapportent et quoi changer.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
@@ -10,6 +10,8 @@
   "TUTO_INSTALLATION.md",
   "Lancer le relevé.command",
   "Lancer le relevé.bat",
-  "nft_analyse.py"
+  "nft_analyse.py",
+  "competences.py",
+  "competences_jeu.json"
  ]
 }

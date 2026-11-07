@@ -588,6 +588,11 @@ def main():
                                 land, float(CONFIG.get("coins_par_flower", 1525))) if goals else []
     from nft_analyse import analyse_nft
     nft = analyse_nft(holdings, all_prices, CONFIG)
+    from competences import analyse_competences
+    try:
+        nft["skills"] = analyse_competences(land, all_prices, CONFIG)
+    except Exception as e:  # la page s'affiche même si sfl.world ne répond pas
+        print(f"(compétences indisponibles : {e})", file=sys.stderr)
     dash = build_dashboard(ROOT, farms, history, WATCH, NAMES_FR, all_prices, costs, cost_hist, stock, goals_eval,
                            CONFIG.get("date_depart"), nft)
     print(report)
