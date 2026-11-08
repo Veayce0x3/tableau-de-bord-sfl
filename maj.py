@@ -56,7 +56,7 @@ def main():
         cible = ICI / nom
         if cible.exists():
             tmp.chmod(cible.stat().st_mode)  # garde le double-clic possible sur Mac
-        elif nom.endswith(".command"):
+        elif nom.endswith((".command", ".sh")):
             tmp.chmod(0o755)
         tmp.replace(cible)
     (ICI / "version.json").write_text(json.dumps(distante, ensure_ascii=False, indent=1))

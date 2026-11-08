@@ -1,6 +1,6 @@
 {
- "version": "2026-11-07.36",
- "nouveautes": "Textes mis à jour : tout est automatique, rien à modifier à la main.",
+ "version": "2026-11-08.1",
+ "nouveautes": "Installation plus fiable sur un Mac neuf (Python installé tout seul).",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

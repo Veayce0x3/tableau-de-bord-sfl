@@ -2,7 +2,18 @@
 # Lancé par l'appli « Ferme SFL » : pas de fenêtre Terminal.
 cd "$(dirname "$0")" || exit 1
 URL="http://127.0.0.1:8765/tableau_de_bord.html"
-PY="$(command -v python3 || echo /usr/bin/python3)"
+# Un python3 qui marche vraiment (sur un Mac neuf, /usr/bin/python3 est vide sans les outils Apple)
+PY=""
+for p in /usr/local/bin/python3 /opt/homebrew/bin/python3 /Library/Frameworks/Python.framework/Versions/Current/bin/python3; do
+  [ -x "$p" ] && "$p" -c '' >/dev/null 2>&1 && { PY="$p"; break; }
+done
+if [ -z "$PY" ]; then
+  if xcode-select -p >/dev/null 2>&1; then PY=/usr/bin/python3
+  else
+    osascript -e 'display alert "Ferme SFL" message "Python est introuvable. Relance dans Terminal la commande donnée pour installer."' 2>/dev/null
+    exit 1
+  fi
+fi
 # Serveur déjà lancé (depuis la dernière fois) : on ouvre juste la page.
 if curl -fs -o /dev/null "$URL" 2>/dev/null; then
   # Déjà lancé : mise à jour de l'outil + nouveau relevé, puis on ouvre la page

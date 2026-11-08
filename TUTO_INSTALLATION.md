@@ -10,12 +10,12 @@ Tu n'as **plus besoin d'aller sur ces sites** : tout s'affiche dans ton tableau 
 
 ## 🍏 Sur Mac : installation en une ligne (recommandé)
 Pas de zip, pas de blocage de macOS.
-1. Installe **Python 3** si besoin (voir étape 2 plus bas).
-2. Ouvre **Terminal** (Cmd + Espace, tape « Terminal », Entrée).
-3. Copie-colle cette ligne, puis Entrée :
+1. Ouvre **Terminal** (Cmd + Espace, tape « Terminal », Entrée).
+2. Copie-colle cette ligne, puis Entrée :
    ```
-   bash -c "$(curl -fsSL https://raw.githubusercontent.com/Veayce0x3/tableau-de-bord-sfl/main/installer.sh)"
+   curl -fsSL https://raw.githubusercontent.com/Veayce0x3/tableau-de-bord-sfl/main/installer.sh | bash
    ```
+3. Si Python manque, il est téléchargé tout seul : clique Continuer → Installer dans la fenêtre qui s'ouvre (mot de passe du Mac).
 4. Tape ton **numéro de ferme** quand il est demandé, puis Entrée.
 
 C'est tout : l'outil s'installe dans `Documents/Tableau-de-bord-SFL`, une appli **« Ferme SFL »** apparaît sur ton Bureau, et le tableau de bord s’ouvre.
