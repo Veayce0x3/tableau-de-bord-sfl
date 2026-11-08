@@ -107,8 +107,11 @@ json.dump(c, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
   $Lnk = Join-Path $Desktop 'Ferme SFL.lnk'
   $sh = New-Object -ComObject WScript.Shell
   $s = $sh.CreateShortcut($Lnk)
-  $s.TargetPath = $Bat.FullName
+  # Le raccourci lance Python directement (chemin exact) : pas besoin que Windows le trouve
+  $s.TargetPath = $Py
+  $s.Arguments = '-X utf8 "' + (Join-Path $Dest 'lancer_windows.py') + '"'
   $s.WorkingDirectory = $Dest
+  $s.IconLocation = "$env:SystemRoot\System32\shell32.dll,43"
   $s.Description = 'Tableau de bord Sunflower Land'
   $s.Save()
 
@@ -118,5 +121,5 @@ json.dump(c, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
   Write-Host ''
   Write-Host 'Premier releve en cours : une fenetre noire s ouvre, puis le tableau de bord dans ton navigateur (30 s a 1 min).'
   Write-Host 'Laisse la fenetre noire ouverte tant que tu utilises le tableau de bord.'
-  Start-Process -FilePath $Bat.FullName -WorkingDirectory $Dest
+  Start-Process -FilePath $Py -ArgumentList '-X', 'utf8', ('"' + (Join-Path $Dest 'lancer_windows.py') + '"') -WorkingDirectory $Dest
 }
