@@ -335,8 +335,8 @@ function conseils(b){
  // Un NFT colle à ta ferme s'il améliore une de tes activités principales
  const colle=r=>(r.cibles||[]).some(k=>PR.has(k));
  const desc=a=>`${a.nom} (${fr(a.actions,0)} ${a.unite}${a.detail&&a.detail.length?" : "+a.detail.map(nm).join(", "):""}, ≈ ${fr(a.flw,a.flw>=10?0:1)} FLW/jour)`;
- const princ=A.filter(a=>a.principale),autres=A.filter(a=>!a.principale&&a.actions>=1);
- li.push(`🔎 <b>Ce que fait ta ferme aujourd'hui</b> : ${princ.map(desc).join(" · ")||"rien de mesurable pour l'instant"}.`+(autres.length?` <span class="why">Un peu aussi : ${autres.map(a=>a.nom).join(", ")}.</span>`:"")+` <span class="why">Les conseils ci-dessous partent de là.</span>`);
+ const princ=A.filter(a=>a.principale),autres=A.filter(a=>!a.principale&&a.actions>=1);const peu=autres.filter(a=>a.usage!=null&&a.usage<0.2);
+ li.push(`🔎 <b>Ce que fait ta ferme aujourd'hui</b> : ${princ.map(desc).join(" · ")||"rien de mesurable pour l'instant"}.`+(autres.length?` <span class="why">Un peu aussi : ${autres.map(a=>a.nom+(a.usage!=null&&a.usage<0.2?` (tu exploites ~${fr(a.usage*100,0)} % de tes rochers)`:"")).join(", ")}.</span>`:"")+` <span class="why">Les conseils ci-dessous partent de là.</span>`);
  const buys=N.filter(r=>!r.owned&&!r.xp&&!r.pas_pour_toi&&colle(r)&&r.an_pct>=35&&r.jour>0.001).sort((a,b)=>b.an_pct-a.an_pct);
  const xpOwned=N.filter(r=>r.owned&&r.xp);
  const nftTxt=r=>`<b>${r.n}</b> (${fr(r.price)} FLW → +${fp(r.jour)}/jour, ${fr(r.an_pct,0)} %/an, remboursé en ~${fr(r.rembourse_jours/30,0)} mois)`;

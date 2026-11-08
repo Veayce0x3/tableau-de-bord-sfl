@@ -474,8 +474,13 @@ def profil_ferme(prod, prices, rendements=None):
         a["actions"] = round(a["actions"], 1)
         a["flw"] = round(a["flw"], 2)
         a["detail"] = [c for c, _ in sorted(a["detail"].items(), key=lambda x: -x[1])[:4]]
-        # Principale : pèse au moins 10 % de ce que rapporte la ferme, ou (cultures) au moins 25 % des champs récoltés
-        a["principale"] = a["part"] >= 0.10 or (a["cle"] in ("Basiques", "Moyennes", "Avancees") and a["actions"] / champs >= 0.25)
+        # Rochers et arbres : quelle part de ce qu'ils pourraient donner tu exploites vraiment
+        mx = (prod.get("max_actions") or {}).get(a["cle"])
+        a["usage"] = round(min(1.0, a["actions"] / mx), 2) if mx else None
+        # Principale : pèse au moins 10 % de ce que rapporte la ferme (et, pour les rochers, tu les exploites à 20 % ou plus),
+        # ou (cultures) au moins 25 % des champs récoltés
+        a["principale"] = ((a["part"] >= 0.10 and (a["usage"] is None or a["usage"] >= 0.20))
+                           or (a["cle"] in ("Basiques", "Moyennes", "Avancees") and a["actions"] / champs >= 0.25))
     # Cultures principales : au moins 10 % de tes champs récoltés (rythme mesuré, sinon tes habitudes depuis le début)
     rec = {c: n for c, n in (prod.get("recoltes") or {}).items() if n}
     parts = {c: n / sum(rec.values()) for c, n in rec.items()} if rec else dict(prod.get("parts_vie") or {})

@@ -791,12 +791,23 @@ def main():
             # u = nombre de « jours pleins » passés sur chaque ressource ; la plus utilisée garde l'estimation, les autres au prorata.
             cle = {"Stone": "Stone Mined", "Iron": "Iron Mined", "Gold": "Gold Mined",
                    "Crimstone": "Crimstone Mined", "Wood": "Tree Chopped"}
-            u = {k: compteurs.get(c, 0) / p[k] for k, c in cle.items() if p.get(k)}
-            um = max(u.values(), default=0)
-            if um > 0:
-                for k in u:
-                    p[k] = round(p[k] * min(1.0, u[k] / um), 1)
+            jours_jeu = compteurs.get("Daily Reward Collected", 0)   # ≈ nombre de jours où tu as joué
+            if jours_jeu >= 7:
+                # Ta moyenne par jour de jeu depuis le début (sans dépasser le maximum possible de tes rochers)
+                for k, c in cle.items():
+                    p[k] = round(min(p.get(k) or 0, compteurs.get(c, 0) / jours_jeu), 1)
+                from nft_analyse import CROPS
+                tot_c = sum(compteurs.get(f"{c} Harvested", 0) for c in CROPS) / jours_jeu
+                if tot_c and parts_vie:
+                    p["recoltes"] = {c: round(tot_c * v, 1) for c, v in parts_vie.items()}
                 habitudes = True
+            else:
+                u = {k: compteurs.get(c, 0) / p[k] for k, c in cle.items() if p.get(k)}
+                um = max(u.values(), default=0)
+                if um > 0:
+                    for k in u:
+                        p[k] = round(p[k] * min(1.0, u[k] / um), 1)
+                    habitudes = True
         n = ferme["noeuds"]
         source = (f"lue sur ta ferme : {n['Stone']} rochers de pierre, {n['Iron']} de fer, {n['Gold']} d'or, "
                   f"{n['Crimstone']} de crimstone, {n['Wood']} arbres, champs : "
@@ -823,7 +834,7 @@ def main():
                       f"{reel['Wood']:g} arbres coupés, {sum(reel['recoltes'].values()):g} champs récoltés, "
                       f"{reel['cycles_poules']:g} récoltes d'œufs et {reel['cycles_vaches']:g} de lait par jour · " + source)
         else:
-            source = (("⏳ estimation selon tes habitudes (ce que tu as miné et coupé depuis le début) : "
+            source = (("⏳ estimation selon tes habitudes (ta moyenne par jour de jeu depuis le début) : "
                        if habitudes else "⏳ estimation (rochers × ~6 passages/jour) : ")
                       + "ton vrai rythme sera mesuré au prochain relevé, demain · " + source)
         if parts_vie:

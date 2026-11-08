@@ -1,6 +1,6 @@
 {
- "version": "2026-11-08.4",
- "nouveautes": "Conseils personnalisés : ils partent de ce que fait vraiment ta ferme (activités principales), dès le premier jour.",
+ "version": "2026-11-08.5",
+ "nouveautes": "Conseils encore plus proches de ta façon de jouer : moyenne par jour de jeu dès le premier jour, rochers peu exploités écartés.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
