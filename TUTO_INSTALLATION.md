@@ -8,6 +8,20 @@ Tu n'as **plus besoin d'aller sur ces sites** : tout s'affiche dans ton tableau 
 
 ---
 
+## 🪟 Sur Windows : installation en une ligne (recommandé)
+1. Ouvre **PowerShell** : touche Windows, tape « PowerShell », Entrée.
+2. Copie-colle cette ligne, puis Entrée :
+   ```
+   irm https://raw.githubusercontent.com/Veayce0x3/tableau-de-bord-sfl/main/installer.ps1 | iex
+   ```
+3. Si Python manque, il s'installe tout seul (1 à 2 minutes, rien à cliquer).
+4. Tape ton **numéro de ferme** quand il est demandé, puis Entrée.
+
+C'est tout : l'outil s'installe dans `Documents\Tableau-de-bord-SFL`, un raccourci **« Ferme SFL »** apparaît sur ton Bureau, et le tableau de bord s'ouvre.
+Ensuite, chaque jour : double-clic sur **« Ferme SFL »** sur le Bureau, et laisse la fenêtre noire ouverte pendant que tu regardes le tableau de bord.
+
+---
+
 ## 🍏 Sur Mac : installation en une ligne (recommandé)
 Pas de zip, pas de blocage de macOS.
 1. Ouvre **Terminal** (Cmd + Espace, tape « Terminal », Entrée).

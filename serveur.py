@@ -25,7 +25,7 @@ def _relancer_si_mis_a_jour():
     """Si l'outil vient d'être mis à jour, le serveur redémarre tout seul avec la nouvelle version."""
     import os
     if Path(__file__).stat().st_mtime != _DEMARRAGE:
-        threading.Timer(1.5, lambda: os.execv(sys.executable, [sys.executable, "-I", str(Path(__file__).resolve()), "--sans-navigateur"])).start()
+        threading.Timer(1.5, lambda: os.execv(sys.executable, [sys.executable, "-I", "-X", "utf8", str(Path(__file__).resolve()), "--sans-navigateur"])).start()
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -74,8 +74,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return self._json(409, {"ok": False, "message": "Un relevé est déjà en cours."})
         try:
             if (ROOT / "maj.py").exists():  # récupère d'abord la dernière version de l'outil
-                subprocess.run([sys.executable, "-I", str(ROOT / "maj.py")], cwd=ROOT, capture_output=True, timeout=120)
-            r = subprocess.run([sys.executable, "-I", str(ROOT / "releve_hebdo.py")],
+                subprocess.run([sys.executable, "-I", "-X", "utf8", str(ROOT / "maj.py")], cwd=ROOT, capture_output=True, timeout=120)
+            r = subprocess.run([sys.executable, "-I", "-X", "utf8", str(ROOT / "releve_hebdo.py")],
                                cwd=ROOT, capture_output=True, text=True, timeout=600)
             ok = r.returncode == 0
             _relancer_si_mis_a_jour()

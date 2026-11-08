@@ -1,6 +1,6 @@
 {
- "version": "2026-11-08.1",
- "nouveautes": "Installation plus fiable sur un Mac neuf (Python installé tout seul).",
+ "version": "2026-11-08.2",
+ "nouveautes": "Windows : installation en une ligne, accents et Python corrigés.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
