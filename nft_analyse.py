@@ -971,3 +971,120 @@ def lire_vetements_sflworld(page_html):
     j = t.find(" Bumpkin ", i)
     sec = t[j if j > 0 else i: (j if j > 0 else i) + 3000]
     return sorted(n for n in _effets_jeu() if len(n) > 3 and re.search(r"\b" + re.escape(n) + r"\b", sec))
+
+
+# Temps de pousse des cultures en heures (code du jeu, sans bonus)
+POUSSE_H = {"Sunflower": 1 / 60, "Potato": 5 / 60, "Rhubarb": 10 / 60, "Pumpkin": 0.5, "Zucchini": 0.5, "Carrot": 1,
+            "Yam": 1, "Cabbage": 2, "Broccoli": 2, "Soybean": 3, "Beetroot": 4, "Pepper": 4, "Cauliflower": 8,
+            "Parsnip": 12, "Eggplant": 16, "Corn": 20, "Onion": 20, "Radish": 24, "Wheat": 24, "Turnip": 24,
+            "Kale": 36, "Artichoke": 36, "Barley": 48}
+
+
+def _recoltes_par_jour(pousse_h, passages):
+    """Récoltes par champ et par jour : limitée par tes passages (7 h-23 h) et par le temps de pousse (la nuit compte)."""
+    return min(passages, 16 / pousse_h + 1) if pousse_h < 16 else min(passages, 24 / pousse_h)
+
+
+# Prix des graines en coins (boutique du jeu)
+GRAINE_COINS = {"Sunflower": 0.01, "Potato": 0.1, "Rhubarb": 0.15, "Pumpkin": 0.2, "Zucchini": 0.2, "Carrot": 0.5, "Yam": 0.5,
+                "Cabbage": 1, "Broccoli": 1, "Soybean": 1.5, "Beetroot": 2, "Pepper": 2, "Cauliflower": 3, "Parsnip": 5,
+                "Eggplant": 6, "Corn": 7, "Onion": 7, "Radish": 7, "Wheat": 5, "Turnip": 5, "Kale": 7, "Artichoke": 7,
+                "Barley": 10}
+
+
+def plan_progression(nft, prices, saison, skills=None, rendements=None, costs=None, coins_par_flower=1500):
+    """Plan pour progresser sans rien investir : 1) gains gratuits, 2) premier achat qui se paie avec ces gains, 3) la suite."""
+    prod, prof = nft.get("prod") or {}, nft.get("profil")
+    if not prof:
+        return None
+    pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
+    rd = {**{k: v for k, v in (rendements or {}).items() if isinstance(v, (int, float))}, **(prod.get("rendements_cultures") or {})}
+    y_res = {"Stone": 4.13, "Iron": 1.93, "Gold": 1.81, "Crimstone": 4.2, "Wood": prod.get("rendement_bois", 3.2), **rd}
+    act = {a["cle"]: a for a in prof["activites"]}
+    gagne_jour = sum(a["flw"] for a in prof["activites"])
+    gratuit = []
+    # 1a. Points de compétence à placer
+    if skills and skills.get("libres", 0) > 0:
+        def utile(r):
+            # Une compétence de vitesse (repousse plus vite) ne sert que si tu exploites déjà ces rochers/arbres
+            m = re.search(r"(stone|iron|gold|crimstone|tree) recovery time", r.get("effet") or "", re.I)
+            if m:
+                k = {"tree": "Wood"}.get(m.group(1).lower(), m.group(1).capitalize())
+                return ((act.get(k) or {}).get("usage") or 0) >= 0.5
+            return True
+        dispo = sorted([r for r in skills["rows"] if not r["owned"] and r.get("accessible") and (r.get("jour") or 0) > 0.001
+                        and utile(r)], key=lambda r: -(r.get("par_point") or 0))
+        choix, reste = [], skills["libres"]
+        for r in dispo:
+            if r["points"] <= reste:
+                choix.append(r); reste -= r["points"]
+        gratuit.append({"type": "competences", "libres": skills["libres"],
+                        "liste": [{"n": r["n"], "effet": r["effet"], "points": r["points"], "jour": r["jour"]} for r in choix[:4]],
+                        "gain": sum(r["jour"] for r in choix[:4])})
+    # 1b. Rochers et arbres que tu as déjà mais que tu récoltes peu
+    noeuds = prod.get("noeuds") or {}
+    mx_all = prod.get("max_actions") or {}
+    extra_actions = {}
+    for k in ("Iron", "Gold", "Stone", "Crimstone", "Wood"):
+        mx, n = mx_all.get(k) or 0, noeuds.get(k) or 0
+        actu = (act.get(k) or {}).get("actions", 0) or 0
+        if not mx or not n:
+            continue
+        cible = mx * 0.6   # objectif réaliste : 60 % du maximum (2-3 passages par jour)
+        if actu >= cible * 0.9:
+            continue
+        c = next((r for r in costs or [] if r.get("item") == k and r.get("par_action")), None)
+        # Ce que rapporte vraiment un coup en plus : vente − coût de l'outil (pioche, hache). Si c'est à perte, on ne le conseille pas.
+        v_u = (c["marge"] * c["par_action"]) if c else y_res.get(k, 1) * pr(k)
+        if v_u <= 0:
+            continue
+        gain = (cible - actu) * v_u
+        if gain < 0.1:
+            continue
+        extra_actions[k] = cible - actu
+        gratuit.append({"type": "noeuds", "res": k, "nom": NOM_NOEUD.get(k, k), "noeuds": n, "actu": round(actu, 1),
+                        "cible": round(cible, 1), "par_noeud_actu": round(actu / n, 1), "par_noeud_cible": round(cible / n, 1),
+                        "gain": gain})
+    # 1c. Cultures : la plus rentable de la saison, avec ta fréquence de passage
+    champs = prod.get("champs_total") or 0
+    rec = {c: v for c, v in (prod.get("recoltes") or {}).items() if v}
+    if champs and rec and saison:
+        passages = min(12.0, sum(rec.values()) / champs)
+        actuel = sum(n * rd.get(c, prod.get("rendement_culture", 1)) * pr(c) for c, n in rec.items()) / champs
+        options = []
+        for c, h in POUSSE_H.items():
+            if saison not in SAISONS.get(c, []) or not pr(c):
+                continue
+            r = _recoltes_par_jour(h, passages)
+            graine = GRAINE_COINS.get(c, 1) / max(1, coins_par_flower)
+            options.append({"c": c, "par_champ": r * (rd.get(c, prod.get("rendement_culture", 1)) * pr(c) - graine),
+                            "recoltes": r, "pousse_h": h})
+        options.sort(key=lambda o: -o["par_champ"])
+        if options and options[0]["par_champ"] > actuel * 1.2:
+            gratuit.append({"type": "cultures", "champs": champs, "passages": round(passages, 1), "saison": saison,
+                            "actuel": actuel * champs, "top": options[:3], "gain": (options[0]["par_champ"] - actuel) * champs})
+    gain_gratuit = sum(g["gain"] for g in gratuit)
+    # 2. Premier achat qui se paie avec tes gains (après les étapes gratuites)
+    apres = []
+    for r in nft.get("rows") or []:
+        if r["owned"] or not r.get("price") or r.get("xp") or not r.get("chiffrable"):
+            continue
+        g = r["jour"] or 0
+        cur = (r.get("pot") or {}).get("cur") or {}
+        utiles = set(prof.get("principales") or []) | set(extra_actions)
+        meilleure = next((g["top"][0]["c"] for g in gratuit if g["type"] == "cultures"), None)
+        if meilleure:
+            utiles.add("crop:" + meilleure)
+        if not (set(r.get("cibles") or []) & utiles):
+            continue   # n'améliore rien de ce que tu fais (ou feras après les étapes gratuites)
+        e_res = next((k for k in (r.get("cibles") or []) if k in extra_actions), None)
+        if e_res and cur.get("gain_u") and cur.get("unite", "").endswith("par jour"):
+            g += cur["gain_u"] * extra_actions[e_res]   # ce NFT rapporte plus si tu récoltes plus
+        if g <= 0.001:
+            continue
+        mois = r["price"] / g / 30
+        if mois <= 24:
+            apres.append({"n": r["n"], "price": r["price"], "jour": g, "mois": mois, "effet": r.get("effet", ""),
+                          "jours_pour_payer": r["price"] / max(0.01, gagne_jour + gain_gratuit)})
+    apres.sort(key=lambda x: x["mois"])
+    return {"gagne_jour": gagne_jour, "gratuit": gratuit, "gain_gratuit": gain_gratuit, "achats": apres[:3]}

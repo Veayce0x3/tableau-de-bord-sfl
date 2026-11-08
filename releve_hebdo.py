@@ -918,6 +918,12 @@ def main():
                                      all_prices, cfg_prod.get("ma_production") or {})
     except Exception as e:  # la page s'affiche même si sfl.world ne répond pas
         print(f"(compétences indisponibles : {e})", file=sys.stderr)
+    try:
+        from nft_analyse import plan_progression
+        nft["progression"] = plan_progression(nft, all_prices, saison, nft.get("skills"), CONFIG.get("rendements"),
+                                               costs, float(CONFIG.get("coins_par_flower", 1525)))
+    except Exception as e:
+        print(f"(plan de progression indisponible : {e})", file=sys.stderr)
     dash = build_dashboard(ROOT, farms, history, WATCH, NAMES_FR, all_prices, costs, cost_hist, stock, goals_eval,
                            CONFIG.get("date_depart"), nft)
     print(report)
