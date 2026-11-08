@@ -924,6 +924,13 @@ def main():
                                                costs, float(CONFIG.get("coins_par_flower", 1525)))
     except Exception as e:
         print(f"(plan de progression indisponible : {e})", file=sys.stderr)
+    try:
+        from nft_analyse import lire_livraisons_sflworld, lire_chapitre_sflworld, conseils_livraisons
+        liv = lire_livraisons_sflworld(page_sfl(f"https://sfl.world/land/{FARM_ID}/delivery"))
+        chap = lire_chapitre_sflworld(page_sfl(f"https://sfl.world/land/{FARM_ID}/chapter"))
+        nft["livraisons"] = conseils_livraisons(liv, chap, nft.get("profil"), all_prices)
+    except Exception as e:
+        print(f"(livraisons non lues sur sfl.world : {e})", file=sys.stderr)
     dash = build_dashboard(ROOT, farms, history, WATCH, NAMES_FR, all_prices, costs, cost_hist, stock, goals_eval,
                            CONFIG.get("date_depart"), nft)
     print(report)

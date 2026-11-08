@@ -1088,3 +1088,87 @@ def plan_progression(nft, prices, saison, skills=None, rendements=None, costs=No
                           "jours_pour_payer": r["price"] / max(0.01, gagne_jour + gain_gratuit)})
     apres.sort(key=lambda x: x["mois"])
     return {"gagne_jour": gagne_jour, "gratuit": gratuit, "gain_gratuit": gain_gratuit, "achats": apres[:3]}
+
+
+def lire_livraisons_sflworld(page_html):
+    """Livraisons de la ferme (page publique sfl.world/land/<numéro>/delivery) : coins, tickets et Flower."""
+    out = []
+    for bloc in page_html.split('<table class="table m-bottom-10">')[1:]:
+        m_nom = re.search(r'<th class="va-middle w75 small b">([^<]+)', bloc)
+        m_etat = re.search(r'<tr title="([^"]+)"', bloc)
+        if not m_nom or not m_etat or m_etat.group(1) == "Completed":
+            continue
+        items = [{"n": n, "a": int(a), "b": int(b)} for n, a, b in
+                 re.findall(r'alt="([^"]+)" class="img-15 m-right-5"/>[^<]*</div><div>(?:<div>)?<small>(\d+)</small> / <b>(\d+)</b>', bloc)]
+        m_r = re.search(r'Reward</td><td[^>]*><img src="/img/([^"]+?)\.png"[^>]*/><b>([\d.]+)</b>', bloc)
+        if not items or not m_r:
+            continue
+        sorte = "flower" if m_r.group(1) == "Flower" else "coins" if m_r.group(1) == "coin" else "tickets"
+        m_f = re.search(r'In Flower <small>[^<]*</small></td><td[^>]*><img[^>]*/><b>([\d.]+)</b>', bloc)
+        m_p = re.search(r'P2P <small>-10%</small></td><td[^>]*><img[^>]*/><b>([\d.]+)</b>', bloc)
+        out.append({"pnj": m_nom.group(1).strip().title(), "type": sorte, "pret": m_etat.group(1) == "Ready for delivery",
+                    "vip": "VIP Access" in bloc and "bi-ban" in bloc.split("VIP Access")[0][-200:],
+                    "items": items, "recompense": float(m_r.group(2)),
+                    "en_flower": float(m_f.group(1)) if m_f else (float(m_r.group(2)) if sorte == "flower" else None),
+                    "cout": float(m_p.group(1)) if m_p else 0.0})
+    return out
+
+
+def lire_chapitre_sflworld(page_html):
+    """Bounties (récompense en gemmes) et corvées de la semaine (page sfl.world/land/<numéro>/chapter)."""
+    bounties, corvees = [], []
+    i_ch, i_bo = page_html.find("collapseChores"), page_html.find(">Bounties")
+    if i_ch >= 0:
+        zone = page_html[i_ch:i_bo if i_bo > i_ch else None]
+        for txt, a, b, img, r in re.findall(r'</i>([^<]+)</div></div><div class="mb-auto ta-right">(?:<div class="hide">\d+</div>)?'
+                                             r'<div><small>(\d+)</small> / <b>(\d+)</b></div><div><div><img src="/img/([^"]+?)\.png"[^>]*/>(\d+)',
+                                             zone):
+            corvees.append({"t": txt.strip(), "a": int(a), "b": int(b), "recompense": int(r),
+                            "monnaie": {"coin": "coins", "Gem": "gemmes"}.get(img, "tickets")})
+    if i_bo >= 0:
+        zone = page_html[i_bo:]
+        fin = zone.find("collapseATrade")
+        for n, a, b, r in re.findall(r'<img src="/img/delivery/[^"]+" class="img-15 m-right-5"/>([^<]+)</div></div>'
+                                     r'<div class="mb-auto ta-right"><div><small>(\d+)</small> / (\d+)</div><div><div>'
+                                     r'<img src="/img/Gem.png"[^>]*/>(\d+)', zone[:fin if fin > 0 else None]):
+            bounties.append({"n": n.strip(), "a": int(a), "b": int(b), "gemmes": int(r)})
+    return {"bounties": bounties, "corvees": corvees}
+
+
+def conseils_livraisons(livraisons, chapitre, prof, prices):
+    """Ce qui vaut le coup de livrer, en partant de ce que tu as et de ce que tu produis."""
+    pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
+    principales = set((prof or {}).get("principales") or [])
+    cultures = set((prof or {}).get("cultures") or [])
+    def produit(n):
+        return n in cultures or ("crop:" + n) in principales or CAT_CULTURE.get(n) in principales or n in principales
+    flower, autres = [], []
+    for d in livraisons or []:
+        manque = [dict(i, manque=i["b"] - i["a"], produit=produit(i["n"])) for i in d["items"] if i["a"] < i["b"]]
+        cout_manque = sum(x["manque"] * (prices.get(x["n"]) or 0) for x in manque)
+        gain = (d["en_flower"] or 0) - d["cout"]
+        e = {**d, "manque": manque, "gain": gain, "cout_manque": cout_manque}
+        if d["type"] == "flower":
+            if d["vip"]:
+                e["verdict"] = "vip"
+            elif d["cout"] > (d["en_flower"] or 0):
+                e["verdict"] = "vendre"     # les ingrédients valent plus que la récompense
+            elif d["pret"]:
+                e["verdict"] = "livrer"
+            elif all(x["produit"] for x in manque):
+                e["verdict"] = "produire"
+            elif manque and all(not prices.get(x["n"]) for x in manque) and d["cout"] < (d["en_flower"] or 0):
+                e["verdict"] = "cuisiner"   # plat ou objet à fabriquer : ingrédients moins chers que la récompense
+            else:
+                e["verdict"] = "acheter" if cout_manque and cout_manque < (d["en_flower"] or 0) - d["cout"] else "attendre"
+            flower.append(e)
+        elif d["pret"] and (d["type"] == "tickets" or gain > 0):
+            autres.append(e)
+    flower.sort(key=lambda e: ["livrer", "produire", "cuisiner", "acheter", "attendre", "vendre", "vip"].index(e["verdict"]))
+    ch = chapitre or {}
+    bounties = sorted([b for b in ch.get("bounties", []) if b["a"] >= b["b"]], key=lambda b: -b["gemmes"])
+    mots = {c.lower() for c in cultures} | {"tree", "trees", "stone", "stones"} if prof else set()
+    corvees = [c for c in ch.get("corvees", []) if c["a"] < c["b"] and
+               (c["a"] / c["b"] >= 0.3 or any(m.rstrip("s") in c["t"].lower() for m in mots))]
+    return {"flower": flower, "autres": autres, "bounties": bounties, "corvees": corvees,
+            "total_flower": sum((e["en_flower"] or 0) for e in flower if e["verdict"] in ("livrer", "produire", "cuisiner"))}

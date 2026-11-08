@@ -1,6 +1,6 @@
 {
- "version": "2026-11-08.6",
- "nouveautes": "Nouveau dans Objectifs : « 🌱 Ton plan pour progresser sans rien investir » (gains gratuits, premier achat payé par tes gains).",
+ "version": "2026-11-08.7",
+ "nouveautes": "Nouveau dans Objectifs : « 📦 Livraisons et bounties » (ce qui vaut le coup de livrer, de cuisiner ou de vendre).",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
