@@ -206,8 +206,14 @@ def _effets_jeu():
 
 
 def _prod(cfg):
-    p = {**DEFAULT_PROD, **(cfg.get("ma_production") or {})}
-    p["recoltes"] = {**DEFAULT_PROD["recoltes"], **((cfg.get("ma_production") or {}).get("recoltes") or {})}
+    mp = cfg.get("ma_production") or {}
+    if not mp:   # rien de lu ni mesuré : ferme type (les conseils d'achat sont alors masqués)
+        return {**DEFAULT_PROD, "recoltes": dict(DEFAULT_PROD["recoltes"])}
+    # Ferme lue ou mesurée : ce qui n'est pas connu compte pour zéro, jamais les chiffres d'une autre ferme
+    base = {k: v for k, v in DEFAULT_PROD.items() if k.startswith("rendement_")}
+    base.update({k: 0 for k in DEFAULT_PROD if not k.startswith("rendement_") and k != "recoltes"})
+    p = {**base, **mp}
+    p["recoltes"] = dict(mp.get("recoltes") or {})
     return p
 
 
@@ -405,6 +411,79 @@ def potentiel(entries, prices, prod, owned=(), textes=None):
     return None
 
 
+# Catégories de cultures du jeu (basiques, moyennes, avancées)
+CAT_CULTURE = {**{c: "Basiques" for c in ("Sunflower", "Potato", "Rhubarb", "Pumpkin", "Zucchini")},
+               **{c: "Moyennes" for c in ("Carrot", "Yam", "Cabbage", "Broccoli", "Soybean", "Beetroot", "Pepper",
+                                           "Cauliflower", "Parsnip")},
+               **{c: "Avancees" for c in ("Eggplant", "Corn", "Onion", "Radish", "Wheat", "Turnip", "Kale", "Artichoke",
+                                           "Barley")}}
+ACTIVITE_FR = {"Basiques": "🌱 cultures basiques", "Moyennes": "🥕 cultures moyennes", "Avancees": "🌽 cultures avancées",
+               "Wood": "🪵 bois", "Stone": "🪨 pierre", "Iron": "⛓️ fer", "Gold": "🥇 or", "Crimstone": "💎 crimstone",
+               "Vaches": "🐄 vaches", "Poules": "🐔 poules"}
+
+
+def cibles_nft(entries):
+    """Activités de la ferme qu'un NFT améliore (pour ne conseiller que ce qui colle à ta façon de jouer)."""
+    out = set()
+    for e in entries or []:
+        k, res = e[0], e[1]
+        if k in ("add", "chance", "mult") and res in RES_NODES:
+            out.add(res)
+        elif k in ("crop_add", "time") and res in CAT_CULTURE:
+            out.add("crop:" + res)   # une culture précise : il faut que TU la plantes beaucoup
+        elif k == "crops_mult" or (k == "time" and res == "crops"):
+            out |= {"Basiques", "Moyennes", "Avancees"}
+        elif k == "animal" or (k == "time" and res == "cow") or (k == "fixed" and res is None):
+            out.add("Vaches")
+        elif k == "hen" or (k in ("time", "feed") and res == "hen"):
+            out.add("Poules")
+    return sorted(out)
+
+
+def profil_ferme(prod, prices, rendements=None):
+    """Ce que la ferme fait vraiment : quantité et valeur (FLW/jour, après taxe) par activité, et ses activités principales."""
+    pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
+    y = {"Stone": 4.13, "Iron": 1.93, "Gold": 1.81, "Crimstone": 4.2, "Wood": prod.get("rendement_bois", 3.2),
+         **{k: v for k, v in (rendements or {}).items() if isinstance(v, (int, float))}}
+    act = {}
+    def ajoute(cle, actions, unite, valeur, detail=None):
+        a = act.setdefault(cle, {"cle": cle, "nom": ACTIVITE_FR[cle], "actions": 0.0, "unite": unite, "flw": 0.0, "detail": {}})
+        a["actions"] += actions
+        a["flw"] += valeur
+        if detail:
+            a["detail"][detail] = a["detail"].get(detail, 0) + actions
+    for k in ("Stone", "Iron", "Gold", "Crimstone", "Wood"):
+        n = prod.get(k) or 0
+        if n >= 0.5:
+            ajoute(k, n, "arbres coupés/jour" if k == "Wood" else "coups/jour", n * y[k] * pr(k))
+    rc = prod.get("rendements_cultures") or {}
+    for c, n in (prod.get("recoltes") or {}).items():
+        if n and c in CAT_CULTURE:
+            ajoute(CAT_CULTURE[c], n, "champs/jour", n * rc.get(c, y.get(c, prod.get("rendement_culture", 2.7))) * pr(c), c)
+    if prod.get("cycles_vaches"):
+        n = prod["cycles_vaches"]
+        ajoute("Vaches", n, "récoltes/jour", n * (y.get("Milk") or 1) * pr("Milk"))
+    if prod.get("cycles_poules"):
+        n = prod["cycles_poules"]
+        ajoute("Poules", n, "récoltes/jour", n * (y.get("Egg") or 1) * pr("Egg"))
+    rows = sorted(act.values(), key=lambda a: -a["flw"])
+    tot_flw = sum(a["flw"] for a in rows) or 1
+    champs = sum(a["actions"] for a in rows if a["cle"] in ("Basiques", "Moyennes", "Avancees")) or 1
+    for a in rows:
+        a["part"] = a["flw"] / tot_flw
+        a["actions"] = round(a["actions"], 1)
+        a["flw"] = round(a["flw"], 2)
+        a["detail"] = [c for c, _ in sorted(a["detail"].items(), key=lambda x: -x[1])[:4]]
+        # Principale : pèse au moins 10 % de ce que rapporte la ferme, ou (cultures) au moins 25 % des champs récoltés
+        a["principale"] = a["part"] >= 0.10 or (a["cle"] in ("Basiques", "Moyennes", "Avancees") and a["actions"] / champs >= 0.25)
+    # Cultures principales : au moins 10 % de tes champs récoltés (rythme mesuré, sinon tes habitudes depuis le début)
+    rec = {c: n for c, n in (prod.get("recoltes") or {}).items() if n}
+    parts = {c: n / sum(rec.values()) for c, n in rec.items()} if rec else dict(prod.get("parts_vie") or {})
+    cultures = [c for c, x in sorted(parts.items(), key=lambda x: -x[1]) if x >= 0.10]
+    return {"activites": rows, "principales": [a["cle"] for a in rows if a["principale"]] + ["crop:" + c for c in cultures],
+            "cultures": cultures}
+
+
 def analyse_nft(holdings, prices, cfg, source="défaut", fiable=True):
     prod = _prod(cfg)
     PRIX_COURANT.clear()
@@ -484,14 +563,15 @@ def analyse_nft(holdings, prices, cfg, source="défaut", fiable=True):
                 else "🟠 Moyen" if mois < 36 else "🔴 Pas rentable")
         if pas_pour_toi and not mine:
             note = "🚫 Pas pour toi"
-        rows.append({"pas_pour_toi": pas_pour_toi, "note": note if chiffrable and not xp and fiable else None, "pot": pot, "an_max": an_max,
+        rows.append({"cibles": cibles_nft(entries) if chiffrable and not xp else [], "pas_pour_toi": pas_pour_toi, "note": note if chiffrable and not xp and fiable else None, "pot": pot, "an_max": an_max,
                      "mois_max": (price / pot["g_max"] / 30) if (pot and price and pot["g_max"] > 0.001) else None,
                      "n": name, "effet": effet(name) if name in B else texte_jeu, "owned": mine,
                      "wearable": name in WEARABLES, "price": price, "jour": g, "chiffrable": chiffrable,
                      "mois": g * 30, "an_pct": an, "rembourse_jours": (price / g) if price and g > 0.001 else None,
                      "why": why, "xp": xp, "verdict": v, "cls": c})
     rows.sort(key=lambda r: (not r["owned"], not r["chiffrable"], -(r["an_pct"] or -1)))
-    return {"rows": rows, "prod": prod, "source": source}
+    return {"rows": rows, "prod": prod, "source": source,
+            "profil": profil_ferme(prod, prices, cfg.get("rendements")) if fiable else None}
 
 
 def mesure_production(stock_hist, trades, rendements, jours_min=3):

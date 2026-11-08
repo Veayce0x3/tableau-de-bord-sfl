@@ -1,6 +1,6 @@
 {
- "version": "2026-11-08.3",
- "nouveautes": "Windows : lanceur plus fiable, chaque étape s'affiche.",
+ "version": "2026-11-08.4",
+ "nouveautes": "Conseils personnalisés : ils partent de ce que fait vraiment ta ferme (activités principales), dès le premier jour.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

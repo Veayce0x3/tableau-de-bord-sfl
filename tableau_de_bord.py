@@ -329,36 +329,50 @@ function getBut(){let b;try{b=localStorage.getItem("but")}catch(e){};return BUTS
 function conseilCard(){const b=getBut();return `<div class="card"><h2>🎯 Ton objectif principal</h2><div class="controls" id="but_chips">${BUTS.map(([k,l])=>`<button class="chip ${k===b?"on":""}" data-k="${k}">${l}</button>`).join("")}</div><div id="conseils">${conseils(b)}</div><div class="sub">Conseils calculés par l'outil à chaque relevé, avec ta production et les prix du jour.</div></div>`;}
 function bindConseil(){document.querySelectorAll("#but_chips .chip").forEach(x=>x.onclick=()=>{try{localStorage.setItem("but",x.dataset.k)}catch(e){};document.querySelectorAll("#but_chips .chip").forEach(y=>y.classList.toggle("on",y===x));document.getElementById("conseils").innerHTML=conseils(x.dataset.k);});}
 function conseils(b){
- const N=(D.nft||{}).rows||[],li=[];
- const buys=N.filter(r=>!r.owned&&!r.xp&&r.an_pct>=35&&r.jour>0.001).sort((a,b)=>b.an_pct-a.an_pct);
+ const N=(D.nft||{}).rows||[],li=[],PF=(D.nft||{}).profil,P=(D.nft||{}).prod||{};
+ if(!PF)return '<div class="empty">⚠️ Ta ferme n\'a pas pu être lue : pas de conseils pour ne pas te conseiller n\'importe quoi. Réessaie 🔄 Actualiser.</div>';
+ const PR=new Set(PF.principales||[]),A=PF.activites||[];
+ // Un NFT colle à ta ferme s'il améliore une de tes activités principales
+ const colle=r=>(r.cibles||[]).some(k=>PR.has(k));
+ const desc=a=>`${a.nom} (${fr(a.actions,0)} ${a.unite}${a.detail&&a.detail.length?" : "+a.detail.map(nm).join(", "):""}, ≈ ${fr(a.flw,a.flw>=10?0:1)} FLW/jour)`;
+ const princ=A.filter(a=>a.principale),autres=A.filter(a=>!a.principale&&a.actions>=1);
+ li.push(`🔎 <b>Ce que fait ta ferme aujourd'hui</b> : ${princ.map(desc).join(" · ")||"rien de mesurable pour l'instant"}.`+(autres.length?` <span class="why">Un peu aussi : ${autres.map(a=>a.nom).join(", ")}.</span>`:"")+` <span class="why">Les conseils ci-dessous partent de là.</span>`);
+ const buys=N.filter(r=>!r.owned&&!r.xp&&!r.pas_pour_toi&&colle(r)&&r.an_pct>=35&&r.jour>0.001).sort((a,b)=>b.an_pct-a.an_pct);
  const xpOwned=N.filter(r=>r.owned&&r.xp);
+ const nftTxt=r=>`<b>${r.n}</b> (${fr(r.price)} FLW → +${fp(r.jour)}/jour, ${fr(r.an_pct,0)} %/an, remboursé en ~${fr(r.rembourse_jours/30,0)} mois)`;
+ const aucun=`🛒 <b>Aucun NFT rentable pour ta façon de jouer actuelle</b> (${princ.map(a=>a.nom).join(", ")||"—"}) : garde tes Flower, aucun ne se rembourse assez vite.`;
+ const vaches=(P.vaches||P.cycles_vaches)>0,cochons=(D.stock||[]).some(r=>/Pig Bristles|Truffle/.test(r.n)&&r.stock>0);
  if(b==="flower"){
-  if(buys.length){const t=buys.slice(0,3);li.push(`🛒 <b>Meilleurs NFT à acheter</b> : ${t.map(r=>`<b>${r.n}</b> (${fr(r.price)} FLW → +${fp(r.jour)}/jour, ${fr(r.an_pct,0)} %/an, remboursé en ~${fr(r.rembourse_jours/30,0)} mois)`).join(" · ")}. Total : ${fr(sum(t,r=>r.price))} FLW pour +${fr(sum(t,r=>r.mois))} FLW/mois.`);}
+  li.push(buys.length?`🛒 <b>Meilleurs NFT pour ce que tu fais</b> : ${buys.slice(0,3).map(nftTxt).join(" · ")}. Total : ${fr(sum(buys.slice(0,3),r=>r.price))} FLW pour +${fr(sum(buys.slice(0,3),r=>r.mois))} FLW/mois.`:aucun);
   if(xpOwned.length)li.push(`💤 <b>À vendre</b> (ne rapportent que de l'XP) : ${xpOwned.map(r=>`${r.n} (~${fr(r.price)} FLW)`).join(", ")} → ${fr(sum(xpOwned,r=>r.price))} FLW à réinvestir.`);
   const al=(D.stock||[]).filter(r=>r.alert);if(al.length)li.push(`⚠️ <b>Tu vends trop bas</b> : ${al.map(r=>nm(r.n)).join(", ")} → regarde le « prix mini conseillé » dans l'onglet Vente.`);
-  const bad=(D.costs||[]).filter(r=>r.cycle&&r.marge<0);if(bad.length)li.push(`🐄 <b>À perte</b> : ${bad.map(r=>r.item).join(", ")} (${bad.map(r=>fp(r.marge)).join(" / ")} par cycle). Ne les nourris que si une bounty les attend.`);
-  const tr=(D.costs||[]).filter(r=>r.trade);if(tr.length)li.push(`🐷 <b>Cochons</b> : échange chaque cochon contre ses poils au niveau 10 (+${fp(tr[0].marge)} FLW chacun) ou 15 (+${fp(tr[1]?tr[1].marge:0)}), puis rachète-en un.`);
-  const neg=(D.costs||[]).filter(r=>!r.cycle&&!r.trade&&r.marge<0);if(neg.length)li.push(`⛏️ <b>Produire coûte plus que vendre</b> : ${neg.map(r=>nm(r.item)).join(", ")} → ne les vends pas, garde-les pour tes outils (ou achète-les moins cher que ton coût).`);
+  const bad=(D.costs||[]).filter(r=>r.cycle&&r.marge<0);if(vaches&&bad.length)li.push(`🐄 <b>À perte</b> : ${bad.map(r=>r.item).join(", ")} (${bad.map(r=>fp(r.marge)).join(" / ")} par cycle). Ne les nourris que si une bounty les attend.`);
+  const tr=(D.costs||[]).filter(r=>r.trade);if(cochons&&tr.length)li.push(`🐷 <b>Cochons</b> : échange chaque cochon contre ses poils au niveau 10 (+${fp(tr[0].marge)} FLW chacun) ou 15 (+${fp(tr[1]?tr[1].marge:0)}), puis rachète-en un.`);
+  const neg=(D.costs||[]).filter(r=>!r.cycle&&!r.trade&&r.marge<0&&(P[r.item]||0)>=1);if(neg.length)li.push(`⛏️ <b>Produire coûte plus que vendre</b> : ${neg.map(r=>nm(r.item)).join(", ")} → ne les vends pas, garde-les pour tes outils (ou achète-les moins cher que ton coût).`);
+  const best=princ[0];if(best)li.push(`💡 <b>Ce qui te rapporte le plus</b> : ${best.nom} (≈ ${fr(best.flw,1)} FLW/jour). C'est là qu'un bonus (NFT, compétence) compte le plus.`);
  }else if(b==="equilibre"){
-  const t=buys[0];if(t)li.push(`🛒 <b>Un achat rentable</b> : ${t.n} (${fr(t.price)} FLW, ${fr(t.an_pct,0)} %/an).`);
-  li.push(`🎯 <b>Garde une réserve</b> de bois, pierre, fer et or pour ton prochain bâtiment ou agrandissement (voir « Ma liste d'objectifs »).`);
-  li.push(`⭐ <b>XP sans perdre de Flower</b> : cuisine avec tes propres cultures, surtout les plats qui servent aux livraisons.`);
+  li.push(buys[0]?`🛒 <b>Un achat rentable pour ce que tu fais</b> : ${nftTxt(buys[0])}.`:aucun);
+  li.push(`🎯 <b>Garde une réserve</b> des matériaux de ton prochain bâtiment ou agrandissement (voir « Ma liste d'objectifs »).`);
+  const cult=princ.filter(a=>/Basiques|Moyennes|Avancees/.test(a.cle)).flatMap(a=>a.detail||[]);
+  li.push(`⭐ <b>XP sans perdre de Flower</b> : cuisine avec tes propres cultures${cult.length?" ("+cult.slice(0,4).map(nm).join(", ")+")":""}, surtout les plats qui servent aux livraisons.`);
   const al=(D.stock||[]).filter(r=>r.alert);if(al.length)li.push(`⚠️ <b>Ne vends pas trop bas</b> : ${al.map(r=>nm(r.n)).join(", ")}.`);
   li.push(`✅ <b>Chaque semaine</b> : finis dans le vert et remplis les objectifs de saison de tes NFT (en haut).`);
  }else if(b==="niveau"){
   const xpAll=N.filter(r=>r.xp);
   li.push(`⭐ <b>NFT d'XP</b> : ${xpAll.map(r=>`${r.n} ${r.xp} — ${r.owned?"✅ tu l'as, garde-le":r.price?`${fr(r.price)} FLW`:"prix inconnu"}`).join(" · ")}.`);
-  li.push(`🍳 L'XP vient surtout de la <b>cuisine</b> : cuisine avec tes propres cultures (pas achetées), en priorité les plats qui servent aussi aux livraisons.`);
-  li.push(`💡 Monter de niveau donne des points de compétence : vise ceux qui rapportent des ressources (voir onglet Rentabilité), pas ceux qui donnent des coins si tu en as assez.`);
+  const cult=princ.filter(a=>/Basiques|Moyennes|Avancees/.test(a.cle)).flatMap(a=>a.detail||[]);
+  li.push(`🍳 L'XP vient surtout de la <b>cuisine</b> : cuisine avec tes propres cultures${cult.length?" ("+cult.slice(0,4).map(nm).join(", ")+")":""} plutôt que des cultures achetées, en priorité les plats qui servent aussi aux livraisons.`);
+  li.push(`💡 Monter de niveau donne des points de compétence : vise ceux qui boostent ${princ.map(a=>a.nom).join(", ")||"ce que tu fais le plus"} (voir l'onglet Bonus et compétences), pas ceux qui donnent des coins si tu en as assez.`);
  }else{
-  const keep=["Wood","Stone","Iron","Gold","Crimstone","Obsidian","Oil"];const st=(D.stock||[]).filter(r=>keep.includes(r.n));
-  li.push(`🏡 <b>Garde tes matériaux</b> : un agrandissement demande surtout du bois, de la pierre, du fer et de l'or. Ne vends pas ces ressources tant que l'agrandissement n'est pas fait.`);
+  const mat=["Wood","Stone","Iron","Gold","Crimstone"],prodMat=mat.filter(k=>(P[k]||0)>=1),achete=mat.filter(k=>!prodMat.includes(k)).slice(0,4);
+  li.push(`🏡 <b>Garde tes matériaux</b> : un agrandissement demande surtout du bois, de la pierre, du fer et de l'or. Toi, tu produis ${prodMat.map(nm).join(", ")||"peu de matériaux"} : ne les vends pas tant que l'agrandissement n'est pas fait.`+(achete.length?` Le reste (${achete.map(nm).join(", ")}), tu devras sûrement l'acheter : surveille son prix dans l'onglet « Une ressource ».`:""));
+  const st=(D.stock||[]).filter(r=>["Wood","Stone","Iron","Gold","Crimstone","Obsidian","Oil"].includes(r.n));
   if(st.length)li.push(`📦 Tu as : ${st.map(r=>`${nm(r.n)} ${fr(r.stock,0)}`).join(" · ")}.`);
-  const mines=N.filter(r=>!r.xp&&/Mole|Golem|Nugget|Idol|Turtle|Beaver|Totem|Wendy|Peckster/.test(r.n)&&!r.owned&&r.an_pct>=35);
-  if(mines.length)li.push(`⛏️ NFT qui produisent ces matériaux et restent rentables : ${mines.map(r=>`<b>${r.n}</b> (${fr(r.an_pct,0)} %/an)`).join(", ")}.`);
+  const mines=N.filter(r=>!r.xp&&!r.owned&&!r.pas_pour_toi&&r.an_pct>=35&&(r.cibles||[]).some(k=>mat.includes(k)&&PR.has(k)));
+  if(mines.length)li.push(`⛏️ NFT qui boostent les matériaux que tu produis vraiment et restent rentables : ${mines.map(r=>`<b>${r.n}</b> (${fr(r.an_pct,0)} %/an)`).join(", ")}.`);
   li.push(`📝 Écris « prochain agrandissement » dans « Ma liste d'objectifs » (➕ Ajouter) : l'outil calcule ce qu'il te manque et combien ça coûterait au marché.`);
  }
- return li.length?li.map(x=>`<p class="plain">${x}</p>`).join(""):'<div class="empty">Rien à signaler 👍</div>';
+ return li.map(x=>`<p class="plain">${x}</p>`).join("");
 }
 function skillsTab(){
  const el=document.getElementById("skills"),K=(D.nft||{}).skills;
@@ -424,8 +438,8 @@ function nftTab(){
   drawOwn();draw();};});
  el.innerHTML=(/^pas encore/.test((D.nft||{}).source||"")?`<div class="card"><p class="plain">⚠️ <b>Ta ferme n'a pas pu être lue</b> (sfl.world n'a pas répondu). Les conseils d'achat sont masqués pour ne pas te conseiller un NFT inutile. Réessaie 🔄 Actualiser dans quelques minutes.</p></div>`:"")+`<div class="hero"><div><div class="l">Tes NFT à bonus rapportent</div><div class="big pos">+${fr(ownDay*30)} FLW/mois</div><div class="l">+${fp(ownDay)} par jour</div></div><div><div class="l">Ils valent (prix plancher)</div><div class="big">${fr(ownVal)} FLW</div><div class="l">soit ${ownVal?fr(ownDay*365/ownVal*100,0):"—"} %/an en moyenne</div></div></div>
  <div class="card"><h2>🧾 Tes NFT</h2><div class="sub">Rendement / an = ce qu'il rapporte en un an ÷ son prix. Un NFT reste à toi et se revend : au-dessus de ~35-40 %/an, c'est un bon placement.</div><div class="scroll"><table>${head}<tbody id="own_rows"></tbody></table></div></div>
- ${(()=>{const T=buy.filter(r=>r.price&&!r.pas_pour_toi&&r.note&&/🟢|🟡/.test(r.note)).sort((a,b)=>(b.an_pct||0)-(a.an_pct||0)).slice(0,8);
-  return `<div class="card"><h2>🏆 Le top pour ta ferme</h2><div class="sub">Les NFT en vente qui te rapporteraient le plus, avec tes compétences, tes bonus, ce que tu produis vraiment et tes habitudes. Seulement ceux remboursés en moins de 2 ans. Change chaque jour selon les prix et ta façon de jouer.</div>
+ ${(()=>{const PRt=new Set(((D.nft||{}).profil||{}).principales||[]);const T=buy.filter(r=>r.price&&!r.pas_pour_toi&&(r.cibles||[]).some(k=>PRt.has(k))&&r.note&&/🟢|🟡/.test(r.note)).sort((a,b)=>(b.an_pct||0)-(a.an_pct||0)).slice(0,8);
+  return `<div class="card"><h2>🏆 Le top pour ta ferme</h2><div class="sub">Les NFT en vente qui boostent ce que tu fais vraiment (tes activités principales), avec tes compétences, tes bonus et tes habitudes. Seulement ceux remboursés en moins de 2 ans. Change chaque jour selon les prix et ta façon de jouer.</div>
   ${T.length?`<div class="scroll"><table><tr><th style="text-align:left">NFT</th><th>Prix</th><th>Note</th><th>Rendement</th><th>Remboursé en</th><th style="text-align:left">Pourquoi</th></tr>${T.map(r=>`<tr><td style="text-align:left"><button class="chip" title="En faire un objectif" data-obj-nft="${encodeURIComponent(r.n)}">🎯</button> <b>${r.n}</b><div class="why">🎁 ${r.effet}</div></td><td>${fr(r.price)}</td><td>${r.note}</td><td><b>${fr(r.an_pct,0)} %/an</b></td><td>${fr(r.rembourse_jours/30,0)} mois</td><td style="text-align:left" class="why">${r.pot?r.pot.actuel:""}</td></tr>`).join("")}</table></div>`:'<div class="empty">Aucun NFT en vente ne se rembourse en moins de 2 ans avec ta façon de jouer actuelle.</div>'}</div>`;})()}
  <div class="card"><h2>🛒 Tous les NFT en vente, comparés à ta ferme</h2>
  <div class="controls" style="flex-wrap:wrap;gap:8px;align-items:center">

@@ -733,7 +733,7 @@ def main():
     except Exception as e:
         print(f"(animaux non lus sur sfl.world : {e})", file=sys.stderr)
     # Compteurs réels (minés, coupés, récoltés, collectés) : enregistrés à chaque relevé pour mesurer ton rythme
-    reel, jours_reel, parts_vie = None, 0, {}
+    reel, jours_reel, parts_vie, compteurs = None, 0, {}, {}
     try:
         compteurs = lire_activite_sflworld(page_sfl(f"https://sfl.world/land/{FARM_ID}/activity"))
         if compteurs:
@@ -757,7 +757,7 @@ def main():
         elif mesure:
             animaux = {k: mesure[k] for k in ("cycles_vaches", "cycles_poules", "vaches")}
         else:
-            animaux = {k: DEFAULT_PROD[k] for k in ("cycles_vaches", "cycles_poules", "vaches")}
+            animaux = {"cycles_vaches": 0, "cycles_poules": 0, "vaches": 0}   # inconnus : jamais ceux d'une autre ferme
         p.update(animaux)
         if (CONFIG.get("rendements") or {}).get("Wood"):
             p["rendement_bois"] = CONFIG["rendements"]["Wood"]
@@ -785,6 +785,18 @@ def main():
         p["max_actions"] = ferme.get("max_actions") or {}
         if animaux_lus:
             p["poules"] = (animaux_lus.get("Chicken") or {}).get("nombre", 0)
+        habitudes = False
+        if not reel and compteurs:
+            # Premier jour : on répartit selon TES habitudes (compteurs à vie), pas « chaque rocher 6 fois par jour ».
+            # u = nombre de « jours pleins » passés sur chaque ressource ; la plus utilisée garde l'estimation, les autres au prorata.
+            cle = {"Stone": "Stone Mined", "Iron": "Iron Mined", "Gold": "Gold Mined",
+                   "Crimstone": "Crimstone Mined", "Wood": "Tree Chopped"}
+            u = {k: compteurs.get(c, 0) / p[k] for k, c in cle.items() if p.get(k)}
+            um = max(u.values(), default=0)
+            if um > 0:
+                for k in u:
+                    p[k] = round(p[k] * min(1.0, u[k] / um), 1)
+                habitudes = True
         n = ferme["noeuds"]
         source = (f"lue sur ta ferme : {n['Stone']} rochers de pierre, {n['Iron']} de fer, {n['Gold']} d'or, "
                   f"{n['Crimstone']} de crimstone, {n['Wood']} arbres, champs : "
@@ -811,8 +823,9 @@ def main():
                       f"{reel['Wood']:g} arbres coupés, {sum(reel['recoltes'].values()):g} champs récoltés, "
                       f"{reel['cycles_poules']:g} récoltes d'œufs et {reel['cycles_vaches']:g} de lait par jour · " + source)
         else:
-            source = ("⏳ estimation (rochers × ~6 passages/jour) : ton vrai rythme sera mesuré au prochain relevé, demain · "
-                      + source)
+            source = (("⏳ estimation selon tes habitudes (ce que tu as miné et coupé depuis le début) : "
+                       if habitudes else "⏳ estimation (rochers × ~6 passages/jour) : ")
+                      + "ton vrai rythme sera mesuré au prochain relevé, demain · " + source)
         if parts_vie:
             p["parts_vie"] = parts_vie
         cfg_prod = {**CONFIG, "ma_production": p}
