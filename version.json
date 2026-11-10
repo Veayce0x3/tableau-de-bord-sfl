@@ -1,6 +1,6 @@
 {
- "version": "2026-11-10.1",
- "nouveautes": "Objectifs : sous chaque bâtiment ou agrandissement, « Acheter ou produire ? » (ce qui manque, prix au marché, temps pour le produire toi-même).",
+ "version": "2026-11-10.2",
+ "nouveautes": "Objectifs : « 🎟️ Pass du chapitre » (tes points, combien par jour pour le palier visé, coût de chaque mission). Mon compte : « 🔔 Dernier mouvement » (dépôt ou retrait).",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
@@ -16,6 +16,7 @@
   "lancer_app.sh",
   "nft_effets_jeu.json",
   "batiments_jeu.json",
-  "lancer_windows.py"
+  "lancer_windows.py",
+  "chapitres_jeu.json"
  ]
 }

@@ -924,6 +924,7 @@ def main():
                                                costs, float(CONFIG.get("coins_par_flower", 1525)))
     except Exception as e:
         print(f"(plan de progression indisponible : {e})", file=sys.stderr)
+    liv, chap = None, None
     try:
         from nft_analyse import lire_livraisons_sflworld, lire_chapitre_sflworld, conseils_livraisons
         liv = lire_livraisons_sflworld(page_sfl(f"https://sfl.world/land/{FARM_ID}/delivery"))
@@ -931,6 +932,12 @@ def main():
         nft["livraisons"] = conseils_livraisons(liv, chap, nft.get("profil"), all_prices)
     except Exception as e:
         print(f"(livraisons non lues sur sfl.world : {e})", file=sys.stderr)
+    try:
+        from nft_analyse import plan_pass
+        nft["pass"] = plan_pass(json.loads((ROOT / "chapitres_jeu.json").read_text()), load(DATA / "activite.json", []),
+                                liv, chap, today, int(CONFIG.get("palier_pass", 40)))
+    except Exception as e:
+        print(f"(pass du chapitre indisponible : {e})", file=sys.stderr)
     try:
         from nft_analyse import acheter_ou_produire
         rythme = reel

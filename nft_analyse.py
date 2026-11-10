@@ -660,7 +660,7 @@ def lire_activite_sflworld(page_html):
     import html as _h
     t = re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", page_html)))
     return {f"{n.strip()} {v}": float(x) for n, v, x in
-            re.findall(r"([A-Z][A-Za-z' ]*?) (Mined|Harvested|Chopped|Collected) (\d+(?:\.\d+)?)", t)}
+            re.findall(r"([A-Z][A-Za-z' ]*?) (Mined|Harvested|Chopped|Collected|Points Earned) (\d+(?:\.\d+)?)", t)}
 
 
 def rythme_reel(hist, jours_max=30):
@@ -1120,8 +1120,8 @@ def lire_chapitre_sflworld(page_html):
     i_ch, i_bo = page_html.find("collapseChores"), page_html.find(">Bounties")
     if i_ch >= 0:
         zone = page_html[i_ch:i_bo if i_bo > i_ch else None]
-        for txt, a, b, img, r in re.findall(r'</i>([^<]+)</div></div><div class="mb-auto ta-right">(?:<div class="hide">\d+</div>)?'
-                                             r'<div><small>(\d+)</small> / <b>(\d+)</b></div><div><div><img src="/img/([^"]+?)\.png"[^>]*/>(\d+)',
+        for txt, a, b, img, r in re.findall(r'</i>(?:<img[^>]*/>)?([^<]+)</div></div><div class="mb-auto ta-right">(?:<div class="hide">\d+</div>)?'
+                                             r'<div><small>(\d+)</small> / <b>(\d+)</b></div><div><div><img src="/img/(?:[^"/]+/)?([^"/]+?)\.png"[^>]*/>(?:[^<\d]*x)?(\d+)',
                                              zone):
             corvees.append({"t": txt.strip(), "a": int(a), "b": int(b), "recompense": int(r),
                             "monnaie": {"coin": "coins", "Gem": "gemmes"}.get(img, "tickets")})
@@ -1262,3 +1262,92 @@ def acheter_ou_produire(goals, holdings, prices, couts, rythme, rendements, coin
                                            "jours_prod": round(jours_prod, 1), "jours_bloque": round(jours_bloque, 1),
                                            "jours_gagnes": round(gagnes, 1), "verdict": verdict, "texte": texte}})
     return out
+
+
+# --- Pass du chapitre : points, rythme à tenir, coût de chaque mission ---
+POINTS_TACHE = {"delivery": 5, "bounty": 5, "chore": 3, "coinDelivery": 10, "flowerDelivery": 10}   # tracks.ts
+
+
+def plan_pass(chapitres, activite, livraisons, chapitre, aujourdhui, palier_vise=40):
+    """Où tu en es dans le pass du chapitre, combien de points par jour il faut, et ce que coûte chaque mission.
+
+    Points (code du jeu) : 5 par ticket d'une livraison ou d'une bounty, 3 par ticket d'une corvée,
+    10 par livraison contre des coins ou des Flower.
+    """
+    from datetime import date
+    auj = date.fromisoformat(aujourdhui)
+    nom = next((n for n, c in (chapitres or {}).items()
+                if date.fromisoformat(c["debut"]) <= auj < date.fromisoformat(c["fin"])), None)
+    if not nom:
+        return None
+    ch = chapitres[nom]
+    cle = f"{nom} Points Earned"
+    act = [a for a in activite or [] if a["date"] >= ch["debut"]]
+    pts = max([a["c"].get(cle, 0) for a in act] or [0])
+    debut, fin = date.fromisoformat(ch["debut"]), date.fromisoformat(ch["fin"])
+    reste_j = max(1, (fin - auj).days)
+    # Rythme : depuis le plus ancien relevé du chapitre qui a le compteur (au moins 1 jour), sinon depuis le début
+    avec = [a for a in act if cle in a["c"]]
+    vieux = next((a for a in avec if (auj - date.fromisoformat(a["date"])).days >= 1), None)
+    if vieux:
+        j = (auj - date.fromisoformat(vieux["date"])).days
+        rythme, rythme_src = (pts - vieux["c"][cle]) / j, f"mesuré sur {j} jour(s)"
+    else:
+        j = max(1, (auj - debut).days)
+        rythme, rythme_src = pts / j, f"moyenne depuis le début du chapitre ({j} j)"
+    paliers = ch["paliers"]
+    niveau = sum(1 for p in paliers if p["points"] <= pts)
+    cibles = []
+    for i, p in enumerate(paliers, 1):
+        lit = any("Bed" in r for r in p["vip"] + p["gratuit"])
+        if lit or i == palier_vise or (i == niveau + 1 and i < palier_vise):
+            manque = max(0, p["points"] - pts)
+            par_j = manque / reste_j
+            date_fin = None
+            if rythme > 0 and manque > 0:
+                from datetime import timedelta
+                date_fin = (auj + timedelta(days=manque / rythme)).isoformat()
+            cibles.append({"palier": i, "points": p["points"], "gratuit": p["gratuit"], "vip": p["vip"], "lit": lit,
+                           "manque": manque, "par_jour": round(par_j), "ok": manque == 0 or rythme >= par_j,
+                           "date_atteinte": date_fin, "vise": i == palier_vise})
+    # Missions du moment
+    missions = []
+    for d in livraisons or []:
+        if d.get("vip"):
+            continue
+        if d["type"] == "tickets":
+            p = POINTS_TACHE["delivery"] * d["recompense"]
+            cout = d["cout"]
+        elif d["type"] in ("coins", "flower"):
+            p = POINTS_TACHE["coinDelivery" if d["type"] == "coins" else "flowerDelivery"]
+            cout = d["cout"] - (d.get("en_flower") or 0)    # négatif = tu gagnes en plus
+        else:
+            continue
+        manque = [f"{i['b'] - i['a']} {i['n']}" for i in d["items"] if i["a"] < i["b"]]
+        missions.append({"quoi": f"Livraison {d['pnj']}", "sorte": d["type"], "points": p, "cout": round(cout, 2),
+                         "flw_100": round(cout / p * 100, 2) if p else None, "pret": d["pret"], "manque": manque})
+    for c in (chapitre or {}).get("corvees", []):
+        if c["monnaie"] != "tickets" or c["a"] >= c["b"]:
+            continue
+        missions.append({"quoi": c["t"], "sorte": "corvee", "points": POINTS_TACHE["chore"] * c["recompense"],
+                         "cout": None, "flw_100": None, "pret": False, "avance": [c["a"], c["b"]]})
+    payantes = sorted([m for m in missions if m["flw_100"] is not None], key=lambda m: m["flw_100"])
+    # « À faire absolument » : les livraisons qui coûtent moins de 3 FLW pour 100 points (ou qui rapportent)
+    for m in payantes:
+        m["absolument"] = m["flw_100"] <= 3
+    vise = next((c for c in cibles if c["vise"]), cibles[-1] if cibles else None)
+    corv_sem = sum(POINTS_TACHE["chore"] * c["recompense"] for c in (chapitre or {}).get("corvees", []) if c["monnaie"] == "tickets")
+    # Ordre de grandeur du coût pour finir : corvées (gratuites) + le reste en livraisons au coût médian du jour
+    vals = sorted(max(0, m["flw_100"]) for m in payantes if m["sorte"] == "tickets")
+    cout_median = vals[len(vals) // 2] / 100 if vals else None
+    cout_fin = None
+    if vise and cout_median is not None:
+        cout_fin = round(max(0, vise["manque"] - corv_sem * reste_j / 7) * cout_median, 1)
+    dispo = sum(m["points"] for m in payantes)
+    dispo_bon = [m for m in payantes if m["absolument"]]
+    return {"chapitre": nom, "debut": ch["debut"], "fin": ch["fin"], "points": pts, "niveau": niveau,
+            "reste_jours": reste_j, "rythme": round(rythme), "rythme_src": rythme_src, "cibles": cibles,
+            "missions": payantes + [m for m in missions if m["sorte"] == "corvee"],
+            "corvees_semaine": corv_sem, "cout_median_100": round(cout_median * 100, 2) if cout_median is not None else None,
+            "cout_fin": cout_fin, "points_dispo": dispo, "points_bon": sum(m["points"] for m in dispo_bon),
+            "cout_bon": round(sum(max(0, m["cout"]) for m in dispo_bon), 2)}

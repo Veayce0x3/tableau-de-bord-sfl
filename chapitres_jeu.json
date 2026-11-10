@@ -1,0 +1,1828 @@
+{
+ "Paw Prints": {
+  "debut": "2025-11-03",
+  "fin": "2026-02-02",
+  "paliers": [
+   {
+    "points": 170,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "Bronze Tool Box"
+    ]
+   },
+   {
+    "points": 350,
+    "gratuit": [
+     "10 Paw Prints Raffle Ticket"
+    ],
+    "vip": [
+     "Treasure Key"
+    ]
+   },
+   {
+    "points": 530,
+    "gratuit": [
+     "Treasure Key"
+    ],
+    "vip": [
+     "100 Paw Prints Raffle Ticket"
+    ]
+   },
+   {
+    "points": 720,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "5 flower"
+    ]
+   },
+   {
+    "points": 920,
+    "gratuit": [
+     "Paw Prints Rug"
+    ],
+    "vip": [
+     "Rare Key"
+    ]
+   }
+  ]
+ },
+ "Crabs and Traps": {
+  "debut": "2026-02-02",
+  "fin": "2026-05-04",
+  "paliers": [
+   {
+    "points": 330,
+    "gratuit": [
+     "Gourmet Hourglass"
+    ],
+    "vip": [
+     "Fish Hook Hat"
+    ]
+   },
+   {
+    "points": 670,
+    "gratuit": [
+     "10 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": [
+     "Walrus Onesie"
+    ]
+   },
+   {
+    "points": 1030,
+    "gratuit": [
+     "Treasure Key"
+    ],
+    "vip": []
+   },
+   {
+    "points": 1400,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "5 flower"
+    ]
+   },
+   {
+    "points": 1790,
+    "gratuit": [
+     "Crabs and Fish Rug"
+    ],
+    "vip": [
+     "Silver Tool Box"
+    ]
+   },
+   {
+    "points": 2190,
+    "gratuit": [
+     "10 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": [
+     "5000 coins"
+    ]
+   },
+   {
+    "points": 2610,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "Ore Hourglass"
+    ]
+   },
+   {
+    "points": 3040,
+    "gratuit": [
+     "Treasure Key"
+    ],
+    "vip": []
+   },
+   {
+    "points": 3490,
+    "gratuit": [
+     "20 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": []
+   },
+   {
+    "points": 3960,
+    "gratuit": [
+     "1 flower"
+    ],
+    "vip": [
+     "Diving Helmet"
+    ]
+   },
+   {
+    "points": 4450,
+    "gratuit": [
+     "10 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": []
+   },
+   {
+    "points": 4960,
+    "gratuit": [
+     "Harvest Hourglass"
+    ],
+    "vip": [
+     "500 coins"
+    ]
+   },
+   {
+    "points": 5490,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "5 flower"
+    ]
+   },
+   {
+    "points": 6040,
+    "gratuit": [
+     "10 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": [
+     "Timber Hourglass"
+    ]
+   },
+   {
+    "points": 6610,
+    "gratuit": [
+     "Rare Key"
+    ],
+    "vip": [
+     "Silver Tool Box"
+    ]
+   },
+   {
+    "points": 7200,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": []
+   },
+   {
+    "points": 7820,
+    "gratuit": [
+     "20 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": []
+   },
+   {
+    "points": 8460,
+    "gratuit": [
+     "5000 coins"
+    ],
+    "vip": [
+     "500 coins"
+    ]
+   },
+   {
+    "points": 9130,
+    "gratuit": [
+     "10 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": [
+     "Silver Flower Box"
+    ]
+   },
+   {
+    "points": 9830,
+    "gratuit": [
+     "Bronze Flower Box"
+    ],
+    "vip": [
+     "Pearl Bed"
+    ]
+   },
+   {
+    "points": 10550,
+    "gratuit": [
+     "10 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": [
+     "Orchard Hourglass"
+    ]
+   },
+   {
+    "points": 11300,
+    "gratuit": [
+     "1 flower"
+    ],
+    "vip": []
+   },
+   {
+    "points": 12080,
+    "gratuit": [
+     "Fish Drying Rack"
+    ],
+    "vip": [
+     "5 flower"
+    ]
+   },
+   {
+    "points": 12890,
+    "gratuit": [
+     "10 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": []
+   },
+   {
+    "points": 13740,
+    "gratuit": [
+     "Timber Hourglass"
+    ],
+    "vip": [
+     "Blossom Hourglass"
+    ]
+   },
+   {
+    "points": 14620,
+    "gratuit": [
+     "10 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": []
+   },
+   {
+    "points": 15530,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "500 coins"
+    ]
+   },
+   {
+    "points": 16480,
+    "gratuit": [
+     "10 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": [
+     "Harvest Hourglass"
+    ]
+   },
+   {
+    "points": 17470,
+    "gratuit": [
+     "20 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": []
+   },
+   {
+    "points": 18500,
+    "gratuit": [
+     "Fish Flags"
+    ],
+    "vip": [
+     "Yellow Submarine Trophy"
+    ]
+   },
+   {
+    "points": 19570,
+    "gratuit": [
+     "10 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": []
+   },
+   {
+    "points": 20680,
+    "gratuit": [
+     "5 flower"
+    ],
+    "vip": []
+   },
+   {
+    "points": 21840,
+    "gratuit": [
+     "10 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": [
+     "5000 coins"
+    ]
+   },
+   {
+    "points": 23040,
+    "gratuit": [
+     "Treasure Key"
+    ],
+    "vip": []
+   },
+   {
+    "points": 24290,
+    "gratuit": [
+     "Ore Hourglass"
+    ],
+    "vip": [
+     "Dark Eyed Kissing Fish"
+    ]
+   },
+   {
+    "points": 25590,
+    "gratuit": [
+     "10 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": [
+     "Orchard Hourglass"
+    ]
+   },
+   {
+    "points": 26940,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "Silver Flower Box"
+    ]
+   },
+   {
+    "points": 28350,
+    "gratuit": [
+     "30 Crabs and Traps Raffle Ticket"
+    ],
+    "vip": []
+   },
+   {
+    "points": 29810,
+    "gratuit": [
+     "10 flower"
+    ],
+    "vip": [
+     "5000 coins"
+    ]
+   },
+   {
+    "points": 31330,
+    "gratuit": [],
+    "vip": [
+     "Pet Egg"
+    ]
+   }
+  ]
+ },
+ "Salt Awakening": {
+  "debut": "2026-05-04",
+  "fin": "2026-08-03",
+  "paliers": [
+   {
+    "points": 20,
+    "gratuit": [
+     "10 Salt Rock"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 66,
+    "gratuit": [
+     "10 Salt Awakening Raffle Ticket"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 134,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 213,
+    "gratuit": [
+     "Ripped Salt Bag"
+    ],
+    "vip": [
+     "Silver Tool Box",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 395,
+    "gratuit": [
+     "10 Salt Rock"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 495,
+    "gratuit": [
+     "10 Salt Awakening Raffle Ticket"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 600,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 710,
+    "gratuit": [
+     "Treasure Key"
+    ],
+    "vip": [
+     "World Map Rug"
+    ]
+   },
+   {
+    "points": 824,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 942,
+    "gratuit": [
+     "10 Salt Rock"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 1064,
+    "gratuit": [
+     "10 Salt Awakening Raffle Ticket"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 1189,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 1317,
+    "gratuit": [
+     "Salt Lamp"
+    ],
+    "vip": [
+     "Luxury Key",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 1582,
+    "gratuit": [
+     "10 Salt Rock"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 1719,
+    "gratuit": [
+     "10 Salt Awakening Raffle Ticket"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 1858,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 2000,
+    "gratuit": [
+     "Bronze Flower Box"
+    ],
+    "vip": [
+     "Clam Shell Hat",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 2395,
+    "gratuit": [
+     "10 Salt Rock"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 2740,
+    "gratuit": [
+     "10 Salt Awakening Raffle Ticket"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 3155,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 3633,
+    "gratuit": [
+     "1000 coins"
+    ],
+    "vip": [
+     "Shrimp Onesie"
+    ]
+   },
+   {
+    "points": 4166,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 4751,
+    "gratuit": [
+     "10 Salt Rock"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 5383,
+    "gratuit": [
+     "10 Salt Awakening Raffle Ticket"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 6061,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 6781,
+    "gratuit": [
+     "Rare Key"
+    ],
+    "vip": [
+     "Fish Kite",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 8343,
+    "gratuit": [
+     "10 Salt Rock"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 9180,
+    "gratuit": [
+     "10 Salt Awakening Raffle Ticket"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 10054,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 10963,
+    "gratuit": [
+     "Treasure Key"
+    ],
+    "vip": [
+     "Silver Tool Box",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 12882,
+    "gratuit": [
+     "10 Salt Rock"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 13891,
+    "gratuit": [
+     "10 Salt Awakening Raffle Ticket"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 14930,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 16000,
+    "gratuit": [
+     "Pet Egg"
+    ],
+    "vip": [
+     "Salt Crystal Bed"
+    ]
+   },
+   {
+    "points": 16133,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 16480,
+    "gratuit": [
+     "10 Salt Rock"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 17017,
+    "gratuit": [
+     "10 Salt Awakening Raffle Ticket"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 17731,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 18616,
+    "gratuit": [
+     "Gourmet Hourglass"
+    ],
+    "vip": [
+     "Silver Tool Box",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 20875,
+    "gratuit": [
+     "10 Salt Rock"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 22242,
+    "gratuit": [
+     "10 Salt Awakening Raffle Ticket"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 23761,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 25431,
+    "gratuit": [
+     "10 Salt Rock"
+    ],
+    "vip": [
+     "Luxury Key",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 29215,
+    "gratuit": [
+     "10 Salt Rock"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 31324,
+    "gratuit": [
+     "10 Salt Awakening Raffle Ticket"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 33576,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 35968,
+    "gratuit": [
+     "Gourmet Hourglass"
+    ],
+    "vip": [
+     "Silver Tool Box"
+    ]
+   },
+   {
+    "points": 38501,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 41171,
+    "gratuit": [
+     "10 Salt Rock"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 43979,
+    "gratuit": [
+     "10 Salt Awakening Raffle Ticket"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 46922,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Salt Rock"
+    ]
+   },
+   {
+    "points": 50000,
+    "gratuit": [
+     "Luxury Key"
+    ],
+    "vip": [
+     "Gold Flower Box"
+    ]
+   }
+  ]
+ },
+ "Ascension Age": {
+  "debut": "2026-08-03",
+  "fin": "2026-11-02",
+  "paliers": [
+   {
+    "points": 20,
+    "gratuit": [
+     "10 Shiny Feather"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 72,
+    "gratuit": [
+     "10 Ascension Age Raffle Ticket"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 157,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 263,
+    "gratuit": [
+     "Treasure Key"
+    ],
+    "vip": [
+     "Ascended Wheel",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 516,
+    "gratuit": [
+     "10 Shiny Feather"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 660,
+    "gratuit": [
+     "10 Ascension Age Raffle Ticket"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 814,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 978,
+    "gratuit": [
+     "Treasure Key"
+    ],
+    "vip": [
+     "Salt Bottle Onesie"
+    ]
+   },
+   {
+    "points": 1149,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 1329,
+    "gratuit": [
+     "10 Shiny Feather"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 1515,
+    "gratuit": [
+     "10 Ascension Age Raffle Ticket"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 1709,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 1910,
+    "gratuit": [],
+    "vip": [
+     "Luxury Key",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 2329,
+    "gratuit": [
+     "10 Shiny Feather"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 2547,
+    "gratuit": [
+     "10 Ascension Age Raffle Ticket"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 2771,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 3000,
+    "gratuit": [
+     "Bronze Flower Box"
+    ],
+    "vip": [
+     "Blue Rose Dress",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 3553,
+    "gratuit": [
+     "10 Shiny Feather"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 4057,
+    "gratuit": [
+     "10 Ascension Age Raffle Ticket"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 4675,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 5394,
+    "gratuit": [
+     "1000 coins"
+    ],
+    "vip": [
+     "Marble Head"
+    ]
+   },
+   {
+    "points": 6205,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 7101,
+    "gratuit": [
+     "10 Shiny Feather"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 8078,
+    "gratuit": [
+     "10 Ascension Age Raffle Ticket"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 9131,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 10257,
+    "gratuit": [
+     "Rare Key"
+    ],
+    "vip": [
+     "Fairy Sandals",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 12715,
+    "gratuit": [
+     "10 Shiny Feather"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 14043,
+    "gratuit": [
+     "10 Ascension Age Raffle Ticket"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 15433,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 16884,
+    "gratuit": [
+     "Treasure Key"
+    ],
+    "vip": [
+     "Silver Tool Box",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 19963,
+    "gratuit": [
+     "10 Shiny Feather"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 21587,
+    "gratuit": [
+     "10 Ascension Age Raffle Ticket"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 23267,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 25000,
+    "gratuit": [
+     "Pet Egg"
+    ],
+    "vip": [
+     "Cloud Bed"
+    ]
+   },
+   {
+    "points": 25137,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 25494,
+    "gratuit": [
+     "10 Shiny Feather"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 26047,
+    "gratuit": [
+     "10 Ascension Age Raffle Ticket"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 26782,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 27693,
+    "gratuit": [
+     "Gourmet Hourglass"
+    ],
+    "vip": [
+     "Silver Tool Box",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 30019,
+    "gratuit": [
+     "10 Shiny Feather"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 31425,
+    "gratuit": [
+     "10 Ascension Age Raffle Ticket"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 32989,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 34709,
+    "gratuit": [
+     "10 Shiny Feather"
+    ],
+    "vip": [
+     "Luxury Key",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 38603,
+    "gratuit": [
+     "10 Shiny Feather"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 40775,
+    "gratuit": [
+     "10 Ascension Age Raffle Ticket"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 43093,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 45556,
+    "gratuit": [
+     "Gourmet Hourglass"
+    ],
+    "vip": [
+     "Silver Tool Box"
+    ]
+   },
+   {
+    "points": 48162,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 50912,
+    "gratuit": [
+     "10 Shiny Feather"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 53802,
+    "gratuit": [
+     "10 Ascension Age Raffle Ticket"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 56831,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Shiny Feather"
+    ]
+   },
+   {
+    "points": 60000,
+    "gratuit": [
+     "Luxury Key"
+    ],
+    "vip": [
+     "Gold Flower Box"
+    ]
+   }
+  ]
+ },
+ "Cave Dwellers": {
+  "debut": "2026-11-02",
+  "fin": "2027-02-01",
+  "paliers": [
+   {
+    "points": 10,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 20,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 72,
+    "gratuit": [
+     "10 Cave Dwellers Raffle Ticket"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 157,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "1000 coins",
+     "3 flower"
+    ]
+   },
+   {
+    "points": 516,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 660,
+    "gratuit": [
+     "10 Cave Dwellers Raffle Ticket"
+    ],
+    "vip": [
+     "10 Duende Cap",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 978,
+    "gratuit": [
+     "Treasure Key"
+    ],
+    "vip": [
+     "Pig Onesie"
+    ]
+   },
+   {
+    "points": 1149,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 1329,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 1515,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 1709,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 1910,
+    "gratuit": [
+     "Mushroom Log"
+    ],
+    "vip": [
+     "Luxury Key",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 2329,
+    "gratuit": [
+     "10 Cave Dwellers Raffle Ticket"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 2547,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 2771,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 3000,
+    "gratuit": [
+     "Mining Drill"
+    ],
+    "vip": [
+     "Traveling Merchant Suit"
+    ]
+   },
+   {
+    "points": 3182,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 3553,
+    "gratuit": [
+     "10 Cave Dwellers Raffle Ticket"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 4057,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 4675,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 5394,
+    "gratuit": [
+     "Beetle Goggles"
+    ],
+    "vip": [
+     "Duende in a Bottle"
+    ]
+   },
+   {
+    "points": 6205,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 7101,
+    "gratuit": [
+     "10 Cave Dwellers Raffle Ticket"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 8078,
+    "gratuit": [
+     "Bronze Tool Box"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 9131,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 10257,
+    "gratuit": [
+     "Rare Key"
+    ],
+    "vip": [
+     "Traveling Merchant Bag"
+    ]
+   },
+   {
+    "points": 11453,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 12715,
+    "gratuit": [
+     "10 Cave Dwellers Raffle Ticket"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 15433,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 16884,
+    "gratuit": [
+     "Treasure Key"
+    ],
+    "vip": [
+     "Ascension Staff"
+    ]
+   },
+   {
+    "points": 18395,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 19963,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 21587,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 23267,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 25000,
+    "gratuit": [
+     "Pet Egg"
+    ],
+    "vip": [
+     "Spooky Bed"
+    ]
+   },
+   {
+    "points": 25137,
+    "gratuit": [
+     "10 Cave Dwellers Raffle Ticket"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 25494,
+    "gratuit": [
+     "10 Cave Dwellers Raffle Ticket"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 26047,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 27693,
+    "gratuit": [
+     "Gourmet Hourglass"
+    ],
+    "vip": [
+     "Warning Sign"
+    ]
+   },
+   {
+    "points": 28773,
+    "gratuit": [
+     "10 Cave Dwellers Raffle Ticket"
+    ],
+    "vip": [
+     "10 Duende Cap",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 31425,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 32989,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
+    "points": 34709,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "Luxury Key"
+    ]
+   },
+   {
+    "points": 36581,
+    "gratuit": [
+     "Bronze Tool Box"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 38603,
+    "gratuit": [
+     "10 Cave Dwellers Raffle Ticket"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 40775,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "10 Duende Cap",
+     "500 coins"
+    ]
+   },
+   {
+    "points": 45556,
+    "gratuit": [
+     "Treasure Key"
+    ],
+    "vip": [
+     "Silver Tool Box"
+    ]
+   },
+   {
+    "points": 48162,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 50912,
+    "gratuit": [
+     "Bronze Food Box"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 53802,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 56831,
+    "gratuit": [
+     "10 Duende Cap"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
+    "points": 60000,
+    "gratuit": [
+     "Luxury Key"
+    ],
+    "vip": [
+     "Gold Flower Box"
+    ]
+   }
+  ]
+ }
+}
