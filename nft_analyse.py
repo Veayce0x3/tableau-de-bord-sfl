@@ -1172,3 +1172,93 @@ def conseils_livraisons(livraisons, chapitre, prof, prices):
                (c["a"] / c["b"] >= 0.3 or any(m.rstrip("s") in c["t"].lower() for m in mots))]
     return {"flower": flower, "autres": autres, "bounties": bounties, "corvees": corvees,
             "total_flower": sum((e["en_flower"] or 0) for e in flower if e["verdict"] in ("livrer", "produire", "cuisiner"))}
+
+
+# --- Objectifs à ressources (bâtiments, agrandissement) : acheter ou produire ? ---
+NON_ACHETABLE = {"Oil": "huile : ne s'achète pas, il faut forer", "Mud": "boue : ne s'achète pas, fouilles « Mud »"}
+
+
+def acheter_ou_produire(goals, holdings, prices, couts, rythme, rendements, coin_rate, tax=0.075):
+    """Pour chaque objectif pas encore fait qui demande des ressources :
+    ce qui manque, prix si on l'achète, coût si on le produit, jours pour le produire soi-même.
+
+    rythme = actions par jour (coups de pioche, arbres coupés) mesurées sur la ferme.
+    Produire soi-même « coûte » ce qu'on aurait gagné en vendant (prix − taxe) ou,
+    si c'est moins, ce que coûtent les outils : on garde le plus bas des deux.
+    """
+    rythme, rendements = rythme or {}, rendements or {}
+    out = []
+    for g in goals:
+        res = g.get("ressources")
+        if not res or g.get("fait"):
+            out.append(g)
+            continue
+        lignes, achat, surcout, a_acheter = [], 0.0, 0.0, []
+        jours_prod, jours_bloque = 0.0, 0.0
+        for item, need in res.items():
+            have = (holdings.get("Coins") if item == "coins" else holdings.get(item)) or 0
+            left = max(0.0, need - have)
+            if left <= 0:
+                continue
+            l = {"item": item, "besoin": need, "stock": round(have, 1), "manque": round(left, 1)}
+            if item == "coins":
+                l["prix"] = round(left / coin_rate, 2)
+                l["note"] = "s'achètent avec des Flower (ou chasse au trésor)"
+                achat += l["prix"]
+            elif item in NON_ACHETABLE:
+                l["note"] = NON_ACHETABLE[item]
+                par_j = (rythme.get(item) or 0) * (rendements.get(item) or 0)
+                if par_j:
+                    l["par_jour"] = round(par_j, 1)
+                    l["jours"] = round(left / par_j, 1)
+                    jours_bloque = max(jours_bloque, l["jours"])
+                else:
+                    jours_bloque = max(jours_bloque, 0.01)
+            else:
+                p = prices.get(item)
+                c = couts.get(item)
+                par_j = (rythme.get(item) or 0) * (rendements.get(item) or 0)
+                if p:
+                    l["prix"] = round(left * p, 2)
+                    achat += l["prix"]
+                    perdu = p * (1 - tax) if c is None else min(p * (1 - tax), c)
+                    l["surcout"] = round(left * (p - perdu), 2)
+                    surcout += l["surcout"]
+                if par_j:
+                    l["par_jour"] = round(par_j, 1)
+                    l["jours"] = round(left / par_j, 1)
+                    jours_prod = max(jours_prod, l["jours"])
+                elif p:
+                    l["note"] = "tu n'en produis pas : à acheter"
+                    a_acheter.append(l)
+            lignes.append(l)
+        if not lignes:
+            out.append(g)
+            continue
+        # le surcoût des ressources que tu ne produis pas ne compte pas : tu dois les acheter de toute façon
+        sur_choix = surcout - sum(l.get("surcout") or 0 for l in a_acheter)
+        gagnes = max(0.0, jours_prod - jours_bloque) if jours_prod else 0.0
+        if gagnes < 1:
+            verdict = "produire"
+            texte = ("Produis-le toi-même : acheter ne te ferait presque pas gagner de temps"
+                     + (" (l'huile ou la boue, qui ne s'achètent pas, te bloquent de toute façon)." if jours_bloque >= jours_prod and jours_bloque > 0 else "."))
+        elif sur_choix <= 0:
+            verdict = "acheter"
+            texte = f"Acheter te fait gagner ≈ {gagnes:.0f} jour(s) sans surcoût : achète."
+        else:
+            seuil = sur_choix / gagnes
+            verdict = "produire" if seuil >= 1 else "selon"
+            texte = (f"Acheter te ferait gagner ≈ {gagnes:.0f} jour(s) et coûterait ≈ {sur_choix:.1f} FLW de plus que de le produire. "
+                     f"Ça vaut le coup seulement si cette amélioration te rapporte plus de {seuil:.2f} FLW par jour. "
+                     "Sinon, garde ta production (ne la vends pas) jusqu'à avoir tout, et achète seulement le petit reste à la fin.")
+        if a_acheter:
+            texte += " Tu ne produis pas : " + ", ".join(l["item"] for l in a_acheter) + " → à acheter."
+        nb = [l for l in lignes if l["item"] in NON_ACHETABLE]
+        if nb:
+            texte += " À côté, il te faut de toute façon " + " et ".join(
+                f"{l['manque']:.0f} {'huiles' if l['item'] == 'Oil' else 'boues'}" for l in nb) + " (ne s'achètent pas)."
+        texte = re.sub(r"(\d)\.(\d)", r"\1,\2", texte)
+        out.append({**g, "achat_ou_prod": {"lignes": lignes, "achat": round(achat, 2), "surcout": round(surcout, 2),
+                                           "jours_prod": round(jours_prod, 1), "jours_bloque": round(jours_bloque, 1),
+                                           "jours_gagnes": round(gagnes, 1), "verdict": verdict, "texte": texte}})
+    return out

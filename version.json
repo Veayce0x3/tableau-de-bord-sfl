@@ -1,6 +1,6 @@
 {
- "version": "2026-11-08.7",
- "nouveautes": "Nouveau dans Objectifs : « 📦 Livraisons et bounties » (ce qui vaut le coup de livrer, de cuisiner ou de vendre).",
+ "version": "2026-11-10.1",
+ "nouveautes": "Objectifs : sous chaque bâtiment ou agrandissement, « Acheter ou produire ? » (ce qui manque, prix au marché, temps pour le produire toi-même).",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

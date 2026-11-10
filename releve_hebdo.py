@@ -931,6 +931,19 @@ def main():
         nft["livraisons"] = conseils_livraisons(liv, chap, nft.get("profil"), all_prices)
     except Exception as e:
         print(f"(livraisons non lues sur sfl.world : {e})", file=sys.stderr)
+    try:
+        from nft_analyse import acheter_ou_produire
+        rythme = reel
+        if not rythme and compteurs.get("Daily Reward Collected"):
+            # 1er relevé : moyenne par jour de jeu depuis le début
+            nj = compteurs["Daily Reward Collected"]
+            rythme = {k: compteurs.get(v, 0) / nj for k, v in (("Wood", "Tree Chopped"), ("Stone", "Stone Mined"),
+                      ("Iron", "Iron Mined"), ("Gold", "Gold Mined"), ("Crimstone", "Crimstone Mined"))}
+        goals_eval = acheter_ou_produire(goals_eval, {**holdings, "Coins": fin.get("coins") or 0}, all_prices,
+                                         {r["item"]: r["cout"] for r in costs}, rythme, CONFIG.get("rendements"),
+                                         float(CONFIG.get("coins_par_flower", 1525)), TAX)
+    except Exception as e:
+        print(f"(acheter ou produire indisponible : {e})", file=sys.stderr)
     dash = build_dashboard(ROOT, farms, history, WATCH, NAMES_FR, all_prices, costs, cost_hist, stock, goals_eval,
                            CONFIG.get("date_depart"), nft)
     print(report)
