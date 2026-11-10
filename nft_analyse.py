@@ -1035,7 +1035,7 @@ def plan_progression(nft, prices, saison, skills=None, rendements=None, costs=No
             continue
         c = next((r for r in costs or [] if r.get("item") == k and r.get("par_action")), None)
         # Ce que rapporte vraiment un coup en plus : vente − coût de l'outil (pioche, hache). Si c'est à perte, on ne le conseille pas.
-        v_u = (c["marge"] * c["par_action"]) if c else y_res.get(k, 1) * pr(k)
+        v_u = (c.get("marge_reelle", c["marge"]) * c["par_action"]) if c else y_res.get(k, 1) * pr(k)
         if v_u <= 0:
             continue
         gain = (cible - actu) * v_u
@@ -1307,7 +1307,7 @@ def plan_pass(chapitres, activite, livraisons, chapitre, aujourdhui, palier_vise
             if rythme > 0 and manque > 0:
                 from datetime import timedelta
                 date_fin = (auj + timedelta(days=manque / rythme)).isoformat()
-            cibles.append({"palier": i, "points": p["points"], "gratuit": p["gratuit"], "vip": p["vip"], "lit": lit,
+            cibles.append({"palier": i, "points": p["points"], "dans_palier": p["points"] - (paliers[i - 2]["points"] if i > 1 else 0), "gratuit": p["gratuit"], "vip": p["vip"], "lit": lit,
                            "manque": manque, "par_jour": round(par_j), "ok": manque == 0 or rythme >= par_j,
                            "date_atteinte": date_fin, "vise": i == palier_vise})
     # Missions du moment

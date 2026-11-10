@@ -253,14 +253,20 @@ def production_costs(prices, cfg, coin_rate):
     """
     y = {**DEFAULT_YIELDS, **(cfg.get("rendements") or {})}
     rows = []
+    propre = {}   # coût réel : les ressources de l'outil comptées à TON coût de production (s'il est plus bas)
     for item, r in RECIPES.items():
         coins = y[r["coins"]] if isinstance(r["coins"], str) else r["coins"]
         coin_cost = coins / coin_rate
         mat_cost = sum(q * (prices.get(i) or 0) for i, q in r["items"].items())
+        mat_reel = sum(q * min(propre.get(i, prices.get(i) or 0), prices.get(i) or propre.get(i, 0))
+                       for i, q in r["items"].items())
         per_unit = (coin_cost + mat_cost) / y[item]
+        reel = (coin_cost + mat_reel) / y[item]
+        propre[item] = reel
         sell = (prices.get(item) or 0) * (1 - TAX)
         rows.append({"item": item, "par_action": y[item], "cout_coins": coin_cost / y[item],
                      "cout_matieres": mat_cost / y[item], "cout": per_unit, "vente_nette": sell,
+                     "cout_reel": reel, "marge_reelle": sell - reel,
                      "marge": sell - per_unit,
                      "detail": f"{coins:g} coins" + "".join(f" + {q:g} {NAMES_FR.get(i, i)}" for i, q in r["items"].items())
                                + f" → {y[item]:g} par action"})

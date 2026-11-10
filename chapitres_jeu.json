@@ -77,7 +77,9 @@
     "gratuit": [
      "Treasure Key"
     ],
-    "vip": []
+    "vip": [
+     "10  Floater"
+    ]
    },
    {
     "points": 1400,
@@ -120,14 +122,18 @@
     "gratuit": [
      "Treasure Key"
     ],
-    "vip": []
+    "vip": [
+     "10  Floater"
+    ]
    },
    {
     "points": 3490,
     "gratuit": [
      "20 Crabs and Traps Raffle Ticket"
     ],
-    "vip": []
+    "vip": [
+     "10  Floater"
+    ]
    },
    {
     "points": 3960,
@@ -143,7 +149,9 @@
     "gratuit": [
      "10 Crabs and Traps Raffle Ticket"
     ],
-    "vip": []
+    "vip": [
+     "10  Floater"
+    ]
    },
    {
     "points": 4960,
@@ -186,14 +194,18 @@
     "gratuit": [
      "500 coins"
     ],
-    "vip": []
+    "vip": [
+     "50  Floater"
+    ]
    },
    {
     "points": 7820,
     "gratuit": [
      "20 Crabs and Traps Raffle Ticket"
     ],
-    "vip": []
+    "vip": [
+     "50  Floater"
+    ]
    },
    {
     "points": 8460,
@@ -236,7 +248,9 @@
     "gratuit": [
      "1 flower"
     ],
-    "vip": []
+    "vip": [
+     "50  Floater"
+    ]
    },
    {
     "points": 12080,
@@ -252,7 +266,9 @@
     "gratuit": [
      "10 Crabs and Traps Raffle Ticket"
     ],
-    "vip": []
+    "vip": [
+     "50  Floater"
+    ]
    },
    {
     "points": 13740,
@@ -268,7 +284,9 @@
     "gratuit": [
      "10 Crabs and Traps Raffle Ticket"
     ],
-    "vip": []
+    "vip": [
+     "50  Floater"
+    ]
    },
    {
     "points": 15530,
@@ -293,7 +311,9 @@
     "gratuit": [
      "20 Crabs and Traps Raffle Ticket"
     ],
-    "vip": []
+    "vip": [
+     "50  Floater"
+    ]
    },
    {
     "points": 18500,
@@ -309,14 +329,18 @@
     "gratuit": [
      "10 Crabs and Traps Raffle Ticket"
     ],
-    "vip": []
+    "vip": [
+     "100  Floater"
+    ]
    },
    {
     "points": 20680,
     "gratuit": [
      "5 flower"
     ],
-    "vip": []
+    "vip": [
+     "100  Floater"
+    ]
    },
    {
     "points": 21840,
@@ -332,7 +356,9 @@
     "gratuit": [
      "Treasure Key"
     ],
-    "vip": []
+    "vip": [
+     "100  Floater"
+    ]
    },
    {
     "points": 24290,
@@ -366,7 +392,9 @@
     "gratuit": [
      "30 Crabs and Traps Raffle Ticket"
     ],
-    "vip": []
+    "vip": [
+     "100  Floater"
+    ]
    },
    {
     "points": 29810,
@@ -379,7 +407,9 @@
    },
    {
     "points": 31330,
-    "gratuit": [],
+    "gratuit": [
+     "Oaken"
+    ],
     "vip": [
      "Pet Egg"
     ]
@@ -390,6 +420,15 @@
   "debut": "2026-05-04",
   "fin": "2026-08-03",
   "paliers": [
+   {
+    "points": 10,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
    {
     "points": 20,
     "gratuit": [
@@ -423,8 +462,16 @@
      "Ripped Salt Bag"
     ],
     "vip": [
-     "Silver Tool Box",
+     "Silver Tool Box"
+    ]
+   },
+   {
+    "points": 300,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "2000 coins"
     ]
    },
    {
@@ -505,8 +552,16 @@
      "Salt Lamp"
     ],
     "vip": [
-     "Luxury Key",
+     "Luxury Key"
+    ]
+   },
+   {
+    "points": 1448,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "3 flower"
     ]
    },
    {
@@ -542,8 +597,16 @@
      "Bronze Flower Box"
     ],
     "vip": [
-     "Clam Shell Hat",
+     "Clam Shell Hat"
+    ]
+   },
+   {
+    "points": 2135,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "2000 coins"
     ]
    },
    {
@@ -624,8 +687,16 @@
      "Rare Key"
     ],
     "vip": [
-     "Fish Kite",
+     "Fish Kite"
+    ]
+   },
+   {
+    "points": 7542,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "3 flower"
     ]
    },
    {
@@ -661,8 +732,16 @@
      "Treasure Key"
     ],
     "vip": [
-     "Silver Tool Box",
+     "Silver Tool Box"
+    ]
+   },
+   {
+    "points": 11906,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "2000 coins"
     ]
    },
    {
@@ -743,8 +822,16 @@
      "Gourmet Hourglass"
     ],
     "vip": [
-     "Silver Tool Box",
+     "Silver Tool Box"
+    ]
+   },
+   {
+    "points": 19666,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "3 flower"
     ]
    },
    {
@@ -780,8 +867,16 @@
      "10 Salt Rock"
     ],
     "vip": [
-     "Luxury Key",
+     "Luxury Key"
+    ]
+   },
+   {
+    "points": 27250,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "2000 coins"
     ]
    },
    {
@@ -872,6 +967,15 @@
   "fin": "2026-11-02",
   "paliers": [
    {
+    "points": 10,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
     "points": 20,
     "gratuit": [
      "10 Shiny Feather"
@@ -904,8 +1008,16 @@
      "Treasure Key"
     ],
     "vip": [
-     "Ascended Wheel",
+     "Ascended Wheel"
+    ]
+   },
+   {
+    "points": 383,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "2000 coins"
     ]
    },
    {
@@ -982,10 +1094,20 @@
    },
    {
     "points": 1910,
-    "gratuit": [],
+    "gratuit": [
+     "Lampshade"
+    ],
     "vip": [
-     "Luxury Key",
+     "Luxury Key"
+    ]
+   },
+   {
+    "points": 2116,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "3 flower"
     ]
    },
    {
@@ -1021,8 +1143,16 @@
      "Bronze Flower Box"
     ],
     "vip": [
-     "Blue Rose Dress",
+     "Blue Rose Dress"
+    ]
+   },
+   {
+    "points": 3182,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "2000 coins"
     ]
    },
    {
@@ -1103,8 +1233,16 @@
      "Rare Key"
     ],
     "vip": [
-     "Fairy Sandals",
+     "Fairy Sandals"
+    ]
+   },
+   {
+    "points": 11453,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "3 flower"
     ]
    },
    {
@@ -1140,8 +1278,16 @@
      "Treasure Key"
     ],
     "vip": [
-     "Silver Tool Box",
+     "Silver Tool Box"
+    ]
+   },
+   {
+    "points": 18395,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "2000 coins"
     ]
    },
    {
@@ -1222,8 +1368,16 @@
      "Gourmet Hourglass"
     ],
     "vip": [
-     "Silver Tool Box",
+     "Silver Tool Box"
+    ]
+   },
+   {
+    "points": 28773,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "3 flower"
     ]
    },
    {
@@ -1259,8 +1413,16 @@
      "10 Shiny Feather"
     ],
     "vip": [
-     "Luxury Key",
+     "Luxury Key"
+    ]
+   },
+   {
+    "points": 36581,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "2000 coins"
     ]
    },
    {
@@ -1383,8 +1545,25 @@
      "10 Duende Cap"
     ],
     "vip": [
-     "1000 coins",
      "3 flower"
+    ]
+   },
+   {
+    "points": 263,
+    "gratuit": [
+     "1000 coins"
+    ],
+    "vip": [
+     "TNT"
+    ]
+   },
+   {
+    "points": 383,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "2000 coins"
     ]
    },
    {
@@ -1402,8 +1581,16 @@
      "10 Cave Dwellers Raffle Ticket"
     ],
     "vip": [
-     "10 Duende Cap",
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 814,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "3 flower"
     ]
    },
    {
@@ -1457,8 +1644,16 @@
      "Mushroom Log"
     ],
     "vip": [
-     "Luxury Key",
+     "Luxury Key"
+    ]
+   },
+   {
+    "points": 2116,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "2000 coins"
     ]
    },
    {
@@ -1606,6 +1801,15 @@
     ]
    },
    {
+    "points": 14043,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "3 flower"
+    ]
+   },
+   {
     "points": 15433,
     "gratuit": [
      "10 Duende Cap"
@@ -1696,6 +1900,15 @@
     ]
    },
    {
+    "points": 26782,
+    "gratuit": [
+     "500 coins"
+    ],
+    "vip": [
+     "2000 coins"
+    ]
+   },
+   {
     "points": 27693,
     "gratuit": [
      "Gourmet Hourglass"
@@ -1710,8 +1923,16 @@
      "10 Cave Dwellers Raffle Ticket"
     ],
     "vip": [
-     "10 Duende Cap",
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 30019,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "2000 coins"
     ]
    },
    {
@@ -1765,8 +1986,16 @@
      "10 Duende Cap"
     ],
     "vip": [
-     "10 Duende Cap",
+     "10 Duende Cap"
+    ]
+   },
+   {
+    "points": 43093,
+    "gratuit": [
      "500 coins"
+    ],
+    "vip": [
+     "3 flower"
     ]
    },
    {
