@@ -48,6 +48,11 @@
      "Rare Key"
     ]
    }
+  ],
+  "objets_tickets": [
+   "Pet Specialist Hat",
+   "Pet Specialist Pants",
+   "Pet Specialist Shirt"
   ]
  },
  "Crabs and Traps": {
@@ -414,6 +419,11 @@
      "Pet Egg"
     ]
    }
+  ],
+  "objets_tickets": [
+   "Fish Hook Hat",
+   "Fish Hook Vest",
+   "Fish Hook Waders"
   ]
  },
  "Salt Awakening": {
@@ -960,6 +970,11 @@
      "Gold Flower Box"
     ]
    }
+  ],
+  "objets_tickets": [
+   "Spa Hat",
+   "Spa Robe",
+   "Spa Slippers"
   ]
  },
  "Ascension Age": {
@@ -1506,6 +1521,11 @@
      "Gold Flower Box"
     ]
    }
+  ],
+  "objets_tickets": [
+   "Swamp Lily Hat",
+   "Swamp Armor",
+   "Swamp Pants"
   ]
  },
  "Cave Dwellers": {
@@ -2052,6 +2072,28 @@
      "Gold Flower Box"
     ]
    }
+  ],
+  "objets_tickets": [
+   "Duende Shoes",
+   "Duende Pants",
+   "Duende Shirt"
   ]
+ },
+ "_regles": {
+  "tickets_livraison": {
+   "pumpkin' pete": 1,
+   "bert": 2,
+   "miranda": 2,
+   "finley": 2,
+   "raven": 4,
+   "finn": 5,
+   "timmy": 5,
+   "cornwell": 3,
+   "tywin": 10,
+   "jester": 4,
+   "pharaoh": 6
+  },
+  "bonus_vip": 2,
+  "source": "code du jeu : deliver.ts (TICKET_REWARDS, generateDeliveryTickets), completeNPCChore.ts, tracks.ts"
  }
 }

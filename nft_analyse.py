@@ -1268,7 +1268,7 @@ def acheter_ou_produire(goals, holdings, prices, couts, rythme, rendements, coin
 POINTS_TACHE = {"delivery": 5, "bounty": 5, "chore": 3, "coinDelivery": 10, "flowerDelivery": 10}   # tracks.ts
 
 
-def plan_pass(chapitres, activite, livraisons, chapitre, aujourdhui, palier_vise=40):
+def plan_pass(chapitres, activite, livraisons, chapitre, aujourdhui, palier_vise=40, vip=False, possedes=(), double=False):
     """Où tu en es dans le pass du chapitre, combien de points par jour il faut, et ce que coûte chaque mission.
 
     Points (code du jeu) : 5 par ticket d'une livraison ou d'une bounty, 3 par ticket d'une corvée,
@@ -1276,8 +1276,9 @@ def plan_pass(chapitres, activite, livraisons, chapitre, aujourdhui, palier_vise
     """
     from datetime import date
     auj = date.fromisoformat(aujourdhui)
-    nom = next((n for n, c in (chapitres or {}).items()
-                if date.fromisoformat(c["debut"]) <= auj < date.fromisoformat(c["fin"])), None)
+    regles = (chapitres or {}).get("_regles") or {}
+    nom = next((n for n, c in (chapitres or {}).items() if not n.startswith("_")
+                and date.fromisoformat(c["debut"]) <= auj < date.fromisoformat(c["fin"])), None)
     if not nom:
         return None
     ch = chapitres[nom]
@@ -1310,13 +1311,26 @@ def plan_pass(chapitres, activite, livraisons, chapitre, aujourdhui, palier_vise
             cibles.append({"palier": i, "points": p["points"], "dans_palier": p["points"] - (paliers[i - 2]["points"] if i > 1 else 0), "gratuit": p["gratuit"], "vip": p["vip"], "lit": lit,
                            "manque": manque, "par_jour": round(par_j), "ok": manque == 0 or rythme >= par_j,
                            "date_atteinte": date_fin, "vise": i == palier_vise})
-    # Missions du moment
+    # Tickets recalculés avec les règles du jeu (sfl.world n'est pas toujours à jour)
+    objets = [o for o in ch.get("objets_tickets", []) if o in set(possedes or ())]
+    bonus = (regles.get("bonus_vip", 2) if vip else 0) + len(objets)
+    table = regles.get("tickets_livraison") or {}
+    calc = {"vip": vip, "objets": objets, "double": double, "bonus": bonus}
     missions = []
     for d in livraisons or []:
         if d.get("vip"):
             continue
         if d["type"] == "tickets":
-            p = POINTS_TACHE["delivery"] * d["recompense"]
+            base = table.get(d["pnj"].lower())
+            if base is not None:
+                t = (base + bonus) * (2 if double else 1)
+                detail = f"{base} de base" + (" + 2 VIP" if vip else "") + (f" + {len(objets)} tenue(s) du chapitre" if objets else "")
+                if double:
+                    detail = f"({detail}) × 2 (double livraison du jour)"
+                detail += f" = {t} tickets"
+            else:
+                t, detail = d["recompense"], f"{d['recompense']:g} tickets (sfl.world)"
+            p = POINTS_TACHE["delivery"] * t
             cout = d["cout"]
         elif d["type"] in ("coins", "flower"):
             p = POINTS_TACHE["coinDelivery" if d["type"] == "coins" else "flowerDelivery"]
@@ -1324,19 +1338,22 @@ def plan_pass(chapitres, activite, livraisons, chapitre, aujourdhui, palier_vise
         else:
             continue
         manque = [f"{i['b'] - i['a']} {i['n']}" for i in d["items"] if i["a"] < i["b"]]
-        missions.append({"quoi": f"Livraison {d['pnj']}", "sorte": d["type"], "points": p, "cout": round(cout, 2),
+        if d["type"] != "tickets":
+            detail = "10 points par livraison"
+        missions.append({"quoi": f"Livraison {d['pnj']}", "sorte": d["type"], "points": p, "cout": round(cout, 2), "calcul": detail,
                          "flw_100": round(cout / p * 100, 2) if p else None, "pret": d["pret"], "manque": manque})
     for c in (chapitre or {}).get("corvees", []):
         if c["monnaie"] != "tickets" or c["a"] >= c["b"]:
             continue
-        missions.append({"quoi": c["t"], "sorte": "corvee", "points": POINTS_TACHE["chore"] * c["recompense"],
+        caps = c["recompense"] + bonus
+        missions.append({"quoi": c["t"], "sorte": "corvee", "points": POINTS_TACHE["chore"] * caps, "tickets": caps,
                          "cout": None, "flw_100": None, "pret": False, "avance": [c["a"], c["b"]]})
     payantes = sorted([m for m in missions if m["flw_100"] is not None], key=lambda m: m["flw_100"])
     # « À faire absolument » : les livraisons qui coûtent moins de 3 FLW pour 100 points (ou qui rapportent)
     for m in payantes:
         m["absolument"] = m["flw_100"] <= 3
     vise = next((c for c in cibles if c["vise"]), cibles[-1] if cibles else None)
-    corv_sem = sum(POINTS_TACHE["chore"] * c["recompense"] for c in (chapitre or {}).get("corvees", []) if c["monnaie"] == "tickets")
+    corv_sem = sum(POINTS_TACHE["chore"] * (c["recompense"] + bonus) for c in (chapitre or {}).get("corvees", []) if c["monnaie"] == "tickets")
     # Ordre de grandeur du coût pour finir : corvées (gratuites) + le reste en livraisons au coût médian du jour
     vals = sorted(max(0, m["flw_100"]) for m in payantes if m["sorte"] == "tickets")
     cout_median = vals[len(vals) // 2] / 100 if vals else None
@@ -1350,4 +1367,4 @@ def plan_pass(chapitres, activite, livraisons, chapitre, aujourdhui, palier_vise
             "missions": payantes + [m for m in missions if m["sorte"] == "corvee"],
             "corvees_semaine": corv_sem, "cout_median_100": round(cout_median * 100, 2) if cout_median is not None else None,
             "cout_fin": cout_fin, "points_dispo": dispo, "points_bon": sum(m["points"] for m in dispo_bon),
-            "cout_bon": round(sum(max(0, m["cout"]) for m in dispo_bon), 2)}
+            "cout_bon": round(sum(max(0, m["cout"]) for m in dispo_bon), 2), "calcul": calc}

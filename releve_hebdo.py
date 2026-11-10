@@ -706,6 +706,7 @@ def main():
     # Production de TA ferme : réglée à la main (ma_production) > lue sur ta ferme (sfl.world) > mesurée > ferme type
     mesure, jours = mesure_production(stock_hist, all_trades, CONFIG.get("rendements"))
     ferme, saison = None, None
+    land_page = ""
     try:
         req = urllib.request.Request(f"https://sfl.world/land/{FARM_ID}", headers={"User-Agent": "releve-hebdo-sfl"})
         try:
@@ -715,6 +716,7 @@ def main():
             import subprocess
             page = subprocess.run(["curl", "-fsSL", "-A", "releve-hebdo-sfl", f"https://sfl.world/land/{FARM_ID}"],
                                   capture_output=True, check=True).stdout.decode("utf-8", "replace")
+        land_page = page
         ferme = lire_ferme_sflworld(page, ((land or {}).get("bumpkin") or {}).get("skills"))
         from nft_analyse import lire_vetements_sflworld
         vetements = lire_vetements_sflworld(page)
@@ -941,7 +943,10 @@ def main():
     try:
         from nft_analyse import plan_pass
         nft["pass"] = plan_pass(json.loads((ROOT / "chapitres_jeu.json").read_text()), load(DATA / "activite.json", []),
-                                liv, chap, today, int(CONFIG.get("palier_pass", 40)))
+                                liv, chap, today, int(CONFIG.get("palier_pass", 40)),
+                                vip=bool((((land or {}).get("land") or {}).get("vip_info") or {}).get("have")),
+                                possedes=set(re.findall(r"(?<![A-Za-z])((?:[A-Z][a-z']+ ){1,3}[A-Z][a-z']+) \d+(?:\.\d+)?K? ", re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", land_page or "")))),
+                                double="Double Rewards Deliveries" in (land_page or ""))
         P = nft["pass"]
         if P:
             # Points du jour : depuis le dernier relevé d'hier (sinon le premier d'aujourd'hui)
