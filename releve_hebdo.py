@@ -942,6 +942,24 @@ def main():
         from nft_analyse import plan_pass
         nft["pass"] = plan_pass(json.loads((ROOT / "chapitres_jeu.json").read_text()), load(DATA / "activite.json", []),
                                 liv, chap, today, int(CONFIG.get("palier_pass", 40)))
+        P = nft["pass"]
+        if P:
+            # Points du jour : depuis le dernier relevé d'hier (sinon le premier d'aujourd'hui)
+            pj = load(DATA / "pass_jour.json", {})
+            hier = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+            if today not in pj:
+                base = pj[hier]["dernier"] if hier in pj and pj[hier].get("chapitre") == P["chapitre"] else P["points"]
+                pj[today] = {"chapitre": P["chapitre"], "debut": base}
+            pj[today]["dernier"] = P["points"]
+            pj = {k: v for k, v in sorted(pj.items())[-60:]}
+            safe_write(DATA / "pass_jour.json", json.dumps(pj, ensure_ascii=False, indent=1))
+            vise = next((c for c in P["cibles"] if c["vise"]), None)
+            fait = P["points"] - pj[today]["debut"]
+            # objectif du jour : ce qu'il faut par jour, calculé au début de la journée
+            obj = round(max(0, (vise["points"] - pj[today]["debut"])) / P["reste_jours"]) if vise else None
+            P["jour"] = {"fait": fait, "objectif": obj, "depuis": pj[today]["debut"],
+                         "historique": [{"date": k, "fait": v["dernier"] - v["debut"]} for k, v in pj.items()
+                                        if v.get("chapitre") == P["chapitre"]][-7:]}
     except Exception as e:
         print(f"(pass du chapitre indisponible : {e})", file=sys.stderr)
     try:

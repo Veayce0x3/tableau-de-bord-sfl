@@ -1,6 +1,6 @@
 {
- "version": "2026-11-10.3",
- "nouveautes": "Rentabilité : « coût réel » (avec tes propres ressources) à côté du coût « si tu vendais plutôt » — pierre et fer ne sont plus jugés à perte. Pass : numéros de paliers corrigés (lit + œuf au palier 40).",
+ "version": "2026-11-10.4",
+ "nouveautes": "Pass du chapitre : compteur « 📅 Points faits aujourd'hui » avec l'objectif du jour (se met à jour à chaque Actualiser).",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
