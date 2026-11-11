@@ -885,29 +885,74 @@ def production(act, stock, prices, rendements, aujourdhui):
     return rows
 
 
-def ressources_jour(jours, trades, prices, exclure, n_jours, aujourdhui):
-    """Ressources gagnées / utilisées sur les n derniers jours (comme SFL Tool) :
-    stock de fin de journée − stock du début de journée + vendu − acheté (achats/ventes du marché exclus)."""
+def _production_compteurs(c1, c0, rendements):
+    """Ce que tu as produit entre deux relevés des compteurs du jeu (arbres coupés, pierres minées, récoltes…)."""
+    rd = rendements or {}
+    out = {}
+    for k, v in c1.items():
+        d = v - c0.get(k, v)
+        if d <= 0:
+            continue
+        if k == "Tree Chopped":
+            res = "Wood"
+        elif k.endswith(" Mined"):
+            res = k[:-6]
+        elif k.endswith(" Harvested"):
+            res = k[:-10]
+        else:
+            continue
+        if res.endswith(" Rock") or res.endswith(" Tree") or " " in res and res not in rd:
+            continue    # compteurs de rochers/arbres (pas une ressource)
+        out[res] = out.get(res, 0) + d * (rd.get(res) or 1)
+    return out
+
+
+def ressources_jour(stocks, activite, trades, prices, exclure, n_jours, aujourdhui, rendements=None):
+    """Ressources récoltées / utilisées sur les n derniers jours, entre deux relevés pris au même moment
+    (stock + compteurs du jeu) : le dernier relevé d'avant la période et le relevé d'aujourd'hui.
+
+    Récolté = tes compteurs du jeu (arbres coupés, pierres minées, champs récoltés…) × ce que donne une action,
+    ou ce que ton stock a gagné s'il n'y a pas de compteur. Utilisé = récolté − ce qui reste en plus dans ton stock
+    (achats et ventes du marché retirés) : outils, nourriture, cuisine, quêtes, bâtiments…"""
     from datetime import date, timedelta, datetime, timezone
     lim = (date.fromisoformat(aujourdhui) - timedelta(days=n_jours - 1)).isoformat()
-    tot, nb = {}, 0
-    for day, j in sorted(jours.items()):
-        if day < lim or not j.get("opening") or not j.get("close"):
+    act = {a["date"]: a for a in activite or []}
+    snaps = [s for s in stocks or [] if s["date"] in act]
+    if len(snaps) < 2 or snaps[-1]["date"] != aujourdhui:
+        return {"jours": 0, "gagne": [], "utilise": []}
+    s1 = snaps[-1]
+    avant = [s for s in snaps[:-1] if s["date"] < lim]
+    s0 = avant[-1] if avant else snaps[0] if snaps[0] is not s1 else None
+    if not s0:
+        return {"jours": 0, "gagne": [], "utilise": []}
+    def ms(snap):
+        at = snap.get("at") or act[snap["date"]].get("at")
+        return datetime.fromisoformat(at).timestamp() * 1000 if at else \
+            datetime.fromisoformat(snap["date"] + "T23:59:59+00:00").timestamp() * 1000
+    t0, t1 = ms(s0), ms(s1)
+    flux = {}
+    for t in trades:
+        if t0 < t["at"] <= t1:
+            flux[t["name"]] = flux.get(t["name"], 0) + (t["quantity"] if t["sold"] else -t["quantity"])
+    prod = _production_compteurs(act[s1["date"]]["c"], act[s0["date"]]["c"], rendements)
+    a0, a1 = s0["stock"], s1["stock"]
+    gagne, utilise = {}, {}
+    for k in set(a0) | set(a1) | set(flux) | set(prod):
+        if k in exclure:
             continue
-        nb += 1
-        flux = {}
-        for t in trades:
-            if datetime.fromtimestamp(t["at"] / 1000, timezone.utc).date().isoformat() == day:
-                flux[t["name"]] = flux.get(t["name"], 0) + (t["quantity"] if t["sold"] else -t["quantity"])
-        for k in set(j["opening"]) | set(j["close"]) | set(flux):
-            if k in exclure or not prices.get(k):
-                continue
-            d = (j["close"].get(k) or 0) - (j["opening"].get(k) or 0) + flux.get(k, 0)
-            if abs(d) >= 0.01:
-                tot[k] = tot.get(k, 0) + d
-    rows = [{"n": k, "q": q, "v": q * prices[k] * (1 - TAX)} for k, q in tot.items()]
-    rows.sort(key=lambda r: -r["v"])
-    return {"jours": nb, "gagne": [r for r in rows if r["q"] > 0], "utilise": sorted([r for r in rows if r["q"] < 0], key=lambda r: r["v"])}
+        net = (a1.get(k) or 0) - (a0.get(k) or 0) + flux.get(k, 0)
+        g = max(prod.get(k, 0), net, 0)     # ce qui est entré dans ton stock
+        u = g - net                         # ce qui en est sorti (hors marché)
+        if g >= 0.01:
+            gagne[k] = g
+        if u >= 0.01:
+            utilise[k] = u
+    pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
+    G = sorted([{"n": k, "q": q, "v": q * pr(k), "prix": bool(prices.get(k))} for k, q in gagne.items()], key=lambda r: (-r["v"], -r["q"]))
+    U = sorted([{"n": k, "q": -q, "v": -q * pr(k), "prix": bool(prices.get(k))} for k, q in utilise.items()], key=lambda r: (r["v"], r["q"]))
+    jours = (date.fromisoformat(s1["date"]) - date.fromisoformat(s0["date"])).days
+    return {"jours": max(1, jours), "gagne": G, "utilise": U, "depuis": s0.get("at") or s0["date"],
+            "complet": s0["date"] < lim}
 
 
 def amortissement(fichier_data, rows, aujourdhui, c_now=None, prices=None, c_premier=None):

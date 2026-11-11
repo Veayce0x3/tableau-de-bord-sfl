@@ -45,6 +45,9 @@ PRICES_FILE = DATA / "prix.json"
 PRICES_CSV = DATA / "prix.csv"
 DAYS = 7
 TAX = 0.075
+# Outils fabriqués : ni « récoltés » ni « utilisés » dans le bilan des ressources (leur coût est déjà dans le bois, la pierre…)
+OUTILS = {"Axe", "Pickaxe", "Stone Pickaxe", "Iron Pickaxe", "Gold Pickaxe", "Rod", "Sand Shovel", "Sand Drill",
+          "Oil Drill", "Salt Rake", "Crab Pot", "Mariner Pot", "Petting Hand", "Brush", "Music Box"}
 
 # Ce que la ferme produit ou utilise, par famille (ordre d'affichage).
 WATCH = {
@@ -690,7 +693,7 @@ def main():
     safe_write((DATA / "couts.json"), json.dumps(cost_hist, ensure_ascii=False, indent=1))
     stock = sell_advice(holdings, all_prices, history, costs, CONFIG, all_trades)
     stock_hist = [s for s in load(DATA / "stock.json", []) if s["date"] != today]
-    stock_hist.append({"date": today, "stock": {k: v for k, v in holdings.items() if v}})
+    stock_hist.append({"date": today, "at": now.isoformat(timespec="seconds"), "stock": {k: v for k, v in holdings.items() if v}})
     safe_write((DATA / "stock.json"), json.dumps(stock_hist, ensure_ascii=False, indent=1))
     land = try_json(f"https://sfl.world/api/v1.1/land/{FARM_ID}")  # niveau et compétences
     goals = load(ROOT / "objectifs.json", [])
@@ -746,7 +749,7 @@ def main():
         compteurs = lire_activite_sflworld(page_sfl(f"https://sfl.world/land/{FARM_ID}/activity"))
         if compteurs:
             act = [a for a in load(DATA / "activite.json", []) if a["date"] != today]
-            act.append({"date": today, "c": compteurs})
+            act.append({"date": today, "at": now.isoformat(timespec="seconds"), "c": compteurs})
             safe_write(DATA / "activite.json", json.dumps(act, ensure_ascii=False))
             reel, jours_reel = rythme_reel(act)
             from nft_analyse import CROPS
@@ -874,8 +877,11 @@ def main():
             if w.get("holdings"):
                 j["close"] = w["holdings"]
         safe_write(DATA / "jours.json", json.dumps(jours, ensure_ascii=False))
-        exclure = {r["n"] for r in nft["rows"]}
-        nft["ressources"] = {k: ressources_jour(jours, all_trades, all_prices, exclure, n, today) for k, n in (("1", 1), ("7", 7), ("30", 30))}
+        exclure = {r["n"] for r in nft["rows"]} | OUTILS
+        act_all = load(DATA / "activite.json", [])
+        nft["ressources"] = {k: ressources_jour(load(DATA / "stock.json", []), act_all, all_trades, all_prices, exclure, n, today,
+                                                CONFIG.get("rendements"))
+                             for k, n in (("1", 1), ("7", 7), ("30", 30))}
     except Exception as e:
         print(f"(ressources du jour indisponibles : {e})", file=sys.stderr)
     # Saisons : on note le début de chaque saison (avec tes compteurs) pour suivre tes objectifs

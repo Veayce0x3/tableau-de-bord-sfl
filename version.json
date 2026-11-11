@@ -1,6 +1,6 @@
 {
- "version": "2026-11-10.5",
- "nouveautes": "Pass du chapitre : tickets et points recalculés avec les règles du jeu (VIP +2, tenues du chapitre, double livraison), car sfl.world n'est pas à jour.",
+ "version": "2026-11-11.1",
+ "nouveautes": "Aperçu « Tes ressources » : le récolté vient de tes compteurs du jeu (bois, pierre, fer, or, crimstone, récoltes) et l'utilisé compte tout ce qui sort du stock (outils, cuisine, quêtes…).",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
