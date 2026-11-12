@@ -181,7 +181,10 @@ rb.onclick=async()=>{
 function sum(arr,f){return arr.reduce((a,x)=>a+f(x),0)}
 const START=D.start?new Date(D.start+"T00:00:00").getTime():0;const STARTFR=D.start?D.start.split("-").reverse().join("/"):"";
 function GT(){return D.trades.filter(t=>t.t>=START)}
-function inLast(days){const lim=Math.max(START,Date.now()-days*864e5);return D.trades.filter(t=>t.t>=lim)}
+// Journée du jeu : commence à minuit UTC (1 h du matin en hiver, 2 h en été à Paris)
+function debutJeu(jours){const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())-(jours-1)*864e5;}
+const HEURE_JEU=new Date(debutJeu(1)).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+function inLast(days){const lim=Math.max(START,debutJeu(days));return D.trades.filter(t=>t.t>=lim)}
 function periodKey(t,kind){const d=new Date(t);if(kind==="jour")return d.toISOString().slice(0,10);
   if(kind==="mois")return d.toISOString().slice(0,7);
   const x=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));const wd=(x.getUTCDay()+6)%7;x.setUTCDate(x.getUTCDate()-wd);return "Sem. du "+x.toISOString().slice(0,10);}
@@ -202,8 +205,8 @@ function render(id){
  if(id==="cycles")return cyclesTab();
 }
 
-const PERIODS=[["jour","Aujourd'hui",1],["7","7 jours",7],["30","30 jours",30],["tout",STARTFR?"Depuis le "+STARTFR.slice(0,5):"Depuis le début",null]];
-function tradesFor(p){if(p===null)return GT();if(p===1){const d=new Date();d.setHours(0,0,0,0);return GT().filter(t=>t.t>=d.getTime());}return inLast(p);}
+const PERIODS=[["jour","Aujourd'hui (depuis "+HEURE_JEU+")",1],["7","7 jours",7],["30","30 jours",30],["tout",STARTFR?"Depuis le "+STARTFR.slice(0,5):"Depuis le début",null]];
+function tradesFor(p){if(p===null)return GT();if(p===1){return GT().filter(t=>t.t>=debutJeu(1));}return inLast(p);}
 function totals(a){const v=sum(a.filter(t=>t.s),t=>t.net),ac=-sum(a.filter(t=>!t.s),t=>t.net),tax=sum(a.filter(t=>t.s),t=>t.g-t.net);return {v,ac,net:v-ac,tax,n:a.length};}
 function byResource(a){const m={};a.forEach(t=>{const r=m[t.n]=m[t.n]||{qs:0,gs:0,vs:0,qb:0,gb:0};if(t.s){r.qs+=t.q;r.gs+=t.g;r.vs+=t.net;}else{r.qb+=t.q;r.gb+=t.g;}});
  return Object.entries(m).map(([n,r])=>({n,...r,net:r.vs-r.gb})).sort((x,y)=>Math.abs(y.net)-Math.abs(x.net));}
@@ -233,7 +236,7 @@ function apercu(){
  <div class="card"><h2>📊 Tes ressources</h2>
  <div class="controls"><button class="chip on" id="mode_ferme">🌾 Ma ferme (récolté / utilisé)</button><button class="chip" id="mode_marche">🏪 Le marché (vendu / acheté)</button></div>
  <div class="controls" id="res_per"></div>
- <div id="pane_ferme"><div id="rj_tab"></div><div class="sub"><b>Gagné</b> = ce que tu as récolté, miné, coupé, collecté, d'après tes compteurs du jeu (arbres coupés, pierres minées, champs récoltés…) et ton stock. <b>Utilisé</b> = ce qui est sorti de ton stock hors marché : outils, nourriture, cuisine, quêtes, bâtiments… Achats et ventes au marché non comptés. Valeur au prix du marché après taxe (— = objet sans prix, comme un plat cuisiné). Compté depuis ton dernier relevé d'avant la période (« Aujourd'hui » = depuis ton dernier relevé d'hier) : clique sur 🔄 Actualiser pour mettre à jour.</div></div>
+ <div id="pane_ferme"><div id="rj_tab"></div><div class="sub"><b>Gagné</b> = ce que tu as récolté, miné, coupé, collecté, d'après tes compteurs du jeu (arbres coupés, pierres minées, champs récoltés…) et ton stock. <b>Utilisé</b> = ce qui est sorti de ton stock hors marché : outils, nourriture, cuisine, quêtes, bâtiments… Achats et ventes au marché non comptés. Valeur au prix du marché après taxe (— = objet sans prix, comme un plat cuisiné). Journées du jeu : elles commencent à <b>${HEURE_JEU}</b> (minuit UTC, comme dans Sunflower Land). Départ = la photo (stock + compteurs du jeu, prise au même moment) la plus proche de cette heure : le tableau de bord ouvert en prend une juste après. Clique sur 🔄 Actualiser pour mettre à jour.</div></div>
  <div id="pane_marche" style="display:none"><div class="scroll" id="res_tab"></div></div></div>
  <div class="card"><h2>Gagné par jour (30 derniers jours)</h2><div class="chart"><canvas id="c_ap"></canvas></div></div>
  <div class="card"><h2>⚠️ Ventes à plus de 10 % sous le prix du marché (30 jours)</h2><div id="warn"></div></div>`;
@@ -246,12 +249,14 @@ function apercu(){
   if(!X||!X.jours){el.innerHTML='<div class="empty">Pas encore de données pour cette période.</div>';return;}
   const g=sum(X.gagne,r=>r.v),u=sum(X.utilise,r=>r.v);
   const tb=(L,c)=>L.length?`<table><tr><th style="text-align:left">Ressource</th><th>Quantité</th><th>Valeur (FLW)</th></tr>${L.map(r=>`<tr><td style="text-align:left">${nm(r.n)}</td><td class="${c}">${sg(r.q)}</td><td class="${c}">${r.prix===false?"—":sg(r.v)}</td></tr>`).join("")}</table>`:'<div class="empty">Rien.</div>';
-  el.innerHTML=`<div class="hero" style="margin:8px 0"><div><div class="l">➕ Gagné</div><div class="big pos">${sg(g)} FLW</div></div><div><div class="l">➖ Utilisé</div><div class="big neg">${sg(u)} FLW</div></div><div><div class="l">= Bilan ${X.depuis?"depuis "+(X.depuis.length>10?new Date(X.depuis).toLocaleString("fr-FR",{weekday:"short",day:"numeric",month:"numeric",hour:"2-digit",minute:"2-digit"}):"le "+X.depuis.split("-").reverse().join("/")):"("+X.jours+" j)"}</div><div class="big ${g+u>=0?"pos":"neg"}">${sg(g+u)} FLW</div></div></div>
+  const ph=X.photo?new Date(X.photo).toLocaleString("fr-FR",{weekday:"long",day:"numeric",month:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+  const ecart=X.photo_ecart_h==null||Math.abs(X.photo_ecart_h)<=1?"":X.photo_ecart_h>24?`<div class="sub">ℹ️ Les photos (stock + compteurs) n'existent que depuis ${ph} : ce bilan commence là, pas au début de la période.</div>`:`<div class="sub">⚠️ La photo la plus proche du début de la journée du jeu (${HEURE_JEU}) date de ${ph} : le bilan compte aussi ce que tu as fait entre les deux. Le tableau de bord ouvert prend une photo pile après ${HEURE_JEU} : laisse-le ouvert la nuit pour un compte exact.</div>`;
+  el.innerHTML=ecart+`<div class="hero" style="margin:8px 0"><div><div class="l">➕ Gagné</div><div class="big pos">${sg(g)} FLW</div></div><div><div class="l">➖ Utilisé</div><div class="big neg">${sg(u)} FLW</div></div><div><div class="l">= Bilan depuis ${X.photo?new Date(X.photo).toLocaleString("fr-FR",{weekday:"short",day:"numeric",month:"numeric",hour:"2-digit",minute:"2-digit"}):"—"}</div><div class="big ${g+u>=0?"pos":"neg"}">${sg(g+u)} FLW</div></div></div>
   <div class="grid2" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px"><div><h3>➕ Gagné</h3><div class="scroll">${tb(X.gagne,"pos")}</div></div><div><h3>➖ Utilisé</h3><div class="scroll">${tb(X.utilise,"neg")}</div></div></div>`;};
  let RM="ferme";try{RM=localStorage.getItem("res_mode")||"ferme"}catch(e){}
  const drawResCard=()=>{const ferme=RM==="ferme";document.getElementById("mode_ferme").classList.toggle("on",ferme);document.getElementById("mode_marche").classList.toggle("on",!ferme);
   document.getElementById("pane_ferme").style.display=ferme?"":"none";document.getElementById("pane_marche").style.display=ferme?"none":"";
-  const P=ferme?[["1","Aujourd'hui"],["7","7 jours"],["30","30 jours"]]:PERIODS.map(([k,l])=>[k==="jour"?"1":k,l]);
+  const P=ferme?[["1","Aujourd'hui (depuis "+HEURE_JEU+")"],["7","7 jours"],["30","30 jours"]]:PERIODS.map(([k,l])=>[k==="jour"?"1":k,l]);
   let cur;try{cur=localStorage.getItem("res_per")||"1"}catch(e){cur="1"};if(!P.some(x=>x[0]===cur))cur="1";
   document.getElementById("res_per").innerHTML=P.map(([k,l])=>`<button class="chip ${k===cur?"on":""}" data-k="${k}">${l}</button>`).join("");
   document.querySelectorAll("#res_per .chip").forEach(x=>x.onclick=()=>{try{localStorage.setItem("res_per",x.dataset.k)}catch(e){};drawResCard();});
@@ -346,7 +351,7 @@ function passCard(){const P=(D.nft||{}).pass;if(!P)return"";
  ${(()=>{const J=P.jour;if(!J)return"";const ok=J.objectif!=null&&J.fait>=J.objectif,pc=J.objectif?Math.min(100,J.fait/J.objectif*100):0;
   return `<div class="hero"><div><div class="l">📅 Points faits aujourd'hui</div><div class="big ${ok?"pos":""}">${fr(J.fait,0)}${J.objectif!=null?` <span style="font-size:18px">/ ${fr(J.objectif,0)}</span>`:""}</div>
   ${J.objectif!=null?`<div class="bar"><span style="width:${pc}%"></span></div><div class="l">${ok?`✅ <b>Objectif du jour atteint</b> (+${fr(J.fait-J.objectif,0)} d'avance). Si tu as encore les ressources pour des missions ⭐, fais-les : chaque point en plus baisse l'objectif des jours suivants.`:`Encore <b>${fr(J.objectif-J.fait,0)} points</b> aujourd'hui pour rester dans les temps du palier visé. Commence par les missions ⭐ ci-dessous.`}</div>`:""}
-  <div class="l">Compté depuis ${fr(J.depuis,0)} points (dernier relevé d'hier, ou premier d'aujourd'hui). Clique sur 🔄 Actualiser après tes quêtes pour mettre à jour.</div></div>
+  <div class="l">Journée du jeu depuis ${HEURE_JEU} : compté depuis ${fr(J.depuis,0)} points${J.photo?" (photo de "+new Date(J.photo).toLocaleString("fr-FR",{weekday:"short",hour:"2-digit",minute:"2-digit"})+")":""}. Clique sur 🔄 Actualiser après tes quêtes pour mettre à jour.</div></div>
   ${J.historique.length>1?`<div><div class="l">Les derniers jours</div>${J.historique.slice().reverse().map(h=>`<div class="l">${h.date.split("-").reverse().slice(0,2).join("/")} : <b>${fr(h.fait,0)}</b>${J.objectif?(h.fait>=J.objectif?" ✅":" ⚠️"):""}</div>`).join("")}</div>`:""}</div>`;})()}
  ${cib}
  ${P.calcul?`<div class="sub">🧮 <b>Tickets recalculés avec les règles du jeu</b> (sfl.world n'est pas toujours à jour) : ${P.calcul.vip?"+2 par mission grâce au VIP":"pas de bonus VIP"}${P.calcul.objets.length?` · +${P.calcul.objets.length} grâce à ${P.calcul.objets.join(", ")} (seulement si tu les portes : Bumpkin ou Farm Hand)`:""}${P.calcul.double?" · <b>journée double livraison</b> : ×2 sur la première livraison de chaque personnage aujourd'hui":""}. Les quêtes viennent de sfl.world : si une livraison que tu viens de faire apparaît encore, clique sur 🔄 Actualiser un peu plus tard.</div>`:""}

@@ -907,35 +907,47 @@ def _production_compteurs(c1, c0, rendements):
     return out
 
 
-def ressources_jour(stocks, activite, trades, prices, exclure, n_jours, aujourdhui, rendements=None):
-    """Ressources récoltées / utilisées sur les n derniers jours, entre deux relevés pris au même moment
-    (stock + compteurs du jeu) : le dernier relevé d'avant la période et le relevé d'aujourd'hui.
+def photo_proche(photos, t_ms, exclure_apres=None):
+    """La photo des compteurs la plus proche d'un instant (en ms). photos = [{"at": iso, "c": {...}}].
+    exclure_apres : ignore les photos prises après cet instant (ex. le relevé en cours)."""
+    from datetime import datetime
+    best = None
+    for p in photos or []:
+        try:
+            tp = datetime.fromisoformat(p["at"]).timestamp() * 1000
+        except (KeyError, ValueError):
+            continue
+        if exclure_apres is not None and tp > exclure_apres:
+            continue
+        d = abs(tp - t_ms)
+        if best is None or d < best[0]:
+            best = (d, p)
+    return best[1] if best else None
 
-    Récolté = tes compteurs du jeu (arbres coupés, pierres minées, champs récoltés…) × ce que donne une action,
-    ou ce que ton stock a gagné s'il n'y a pas de compteur. Utilisé = récolté − ce qui reste en plus dans ton stock
-    (achats et ventes du marché retirés) : outils, nourriture, cuisine, quêtes, bâtiments…"""
-    from datetime import date, timedelta, datetime, timezone
+
+def ressources_jour(photos, trades, prices, exclure, n_jours, aujourdhui, rendements=None):
+    """Ressources récoltées / utilisées sur les n dernières journées DU JEU (qui changent à minuit UTC).
+
+    photos = [{"at", "c": compteurs du jeu, "stock": stock}] prises au même moment. Départ : la photo la plus
+    proche de minuit UTC du premier jour ; arrivée : la dernière. Récolté = compteurs du jeu (arbres coupés,
+    pierres minées, champs récoltés…) × ce que donne une action, ou ce que le stock a gagné. Utilisé = récolté −
+    ce qui reste en plus dans le stock (achats et ventes du marché retirés) : outils, cuisine, quêtes, bâtiments…"""
+    from datetime import date, timedelta, datetime
     lim = (date.fromisoformat(aujourdhui) - timedelta(days=n_jours - 1)).isoformat()
-    act = {a["date"]: a for a in activite or []}
-    snaps = [s for s in stocks or [] if s["date"] in act]
-    if len(snaps) < 2 or snaps[-1]["date"] != aujourdhui:
+    t0 = datetime.fromisoformat(lim + "T00:00:00+00:00").timestamp() * 1000
+    if not photos or len(photos) < 2:
         return {"jours": 0, "gagne": [], "utilise": []}
-    s1 = snaps[-1]
-    avant = [s for s in snaps[:-1] if s["date"] < lim]
-    s0 = avant[-1] if avant else snaps[0] if snaps[0] is not s1 else None
-    if not s0:
+    p1 = photos[-1]
+    p0 = photo_proche(photos[:-1], t0)
+    ts = lambda p: datetime.fromisoformat(p["at"]).timestamp() * 1000
+    if not p0:
         return {"jours": 0, "gagne": [], "utilise": []}
-    def ms(snap):
-        at = snap.get("at") or act[snap["date"]].get("at")
-        return datetime.fromisoformat(at).timestamp() * 1000 if at else \
-            datetime.fromisoformat(snap["date"] + "T23:59:59+00:00").timestamp() * 1000
-    t0, t1 = ms(s0), ms(s1)
+    prod = _production_compteurs(p1["c"], p0["c"], rendements)
     flux = {}
     for t in trades:
-        if t0 < t["at"] <= t1:
+        if ts(p0) < t["at"] <= ts(p1) + 600e3:
             flux[t["name"]] = flux.get(t["name"], 0) + (t["quantity"] if t["sold"] else -t["quantity"])
-    prod = _production_compteurs(act[s1["date"]]["c"], act[s0["date"]]["c"], rendements)
-    a0, a1 = s0["stock"], s1["stock"]
+    a0, a1 = p0["stock"], p1["stock"]
     gagne, utilise = {}, {}
     for k in set(a0) | set(a1) | set(flux) | set(prod):
         if k in exclure:
@@ -950,9 +962,8 @@ def ressources_jour(stocks, activite, trades, prices, exclure, n_jours, aujourdh
     pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
     G = sorted([{"n": k, "q": q, "v": q * pr(k), "prix": bool(prices.get(k))} for k, q in gagne.items()], key=lambda r: (-r["v"], -r["q"]))
     U = sorted([{"n": k, "q": -q, "v": -q * pr(k), "prix": bool(prices.get(k))} for k, q in utilise.items()], key=lambda r: (r["v"], r["q"]))
-    jours = (date.fromisoformat(s1["date"]) - date.fromisoformat(s0["date"])).days
-    return {"jours": max(1, jours), "gagne": G, "utilise": U, "depuis": s0.get("at") or s0["date"],
-            "complet": s0["date"] < lim}
+    return {"jours": n_jours, "gagne": G, "utilise": U, "depuis_utc": lim + "T00:00:00+00:00", "photo": p0["at"],
+            "photo_ecart_h": round((ts(p0) - t0) / 3.6e6, 1)}
 
 
 def amortissement(fichier_data, rows, aujourdhui, c_now=None, prices=None, c_premier=None):

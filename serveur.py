@@ -133,6 +133,25 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
 
+def _photo_minuit():
+    """Juste après minuit UTC (début de la journée du jeu : 1 h en hiver, 2 h en été à Paris),
+    garde une photo des compteurs du jeu pour que « aujourd'hui » commence à la même heure que dans le jeu."""
+    import time
+    from datetime import datetime, timezone
+    fait = None
+    while True:
+        try:
+            n = datetime.now(timezone.utc)
+            jour = n.strftime("%Y-%m-%d")
+            if n.hour == 0 and n.minute < 30 and fait != jour:
+                subprocess.run([sys.executable, "-I", "-X", "utf8", str(ROOT / "releve_hebdo.py"), "--compteurs"],
+                               cwd=ROOT, capture_output=True, timeout=300)
+                fait = jour
+        except Exception:
+            pass
+        time.sleep(120)
+
+
 def main():
     try:
         http.server.ThreadingHTTPServer.allow_reuse_address = True
@@ -144,6 +163,7 @@ def main():
     print(f"Tableau de bord : {URL}\n(ferme cette fenêtre pour arrêter)")
     if "--sans-navigateur" not in sys.argv:
         webbrowser.open(URL)
+    threading.Thread(target=_photo_minuit, daemon=True).start()
     srv.serve_forever()
 
 

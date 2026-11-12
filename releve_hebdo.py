@@ -511,6 +511,36 @@ def price_on_or_before(history, date, item):
     return best
 
 
+def garder_compteurs(compteurs, quand, stock=None):
+    """Garde une photo des compteurs du jeu ET du stock, prise au même moment (avec l'heure) :
+    sert à couper les journées à minuit UTC, comme le jeu."""
+    if not compteurs:
+        return
+    L = load(DATA / "compteurs_releves.json", [])
+    L.append({"at": quand.isoformat(timespec="seconds"), "c": compteurs,
+              "stock": {k: v for k, v in (stock or {}).items() if v}})
+    lim = (quand - timedelta(days=35)).isoformat()
+    safe_write(DATA / "compteurs_releves.json", json.dumps([x for x in L if x["at"] >= lim], ensure_ascii=False))
+
+
+def photo_compteurs():
+    """Relevé léger (lancé par le serveur juste après minuit UTC) : seulement les compteurs du jeu."""
+    sys.path.insert(0, str(ROOT))  # le script tourne en mode isolé (python3 -I)
+    from nft_analyse import lire_activite_sflworld
+    DATA.mkdir(exist_ok=True)
+    if (try_json(f"https://sfl.world/update/{FARM_ID}") or {}).get("status") == "OK":
+        for _ in range(30):
+            if (try_json(f"https://sfl.world/update/{FARM_ID}/check") or {}).get("status") == "OK":
+                break
+            time.sleep(2)
+    req = urllib.request.Request(f"https://sfl.world/land/{FARM_ID}/activity", headers={"User-Agent": "releve-hebdo-sfl"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        page = r.read().decode("utf-8", "replace")
+    fin = try_json(f"https://primerascripto.com/api/farm/{FARM_ID}/finances") or {}
+    w = max(fin.get("wallet") or [{}], key=lambda x: x.get("day", ""))
+    garder_compteurs(lire_activite_sflworld(page), datetime.now(timezone.utc), w.get("holdings"))
+
+
 def main():
     DATA.mkdir(exist_ok=True)
     REPORTS.mkdir(exist_ok=True)
@@ -750,6 +780,7 @@ def main():
         if compteurs:
             act = [a for a in load(DATA / "activite.json", []) if a["date"] != today]
             act.append({"date": today, "at": now.isoformat(timespec="seconds"), "c": compteurs})
+            garder_compteurs(compteurs, now, holdings)
             safe_write(DATA / "activite.json", json.dumps(act, ensure_ascii=False))
             reel, jours_reel = rythme_reel(act)
             from nft_analyse import CROPS
@@ -879,8 +910,14 @@ def main():
         safe_write(DATA / "jours.json", json.dumps(jours, ensure_ascii=False))
         exclure = {r["n"] for r in nft["rows"]} | OUTILS
         act_all = load(DATA / "activite.json", [])
-        nft["ressources"] = {k: ressources_jour(load(DATA / "stock.json", []), act_all, all_trades, all_prices, exclure, n, today,
-                                                CONFIG.get("rendements"))
+        # Photos stock + compteurs prises ensemble (nouvelles) + anciens relevés où les deux ont la même heure
+        st_at = {x.get("at"): x["stock"] for x in load(DATA / "stock.json", []) if x.get("at")}
+        photos = [x for x in load(DATA / "compteurs_releves.json", []) if x.get("stock")]
+        deja = {x["at"] for x in photos}
+        photos += [{"at": a["at"], "c": a["c"], "stock": st_at[a["at"]]} for a in act_all
+                   if a.get("at") in st_at and a["at"] not in deja]
+        photos.sort(key=lambda x: x["at"])
+        nft["ressources"] = {k: ressources_jour(photos, all_trades, all_prices, exclure, n, today, CONFIG.get("rendements"))
                              for k, n in (("1", 1), ("7", 7), ("30", 30))}
     except Exception as e:
         print(f"(ressources du jour indisponibles : {e})", file=sys.stderr)
@@ -955,12 +992,17 @@ def main():
                                 double="Double Rewards Deliveries" in (land_page or ""))
         P = nft["pass"]
         if P:
-            # Points du jour : depuis le dernier relevé d'hier (sinon le premier d'aujourd'hui)
+            # Points du jour : depuis minuit UTC (début de la journée du jeu), photo des compteurs la plus proche
+            from nft_analyse import photo_proche
+            cle = f"{P['chapitre']} Points Earned"
             pj = load(DATA / "pass_jour.json", {})
-            hier = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-            if today not in pj:
-                base = pj[hier]["dernier"] if hier in pj and pj[hier].get("chapitre") == P["chapitre"] else P["points"]
-                pj[today] = {"chapitre": P["chapitre"], "debut": base}
+            t0 = datetime.fromisoformat(today + "T00:00:00+00:00").timestamp() * 1000
+            cand = load(DATA / "compteurs_releves.json", []) + [a for a in load(DATA / "activite.json", []) if a.get("at")]
+            ph = photo_proche([x for x in cand if cle in x["c"]], t0, exclure_apres=now.timestamp() * 1000 - 600e3)
+            if ph:
+                pj[today] = {"chapitre": P["chapitre"], "debut": ph["c"][cle], "photo": ph["at"]}
+            elif today not in pj:
+                pj[today] = {"chapitre": P["chapitre"], "debut": P["points"]}
             pj[today]["dernier"] = P["points"]
             pj = {k: v for k, v in sorted(pj.items())[-60:]}
             safe_write(DATA / "pass_jour.json", json.dumps(pj, ensure_ascii=False, indent=1))
@@ -968,7 +1010,7 @@ def main():
             fait = P["points"] - pj[today]["debut"]
             # objectif du jour : ce qu'il faut par jour, calculé au début de la journée
             obj = round(max(0, (vise["points"] - pj[today]["debut"])) / P["reste_jours"]) if vise else None
-            P["jour"] = {"fait": fait, "objectif": obj, "depuis": pj[today]["debut"],
+            P["jour"] = {"fait": fait, "objectif": obj, "depuis": pj[today]["debut"], "photo": pj[today].get("photo"),
                          "historique": [{"date": k, "fait": v["dernier"] - v["debut"]} for k, v in pj.items()
                                         if v.get("chapitre") == P["chapitre"]][-7:]}
     except Exception as e:
@@ -994,6 +1036,13 @@ def main():
 
 
 if __name__ == "__main__":
+    if "--compteurs" in sys.argv:
+        try:
+            photo_compteurs()
+        except Exception as e:
+            print(f"Photo des compteurs impossible : {e}", file=sys.stderr)
+            sys.exit(1)
+        sys.exit(0)
     try:
         main()
     except Exception as e:  # message lisible si le site ne répond pas
