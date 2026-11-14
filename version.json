@@ -1,6 +1,6 @@
 {
- "version": "2026-11-12.1",
- "nouveautes": "Les journées suivent celles du jeu (début à 1 h du matin en hiver, minuit UTC) : gains, ressources et points du pass. Le tableau de bord ouvert prend une photo de ta ferme juste après.",
+ "version": "2026-11-14.1",
+ "nouveautes": "Tes ressources : Aujourd'hui, Hier, 7 jours, 30 jours en journées du jeu, avec la période exacte indiquée. Pass : points de chaque jour même sans relevé, et « tu tiens le cap ? ».",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

@@ -536,9 +536,20 @@ def photo_compteurs():
     req = urllib.request.Request(f"https://sfl.world/land/{FARM_ID}/activity", headers={"User-Agent": "releve-hebdo-sfl"})
     with urllib.request.urlopen(req, timeout=60) as r:
         page = r.read().decode("utf-8", "replace")
-    fin = try_json(f"https://primerascripto.com/api/farm/{FARM_ID}/finances") or {}
-    w = max(fin.get("wallet") or [{}], key=lambda x: x.get("day", ""))
-    garder_compteurs(lire_activite_sflworld(page), datetime.now(timezone.utc), w.get("holdings"))
+    c = lire_activite_sflworld(page)
+    quand = datetime.now(timezone.utc)
+    # Stock au même moment (SFL Tool) : on réessaie, il répond parfois mal juste après minuit
+    stock = None
+    for essai in range(6):
+        fin = try_json(f"https://primerascripto.com/api/farm/{FARM_ID}/finances") or {}
+        w = max(fin.get("wallet") or [{}], key=lambda x: x.get("day", ""))
+        if w.get("holdings"):
+            stock = w["holdings"]
+            break
+        time.sleep(60)
+    garder_compteurs(c, quand, stock)
+    if not stock:
+        print("Stock indisponible (SFL Tool) : photo des compteurs seulement.", file=sys.stderr)
 
 
 def main():
@@ -896,7 +907,7 @@ def main():
     except Exception as e:
         print(f"(amortissement indisponible : {e})", file=sys.stderr)
     try:
-        from nft_analyse import ressources_jour
+        pass
         jours = load(DATA / "jours.json", {})
         for w in fin.get("wallet") or []:
             d = w.get("day")
@@ -910,15 +921,18 @@ def main():
         safe_write(DATA / "jours.json", json.dumps(jours, ensure_ascii=False))
         exclure = {r["n"] for r in nft["rows"]} | OUTILS
         act_all = load(DATA / "activite.json", [])
-        # Photos stock + compteurs prises ensemble (nouvelles) + anciens relevés où les deux ont la même heure
+        # Toutes les photos (compteurs du jeu, et stock quand il a été pris au même moment)
         st_at = {x.get("at"): x["stock"] for x in load(DATA / "stock.json", []) if x.get("at")}
-        photos = [x for x in load(DATA / "compteurs_releves.json", []) if x.get("stock")]
+        photos = list(load(DATA / "compteurs_releves.json", []))
         deja = {x["at"] for x in photos}
-        photos += [{"at": a["at"], "c": a["c"], "stock": st_at[a["at"]]} for a in act_all
-                   if a.get("at") in st_at and a["at"] not in deja]
-        photos.sort(key=lambda x: x["at"])
-        nft["ressources"] = {k: ressources_jour(photos, all_trades, all_prices, exclure, n, today, CONFIG.get("rendements"))
-                             for k, n in (("1", 1), ("7", 7), ("30", 30))}
+        photos += [{"at": a["at"], "c": a["c"], **({"stock": st_at[a["at"]]} if a["at"] in st_at else {})}
+                   for a in act_all if a.get("at") and a["at"] not in deja]
+        for x in photos:
+            if not x.get("stock") and x["at"] in st_at:
+                x["stock"] = st_at[x["at"]]
+        from nft_analyse import bilan_ressources, periodes_jeu
+        nft["ressources"] = {k: bilan_ressources(photos, all_trades, all_prices, exclure, d0, d1, CONFIG.get("rendements"))
+                             for k, (d0, d1) in periodes_jeu(today, now.timestamp() * 1000).items()}
     except Exception as e:
         print(f"(ressources du jour indisponibles : {e})", file=sys.stderr)
     # Saisons : on note le début de chaque saison (avec tes compteurs) pour suivre tes objectifs
@@ -992,27 +1006,34 @@ def main():
                                 double="Double Rewards Deliveries" in (land_page or ""))
         P = nft["pass"]
         if P:
-            # Points du jour : depuis minuit UTC (début de la journée du jeu), photo des compteurs la plus proche
-            from nft_analyse import photo_proche
+            # Points de chaque journée du jeu (minuit UTC), avec les photos prises au plus près de minuit
+            from nft_analyse import points_par_jour
             cle = f"{P['chapitre']} Points Earned"
-            pj = load(DATA / "pass_jour.json", {})
-            t0 = datetime.fromisoformat(today + "T00:00:00+00:00").timestamp() * 1000
             cand = load(DATA / "compteurs_releves.json", []) + [a for a in load(DATA / "activite.json", []) if a.get("at")]
-            ph = photo_proche([x for x in cand if cle in x["c"]], t0, exclure_apres=now.timestamp() * 1000 - 600e3)
-            if ph:
-                pj[today] = {"chapitre": P["chapitre"], "debut": ph["c"][cle], "photo": ph["at"]}
-            elif today not in pj:
-                pj[today] = {"chapitre": P["chapitre"], "debut": P["points"]}
-            pj[today]["dernier"] = P["points"]
-            pj = {k: v for k, v in sorted(pj.items())[-60:]}
-            safe_write(DATA / "pass_jour.json", json.dumps(pj, ensure_ascii=False, indent=1))
+            hist = points_par_jour(cand, cle, today, now.timestamp() * 1000, 7)
+            # anciens jours notés avant les photos (pass_jour.json), s'ils manquent
+            vus = {h["date"] for h in hist}
+            lim7 = (now - timedelta(days=6)).strftime("%Y-%m-%d")
+            for d, v in load(DATA / "pass_jour.json", {}).items():
+                if d not in vus and lim7 <= d < today and v.get("chapitre") == P["chapitre"] and "dernier" in v:
+                    hist.append({"date": d, "fait": v["dernier"] - v["debut"], "approx": True, "en_cours": False})
+            hist.sort(key=lambda h: h["date"])
+            auj = next((h for h in hist if h["en_cours"]), None)
             vise = next((c for c in P["cibles"] if c["vise"]), None)
-            fait = P["points"] - pj[today]["debut"]
-            # objectif du jour : ce qu'il faut par jour, calculé au début de la journée
-            obj = round(max(0, (vise["points"] - pj[today]["debut"])) / P["reste_jours"]) if vise else None
-            P["jour"] = {"fait": fait, "objectif": obj, "depuis": pj[today]["debut"], "photo": pj[today].get("photo"),
-                         "historique": [{"date": k, "fait": v["dernier"] - v["debut"]} for k, v in pj.items()
-                                        if v.get("chapitre") == P["chapitre"]][-7:]}
+            fait = auj["fait"] if auj else 0
+            debut_j = P["points"] - fait
+            obj = round(max(0, (vise["points"] - debut_j)) / P["reste_jours"]) if vise else None
+            passes = [h for h in hist if not h["en_cours"]]
+            moy7 = sum(h["fait"] for h in passes) / len(passes) if passes else None
+            P["jour"] = {"fait": fait, "objectif": obj, "depuis": debut_j, "approx": bool(auj and auj["approx"]),
+                         "historique": hist, "moyenne": round(moy7) if moy7 is not None else None}
+            if moy7:
+                P["rythme"], P["rythme_src"] = round(moy7), f"moyenne des {len(passes)} dernière(s) journée(s) du jeu"
+                from datetime import timedelta as _td
+                for c in P["cibles"]:
+                    if c["manque"] > 0:
+                        c["ok"] = moy7 >= c["par_jour"]
+                        c["date_atteinte"] = (now + _td(days=c["manque"] / moy7)).strftime("%Y-%m-%d")
     except Exception as e:
         print(f"(pass du chapitre indisponible : {e})", file=sys.stderr)
     try:

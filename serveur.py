@@ -145,7 +145,7 @@ def _photo_minuit():
             jour = n.strftime("%Y-%m-%d")
             if n.hour == 0 and n.minute < 30 and fait != jour:
                 subprocess.run([sys.executable, "-I", "-X", "utf8", str(ROOT / "releve_hebdo.py"), "--compteurs"],
-                               cwd=ROOT, capture_output=True, timeout=300)
+                               cwd=ROOT, capture_output=True, timeout=900)
                 fait = jour
         except Exception:
             pass

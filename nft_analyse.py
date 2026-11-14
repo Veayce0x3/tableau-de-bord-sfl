@@ -925,45 +925,87 @@ def photo_proche(photos, t_ms, exclure_apres=None):
     return best[1] if best else None
 
 
-def ressources_jour(photos, trades, prices, exclure, n_jours, aujourdhui, rendements=None):
-    """Ressources récoltées / utilisées sur les n dernières journées DU JEU (qui changent à minuit UTC).
+def bilan_ressources(photos, trades, prices, exclure, debut_ms, fin_ms, rendements=None):
+    """Récolté / utilisé entre deux instants (journées du jeu : minuit UTC).
 
-    photos = [{"at", "c": compteurs du jeu, "stock": stock}] prises au même moment. Départ : la photo la plus
-    proche de minuit UTC du premier jour ; arrivée : la dernière. Récolté = compteurs du jeu (arbres coupés,
-    pierres minées, champs récoltés…) × ce que donne une action, ou ce que le stock a gagné. Utilisé = récolté −
-    ce qui reste en plus dans le stock (achats et ventes du marché retirés) : outils, cuisine, quêtes, bâtiments…"""
-    from datetime import date, timedelta, datetime
-    lim = (date.fromisoformat(aujourdhui) - timedelta(days=n_jours - 1)).isoformat()
-    t0 = datetime.fromisoformat(lim + "T00:00:00+00:00").timestamp() * 1000
-    if not photos or len(photos) < 2:
-        return {"jours": 0, "gagne": [], "utilise": []}
-    p1 = photos[-1]
-    p0 = photo_proche(photos[:-1], t0)
+    photos = [{"at", "c": compteurs du jeu, "stock"?: stock au même moment}].
+    Récolté = compteurs du jeu (arbres coupés, pierres minées, champs récoltés…) × ce que donne une action,
+    entre les photos les plus proches du début et de la fin (ou ce que le stock a gagné, si c'est plus).
+    Utilisé = calculé entre deux photos qui ont aussi le stock : récolté − ce qui reste en plus dans le stock
+    (achats et ventes du marché retirés) : outils, cuisine, quêtes, bâtiments…"""
+    from datetime import datetime
     ts = lambda p: datetime.fromisoformat(p["at"]).timestamp() * 1000
-    if not p0:
-        return {"jours": 0, "gagne": [], "utilise": []}
-    prod = _production_compteurs(p1["c"], p0["c"], rendements)
-    flux = {}
-    for t in trades:
-        if ts(p0) < t["at"] <= ts(p1) + 600e3:
-            flux[t["name"]] = flux.get(t["name"], 0) + (t["quantity"] if t["sold"] else -t["quantity"])
-    a0, a1 = p0["stock"], p1["stock"]
-    gagne, utilise = {}, {}
-    for k in set(a0) | set(a1) | set(flux) | set(prod):
-        if k in exclure:
-            continue
-        net = (a1.get(k) or 0) - (a0.get(k) or 0) + flux.get(k, 0)
-        g = max(prod.get(k, 0), net, 0)     # ce qui est entré dans ton stock
-        u = g - net                         # ce qui en est sorti (hors marché)
-        if g >= 0.01:
-            gagne[k] = g
-        if u >= 0.01:
-            utilise[k] = u
+    ph = sorted([p for p in photos or [] if p.get("at")], key=ts)
+    if len(ph) < 2:
+        return None
+    proche = lambda L, t: min(L, key=lambda p: abs(ts(p) - t)) if L else None
+    c0, c1 = proche(ph, debut_ms), proche(ph, fin_ms)
+    if c0 is c1 or ts(c1) <= ts(c0):
+        return None
+    st = [p for p in ph if p.get("stock")]
+    s0, s1 = proche(st, debut_ms), proche(st, fin_ms)
+    prod = _production_compteurs(c1["c"], c0["c"], rendements)
+    gagne, utilise, avec_stock = {}, {}, bool(s0 and s1 and ts(s1) > ts(s0))
+    if avec_stock:
+        prod_s = _production_compteurs(s1["c"], s0["c"], rendements)
+        flux = {}
+        for t in trades:
+            if ts(s0) < t["at"] <= ts(s1) + 600e3:
+                flux[t["name"]] = flux.get(t["name"], 0) + (t["quantity"] if t["sold"] else -t["quantity"])
+        a0, a1 = s0["stock"], s1["stock"]
+        for k in set(a0) | set(a1) | set(flux) | set(prod_s):
+            if k in exclure:
+                continue
+            net = (a1.get(k) or 0) - (a0.get(k) or 0) + flux.get(k, 0)
+            g_s = max(prod_s.get(k, 0), net, 0)
+            if g_s - net >= 0.01:
+                utilise[k] = g_s - net
+            if net >= 0.01 and k not in prod:
+                gagne[k] = net        # entré dans le stock sans compteur (coffres, quêtes, cuisine…)
+    for k, q in prod.items():
+        if k not in exclure and q >= 0.01:
+            gagne[k] = max(q, gagne.get(k, 0))
     pr = lambda k: (prices.get(k) or 0) * (1 - TAX)
     G = sorted([{"n": k, "q": q, "v": q * pr(k), "prix": bool(prices.get(k))} for k, q in gagne.items()], key=lambda r: (-r["v"], -r["q"]))
     U = sorted([{"n": k, "q": -q, "v": -q * pr(k), "prix": bool(prices.get(k))} for k, q in utilise.items()], key=lambda r: (r["v"], r["q"]))
-    return {"jours": n_jours, "gagne": G, "utilise": U, "depuis_utc": lim + "T00:00:00+00:00", "photo": p0["at"],
-            "photo_ecart_h": round((ts(p0) - t0) / 3.6e6, 1)}
+    h = lambda p: round((ts(p) - (debut_ms if p in (c0, s0) else fin_ms)) / 3.6e6, 1) if p else None
+    return {"gagne": G, "utilise": U, "compteurs": [c0["at"], c1["at"]], "stock": [s0["at"], s1["at"]] if avec_stock else None,
+            "ecart_debut_h": round((ts(c0) - debut_ms) / 3.6e6, 1), "ecart_fin_h": round((ts(c1) - fin_ms) / 3.6e6, 1),
+            "ecart_stock_h": round((ts(s0) - debut_ms) / 3.6e6, 1) if avec_stock else None,
+            "ecart_stock_fin_h": round((ts(s1) - fin_ms) / 3.6e6, 1) if avec_stock else None}
+
+
+def periodes_jeu(aujourdhui, maintenant_ms):
+    """Aujourd'hui, Hier, 7 jours, 30 jours : en journées du jeu (minuit UTC)."""
+    from datetime import date, timedelta, datetime
+    m = lambda d: datetime.fromisoformat(d + "T00:00:00+00:00").timestamp() * 1000
+    j = date.fromisoformat(aujourdhui)
+    hier = (j - timedelta(days=1)).isoformat()
+    return {"1": (m(aujourdhui), maintenant_ms), "hier": (m(hier), m(aujourdhui)),
+            "7": (m((j - timedelta(days=6)).isoformat()), maintenant_ms),
+            "30": (m((j - timedelta(days=29)).isoformat()), maintenant_ms)}
+
+
+def points_par_jour(photos, cle, aujourdhui, maintenant_ms, nb=7):
+    """Points du pass faits chaque journée du jeu, avec les photos prises au plus près de minuit UTC."""
+    from datetime import date, timedelta, datetime
+    ts = lambda p: datetime.fromisoformat(p["at"]).timestamp() * 1000
+    ph = sorted([p for p in photos or [] if p.get("at") and cle in p["c"]], key=ts)
+    if not ph:
+        return []
+    m = lambda d: datetime.fromisoformat(d + "T00:00:00+00:00").timestamp() * 1000
+    proche = lambda t: min(ph, key=lambda p: abs(ts(p) - t))
+    out = []
+    j = date.fromisoformat(aujourdhui)
+    for i in range(nb - 1, -1, -1):
+        d = (j - timedelta(days=i)).isoformat()
+        t0, t1 = m(d), (m((j - timedelta(days=i - 1)).isoformat()) if i else maintenant_ms)
+        p0, p1 = proche(t0), (proche(t1) if i else ph[-1])
+        if p0 is p1 or ts(p1) <= ts(p0) or ts(p0) > t1 or ts(p1) < t0:
+            continue
+        approx = abs(ts(p0) - t0) > 2 * 3.6e6 or (i and abs(ts(p1) - t1) > 2 * 3.6e6)
+        out.append({"date": d, "fait": p1["c"][cle] - p0["c"][cle], "approx": bool(approx), "en_cours": i == 0})
+    return out
 
 
 def amortissement(fichier_data, rows, aujourdhui, c_now=None, prices=None, c_premier=None):
