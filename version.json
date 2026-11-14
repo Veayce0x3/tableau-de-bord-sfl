@@ -1,6 +1,6 @@
 {
- "version": "2026-11-14.1",
- "nouveautes": "Tes ressources : Aujourd'hui, Hier, 7 jours, 30 jours en journées du jeu, avec la période exacte indiquée. Pass : points de chaque jour même sans relevé, et « tu tiens le cap ? ».",
+ "version": "2026-11-14.2",
+ "nouveautes": "Tes ressources : œufs, plumes, lait, cuir, laine, truffes, poissons, huile et miel comptés avec les compteurs du jeu (× ce que donne une collecte sur ta ferme).",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

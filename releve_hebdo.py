@@ -590,7 +590,7 @@ def main():
     # si tu ne l'as pas réglée toi-même dans ma_ferme.json → "rendements"
     v1 = try_json(f"https://sfl.world/api/v1/land/{FARM_ID}") or {}
     lus = {}
-    for groupe in ("resources", "crops", "fruits"):
+    for groupe in ("resources", "crops", "fruits", "greenhouse"):
         for k, v in (v1.get(groupe) or {}).items():
             if isinstance(v, dict) and v.get("avg"):
                 lus[k.capitalize()] = v["avg"]
@@ -781,7 +781,13 @@ def main():
                                   capture_output=True, check=True).stdout.decode("utf-8", "replace")
     animaux_lus = {}
     try:
-        animaux_lus = lire_animaux_sflworld(page_sfl(f"https://sfl.world/land/{FARM_ID}/animals"))
+        page_an = page_sfl(f"https://sfl.world/land/{FARM_ID}/animals")
+        animaux_lus = lire_animaux_sflworld(page_an)
+        from nft_analyse import lire_rendements_animaux
+        rd_an = lire_rendements_animaux(page_an)
+        if rd_an:
+            # ce que donne une collecte (œufs, lait, cuir, plumes…), gardé pour les jours où la page ne répond pas
+            safe_write(DATA / "rendements_animaux.json", json.dumps(rd_an, ensure_ascii=False))
     except Exception as e:
         print(f"(animaux non lus sur sfl.world : {e})", file=sys.stderr)
     # Compteurs réels (minés, coupés, récoltés, collectés) : enregistrés à chaque relevé pour mesurer ton rythme
@@ -931,7 +937,8 @@ def main():
             if not x.get("stock") and x["at"] in st_at:
                 x["stock"] = st_at[x["at"]]
         from nft_analyse import bilan_ressources, periodes_jeu
-        nft["ressources"] = {k: bilan_ressources(photos, all_trades, all_prices, exclure, d0, d1, CONFIG.get("rendements"))
+        rd_tous = {**load(DATA / "rendements_animaux.json", {}), **(CONFIG.get("rendements") or {})}
+        nft["ressources"] = {k: bilan_ressources(photos, all_trades, all_prices, exclure, d0, d1, rd_tous)
                              for k, (d0, d1) in periodes_jeu(today, now.timestamp() * 1000).items()}
     except Exception as e:
         print(f"(ressources du jour indisponibles : {e})", file=sys.stderr)

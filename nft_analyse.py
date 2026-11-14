@@ -655,12 +655,27 @@ def lire_animaux_sflworld(page_html):
     return out
 
 
+def lire_rendements_animaux(page_html):
+    """Ce que donne une collecte, par animal, avec tes bonus (page sfl.world/land/<numéro>/animals) :
+    « Chicken 15 … Egg 36.50 … Feather 11.00 » → Egg 2,43 et Feather 0,73 par collecte."""
+    import html as _h
+    t = re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", page_html)))
+    out = {}
+    for animal, n, produits in re.findall(r"Animal Amount ([A-Za-z]+) (\d+) Product Amount P2P Cost ((?:[A-Z][A-Za-z ]*? [\d.]+ [\d.]+ )+)Total", t):
+        if int(n) <= 0:
+            continue
+        for prod, q, _ in re.findall(r"([A-Z][A-Za-z ]*?) ([\d.]+) ([\d.]+) ", produits):
+            out[prod.strip()] = float(q) / int(n)
+    return out
+
+
 def lire_activite_sflworld(page_html):
     """Compteurs à vie de la ferme (page sfl.world/land/<numéro>/activity) : « Iron Mined 2089 », « Egg Collected »…"""
     import html as _h
     t = re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", page_html)))
     return {f"{n.strip()} {v}": float(x) for n, v, x in
-            re.findall(r"([A-Z][A-Za-z' ]*?) (Mined|Harvested|Chopped|Collected|Points Earned) (\d+(?:\.\d+)?)", t)}
+            re.findall(r"([A-Z][A-Za-z' ]*?) (Mined|Harvested|Chopped|Collected|Caught|Drilled|Points Earned) (\d+(?:\.\d+)?)", t)
+            if "Farm Name" not in n} | {f"{n} Caught": float(x) for n, x in re.findall(r"Farm Name Amount ([A-Z][A-Za-z' ]*?) Caught (\d+)", t)}
 
 
 def rythme_reel(hist, jours_max=30):
@@ -885,6 +900,10 @@ def production(act, stock, prices, rendements, aujourdhui):
     return rows
 
 
+# Collectes comptées par le jeu (« Egg Collected »…) : × ce que donne une collecte (page animaux de sfl.world)
+COLLECTES = {"Egg", "Feather", "Milk", "Leather", "Wool", "Merino Wool", "Truffle", "Pig Bristles", "Obsidian"}
+
+
 def _production_compteurs(c1, c0, rendements):
     """Ce que tu as produit entre deux relevés des compteurs du jeu (arbres coupés, pierres minées, récoltes…)."""
     rd = rendements or {}
@@ -895,14 +914,22 @@ def _production_compteurs(c1, c0, rendements):
             continue
         if k == "Tree Chopped":
             res = "Wood"
+        elif k == "Oil Drilled":
+            res = "Oil"
         elif k.endswith(" Mined"):
             res = k[:-6]
         elif k.endswith(" Harvested"):
             res = k[:-10]
+            if " " in res and res not in rd:
+                continue    # fleurs et autres compteurs groupés
+        elif k.endswith(" Caught"):
+            res = k[:-7]    # un poisson (ou objet) par prise
+        elif k.endswith(" Collected") and k[:-10] in COLLECTES:
+            res = k[:-10]
         else:
             continue
-        if res.endswith(" Rock") or res.endswith(" Tree") or " " in res and res not in rd:
-            continue    # compteurs de rochers/arbres (pas une ressource)
+        if res.endswith(" Rock") or res.endswith(" Tree"):
+            continue        # compteurs de rochers/arbres (pas une ressource)
         out[res] = out.get(res, 0) + d * (rd.get(res) or 1)
     return out
 
