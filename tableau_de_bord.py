@@ -136,14 +136,15 @@ let FARM;try{FARM=localStorage.getItem("farm")}catch(e){}
 if(!D.farms.some(f=>f.id===FARM))FARM=D.farms[0].id;
 function setFarm(id){const f=D.farms.find(x=>x.id===id);FARM=id;D.trades=f.trades;D.counters=f.counters;try{localStorage.setItem("farm",id)}catch(e){}}
 setFarm(FARM);
-const TABS=[["apercu","🏠 Aujourd'hui"],["objectifs","🎯 Objectifs"],["rentabilite","💰 Ce qui rapporte"],["vente","🛒 Vendre"],["plus","➕ Plus"]];
+const TABS=[["apercu","🏠 Aujourd'hui"],["objectifs","🎯 Objectifs"],["rentabilite","💰 Ce qui rapporte"],["nft","🖼️ NFT"],["vente","🛒 Vendre"],["plus","➕ Plus"]];
 // Une phrase par onglet : à quoi il sert (affichée sous la barre d'onglets)
 const AIDE={apercu:"Ce que tu as gagné, ce que ta ferme a récolté, et ce qu'il y a à faire maintenant.",
  objectifs:"Le pass du chapitre, les livraisons qui valent le coup, ta liste d'objectifs.",
  rentabilite:"Ce qui rapporte vraiment : produire, nourrir tes animaux, agrandir tes bâtiments.",
+ nft:"Tes NFT à bonus : ce qu'ils te rapportent, lesquels acheter ou vendre.",
  vente:"Ce que tu as en stock, et s'il vaut mieux le vendre maintenant ou attendre.",
- plus:"Pour aller plus loin : historique, compte, NFT, bonus, compétences, cours des ressources."};
-const GROUPS={plus:[["historique","📈 Gains jour par jour"],["echanges","🔁 Échanges"],["compteurs","💳 Mon compte"],["nft","🖼️ NFT"],["bonus","🧮 Mes bonus"],["skills","🎓 Compétences"],["ressources","📉 Cours d'une ressource"],["cycles","📅 Saisons passées"]]};
+ plus:"Pour aller plus loin : historique, compte, bonus, compétences, cours des ressources."};
+const GROUPS={plus:[["historique","📈 Gains jour par jour"],["echanges","🔁 Échanges"],["compteurs","💳 Mon compte"],["bonus","🧮 Mes bonus"],["skills","🎓 Compétences"],["ressources","📉 Cours d'une ressource"],["cycles","📅 Saisons passées"]]};
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const fr=(x,d=2)=>x==null||isNaN(x)?"—":x.toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d});
 const fp=x=>x==null?"—":fr(x,x>=10?2:4);
@@ -174,7 +175,13 @@ function show(id){const grp=Object.keys(GROUPS).find(g=>g===id||GROUPS[g].some(x
  let th=document.getElementById("tabhelp");if(!th){th=document.createElement("div");th.id="tabhelp";th.className="sub";th.style.margin="0 0 10px";document.querySelector("main").prepend(th);}
  th.textContent="ℹ️ "+(AIDE[grp||id]||"");
  sn.querySelectorAll("[data-sub]").forEach(b=>b.onclick=()=>show(b.dataset.sub));
- document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===sub));nav.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.id===(grp||id)));try{localStorage.setItem("tab",grp||id)}catch(e){};render(sub);}
+ document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===sub));nav.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.id===(grp||id)));try{localStorage.setItem("tab",grp||id)}catch(e){};render(sub);simplifier(document.getElementById(sub));}
+// Tout ouvert ; les longues explications sont rangées derrière « ℹ️ Détail »
+function simplifier(sec){if(!sec)return;
+ sec.querySelectorAll("details.card:not(.garde)").forEach(d=>d.open=true);
+ sec.querySelectorAll(".sub").forEach(x=>{if(x.closest("details.aide")||x.textContent.trim().length<110)return;
+  const d=document.createElement("details");d.className="aide";d.innerHTML='<summary style="cursor:pointer;color:var(--muted);font-size:13px">ℹ️ Détail</summary>';
+  x.parentNode.insertBefore(d,x);d.appendChild(x);});}
 document.getElementById("theme").onclick=()=>{const r=document.documentElement;const cur=r.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");r.dataset.theme=cur==="dark"?"light":"dark";try{localStorage.setItem("theme",r.dataset.theme)}catch(e){};render(document.querySelector("section.on").id);};
 try{const t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}
 const rb=document.getElementById("refresh");
@@ -227,16 +234,11 @@ function apercu(){
  const wk=totals(tradesFor(7)),td=totals(tradesFor(1));
  document.getElementById("apercu").innerHTML=
  `${(()=>{let ferme=false;try{ferme=localStorage.getItem("guide_vu")==="1"}catch(e){}
-  return `<details class="card" id="guide" ${ferme?"":"open"}><summary style="cursor:pointer"><b>🧭 Bienvenue : comment lire ce tableau de bord</b></summary>
-  <p class="plain">Il suit ta ferme Sunflower Land tout seul : clique sur <b>🔄 Actualiser</b> après avoir joué. Une journée commence à <b>${HEURE_JEU}</b>, comme dans le jeu. Tout est en <b>Flower (FLW)</b>, au prix du marché du jour, taxe déduite.</p>
-  <p class="plain"><b>4 onglets, dans cet ordre :</b></p>
-  <p class="plain">🏠 <b>Aujourd'hui</b> (ici) : ce qu'il y a à faire maintenant, et si tu gagnes de l'argent (« Cette semaine » doit être vert).<br>
-  🎯 <b>Objectifs</b> : ton pass du chapitre (points du jour) et les livraisons qui valent le coup.<br>
-  💰 <b>Ce qui rapporte</b> : miner, nourrir tes animaux, agrandir un bâtiment.<br>
-  🛒 <b>Vendre</b> : quoi vendre, et quand.</p>
-  <p class="plain">➕ <b>Plus</b> rassemble le reste (historique, compte, NFT, compétences) pour aller plus loin. Une ligne ℹ️ sous la barre explique chaque onglet.</p>
-  <div class="sub">Les coins ne sont jamais comptés comme une dépense : tu les gagnes en jouant.</div></details>
-  <details class="card"><summary style="cursor:pointer"><b>🔑 Données officielles du jeu</b> <span class="msum">${((D.nft||{}).animaux||{})._officiel?"✅ branchées":"facultatif (VIP, niveau 50+)"}</span></summary>
+  return `<details class="card garde" id="guide" ${ferme?"":"open"}><summary style="cursor:pointer"><b>🧭 Bienvenue : comment lire ce tableau de bord</b></summary>
+  <p class="plain">Clique sur <b>🔄 Actualiser</b> après avoir joué. Journée du jeu : à partir de <b>${HEURE_JEU}</b>. Tout est en <b>Flower (FLW)</b>, prix du marché, taxe déduite, coins non comptés.</p>
+  <p class="plain">🏠 <b>Aujourd'hui</b> : quoi faire maintenant, et tes gains · 🎯 <b>Objectifs</b> : pass et livraisons · 💰 <b>Ce qui rapporte</b> : animaux, minerais, bâtiments · 🖼️ <b>NFT</b> : ce que rapportent tes NFT · 🛒 <b>Vendre</b> : quoi vendre et quand · ➕ <b>Plus</b> : historique, compte, compétences.</p>
+</details>
+  <details class="card garde"><summary style="cursor:pointer"><b>🔑 Données officielles du jeu</b> <span class="msum">${((D.nft||{}).animaux||{})._officiel?"✅ branchées":"facultatif (VIP, niveau 50+)"}</span></summary>
   <p class="plain">Avec ta clé personnelle, l'outil lit ta ferme directement dans le jeu : XP exacte de chaque animal, caresses faites, cochons et niveau de ta porcherie. Pour l'obtenir : ouvre <b>sunflower-land.com/community-docs</b> dans ton navigateur, connecté au jeu ; la clé apparaît à gauche (« Show », puis « Copy »).</p>
   <p class="plain">⚠️ Elle est comme un mot de passe : ne la donne à personne. Ici, elle reste sur ton ordinateur (fichier ma_ferme.json) et ne sert qu'à lire ta ferme.</p>
   <div class="controls"><input id="cle_api" type="password" autocomplete="off" placeholder="Colle ta clé ici (sfl.…)" style="flex:1;min-width:220px"><button class="chip" id="cle_ok">Enregistrer</button>${((D.nft||{}).animaux||{})._officiel?'<button class="chip" id="cle_del">Retirer</button>':""}</div></details>`;})()}
@@ -323,14 +325,14 @@ function historique(){
 function aFaireCard(){
  const N=D.nft||{},li=[];
  const P=N.pass;if(P&&P.jour&&P.jour.objectif!=null){const J=P.jour,reste=J.objectif-J.fait,m=(P.missions||[]).filter(x=>x.absolument&&x.sorte!=="corvee").slice(0,3);
-  li.push(reste>0?`🎟️ <b>Pass</b> : encore <b>${fr(reste,0)} points</b> aujourd'hui (${fr(J.fait,0)} / ${fr(J.objectif,0)}).${m.length?" Les moins chères : "+m.map(x=>`${x.quoi.replace("Livraison ","")} (${fr(x.points,0)} pts)`).join(", ")+".":""}`:`🎟️ <b>Pass</b> : objectif du jour atteint ✅ (${fr(J.fait,0)} / ${fr(J.objectif,0)} points).`);}
- const L=N.livraisons;if(L){const pr=L.flower.filter(e=>e.verdict==="livrer");if(pr.length)li.push(`📦 <b>Livraisons prêtes</b> : ${pr.map(e=>`${e.pnj} (+${fr(e.en_flower,2)} FLW)`).join(", ")}.`);}
- const A=N.animaux||{};["Cow","Chicken","Sheep"].forEach(t=>{const r=A[t];if(!r||!(r.mes_animaux||[]).length)return;
+  li.push(reste>0?`🎟️ <b>Pass</b> : ${fr(J.fait,0)} / ${fr(J.objectif,0)} points → encore <b>${fr(reste,0)}</b>${m.length?" · "+m.map(x=>`${x.quoi.replace("Livraison ","")} ${fr(x.points,0)} pts`).join(", "):""}`:`🎟️ <b>Pass</b> : ${fr(J.fait,0)} / ${fr(J.objectif,0)} points ✅`);}
+ const L=N.livraisons;if(L){const pr=L.flower.filter(e=>e.verdict==="livrer");if(pr.length)li.push(`📦 <b>Livraisons prêtes</b> : ${pr.map(e=>`${e.pnj} +${fr(e.en_flower,2)}`).join(", ")} FLW`);}
+ const A=N.animaux||{};["Cow","Chicken","Sheep","Pig"].forEach(t=>{const r=A[t];if(!r||!(r.mes_animaux||[]).length)return;
   const ok=r.mes_animaux.filter(a=>a.nourriture&&a.revenu!=null&&a.revenu>(a.nourriture.cout||0));if(!ok.length)return;
   const gain=sum(ok,a=>a.revenu-(a.nourriture.cout||0));
-  li.push(`${{Cow:"🐄",Chicken:"🐔",Sheep:"🐑"}[t]} <b>${r.nom}</b> : nourris-en ${ok.length} sur ${r.mes_animaux.length} → ≈ <b class="pos">${sg(gain)} FLW</b> (même en comptant leur nourriture au prix de vente). Le détail par animal est dans 💰 Ce qui rapporte.`);});
+  li.push(`${{Cow:"🐄",Chicken:"🐔",Sheep:"🐑",Pig:"🐷"}[t]} <b>${r.nom}</b> : nourrir ${ok.length}/${r.mes_animaux.length} → <b class="pos">${sg(gain)} FLW</b> de plus que vendre leur nourriture`);});
  const V=(D.stock||[]).filter(r=>r.sig==="vendre"&&r.sellable>0).sort((a,b)=>(b.value||0)-(a.value||0)).slice(0,3);
- if(V.length)li.push(`🛒 <b>Bon moment pour vendre</b> : ${V.map(r=>`${nm(r.n)} (≈ ${fr(r.value,2)} FLW)`).join(", ")}.`);
+ if(V.length)li.push(`🛒 <b>À vendre maintenant</b> : ${V.map(r=>`${nm(r.n)} ${fr(r.value,2)}`).join(", ")} FLW`);
  return `<div class="card"><h2>✅ À faire maintenant</h2>${li.length?li.map(x=>`<p class="plain">${x}</p>`).join(""):'<div class="empty">Rien d\'urgent. Clique sur 🔄 Actualiser après avoir joué.</div>'}</div>`;}
 function plusLoin(html){return `<details class="card"><summary style="cursor:pointer"><b>📚 Pour aller plus loin</b> <span class="msum">plan pour progresser, objectifs de la saison, NFT remboursés, conseils selon ton objectif</span></summary>${html}</details>`;}
 function objectifs(){
@@ -395,11 +397,11 @@ function passCard(){const P=(D.nft||{}).pass;if(!P)return"";
  <div class="sub">Ton rythme : <b>${fr(P.rythme,0)} points/jour</b> (${P.rythme_src}). Points du jeu : <b>5 par ticket</b> de livraison ou de bounty (animaux compris), <b>3 par Duende Cap</b> de corvée, <b>10 par livraison</b> contre des coins ou des Flower. Paliers tirés du code du jeu.<br>ℹ️ Dans le jeu, la barre ne montre que les points du <b>palier en cours</b> (par exemple ${(()=>{const c=P.cibles.find(x=>x.vise)||P.cibles[0];return c&&c.dans_palier?`« … / ${fr(c.dans_palier,0)} » pour le palier ${c.palier}`:"« 120 / 171 »"})()}). Ici, ce sont tes points <b>au total</b> depuis le début du chapitre.</div>
  ${(()=>{const J=P.jour;if(!J)return"";const ok=J.objectif!=null&&J.fait>=J.objectif,pc=J.objectif?Math.min(100,J.fait/J.objectif*100):0;
   return `<div class="hero"><div><div class="l">📅 Points faits aujourd'hui</div><div class="big ${ok?"pos":""}">${fr(J.fait,0)}${J.objectif!=null?` <span style="font-size:18px">/ ${fr(J.objectif,0)}</span>`:""}</div>
-  ${J.objectif!=null?`<div class="bar"><span style="width:${pc}%"></span></div><div class="l">${ok?`✅ <b>Objectif du jour atteint</b> (+${fr(J.fait-J.objectif,0)} d'avance). Si tu as encore les ressources pour des missions ⭐, fais-les : chaque point en plus baisse l'objectif des jours suivants.`:`Encore <b>${fr(J.objectif-J.fait,0)} points</b> aujourd'hui pour rester dans les temps du palier visé. Commence par les missions ⭐ ci-dessous.`}</div>`:""}
-  <div class="l">Journée du jeu depuis ${HEURE_JEU} : compté depuis ${fr(J.depuis,0)} points${J.photo?" (photo de "+new Date(J.photo).toLocaleString("fr-FR",{weekday:"short",hour:"2-digit",minute:"2-digit"})+")":""}. Clique sur 🔄 Actualiser après tes quêtes pour mettre à jour.</div></div>
+  ${J.objectif!=null?`<div class="bar"><span style="width:${pc}%"></span></div><div class="l">${ok?`✅ <b>Objectif du jour atteint</b> (+${fr(J.fait-J.objectif,0)})`:`Encore <b>${fr(J.objectif-J.fait,0)} points</b> aujourd'hui (missions ⭐ d'abord)`}</div>`:""}
+  <div class="l">depuis ${HEURE_JEU}</div></div>
   ${J.historique.length?`<div><div class="l">Les derniers jours (journées du jeu)</div>${J.historique.slice().reverse().map(h=>`<div class="l">${h.date.split("-").reverse().slice(0,2).join("/")}${h.en_cours?" (en cours)":""} : <b>${h.approx?"≈ ":""}${fr(h.fait,0)}</b>${J.objectif&&!h.en_cours?(h.fait>=J.objectif?" ✅":" ⚠️"):""}</div>`).join("")}
    ${J.moyenne!=null&&J.objectif?`<div class="l" style="margin-top:6px">Moyenne : <b>${fr(J.moyenne,0)} / jour</b> pour ${fr(J.objectif,0)} nécessaires → ${J.moyenne>=J.objectif?"✅ <b>tu tiens le cap</b>":"⚠️ <b>en dessous du rythme</b> : il faut "+fr(J.objectif-J.moyenne,0)+" points de plus par jour"}</div>`:""}
-   <div class="l">≈ = pas de photo pile à ${HEURE_JEU} ce jour-là (laisse le tableau de bord ouvert la nuit).</div></div>`:""}</div>`;})()}
+   </div>`:""}</div>`;})()}
  ${cib}
  ${P.calcul?`<div class="sub">🧮 <b>Tickets recalculés avec les règles du jeu</b> (sfl.world n'est pas toujours à jour) : ${P.calcul.vip?"+2 par mission grâce au VIP":"pas de bonus VIP"}${P.calcul.objets.length?` · +${P.calcul.objets.length} grâce à ${P.calcul.objets.join(", ")} (seulement si tu les portes : Bumpkin ou Farm Hand)`:""}${P.calcul.double?" · <b>journée double livraison</b> : ×2 sur la première livraison de chaque personnage aujourd'hui":""}. Les quêtes viennent de sfl.world : si une livraison que tu viens de faire apparaît encore, clique sur 🔄 Actualiser un peu plus tard.</div>`:""}
  <h3 style="margin-top:12px">Les missions du moment, de la moins chère à la plus chère</h3>
@@ -547,8 +549,8 @@ function nftTab(){
  const own=N.filter(r=>r.owned),buy=N.filter(r=>!r.owned);
  const ownDay=sum(own,r=>r.jour),ownVal=sum(own,r=>r.price||0);
  const row=r=>`<tr><td style="text-align:left;min-width:190px">${!r.owned&&r.price?`<button class="chip" title="En faire un objectif" data-obj-nft="${encodeURIComponent(r.n)}">🎯</button> `:""}<b>${r.n}</b>${r.wearable?' <span class="why">(vêtement)</span>':""}<div class="why">🎁 ${r.effet||""}</div></td><td>${r.price?fr(r.price):"—"}</td><td class="${r.jour>0.001?"pos":""}">${r.xp?"XP":"+"+fp(r.jour)}</td><td>${r.xp?"—":"+"+fr(r.mois)}</td><td class="${r.cls}"><b>${r.an_pct!=null&&!r.xp?fr(r.an_pct,0)+" %":"—"}</b></td><td>${r.rembourse_jours?fr(r.rembourse_jours/30,0)+" mois":"—"}</td><td style="text-align:left;min-width:280px">${r.pas_pour_toi&&!r.owned?`<div><b>🚫 Pas pour toi</b> : ${r.pas_pour_toi}.</div>`:""}${r.note&&!(r.pas_pour_toi&&!r.owned)?`<div><b>${r.note}</b>${r.an_pct!=null?` · ${fr(r.an_pct,0)} %/an`:""}${r.rembourse_jours?` · remboursé en ${fr(r.rembourse_jours/30,0)} mois`:""}${r.jour>0.001?` · +${fr(r.mois)} FLW/mois`:""}</div>`:""}
-  ${r.pot?`<div class="why">👉 ${r.pot.actuel}</div>`:""}
-  ${r.pot&&r.pot.opt&&r.an_max!=null?(r.an_max>(r.an_pct||0)*1.15?`<div class="why">💡 Jusqu'à <b>${fr(r.an_max,0)} %/an</b>${r.mois_max?` (remboursé en ${fr(r.mois_max,0)} mois)`:""} ${r.pot.opt}</div>`:`<div class="why">✅ Tu en tires déjà presque tout.</div>`):""}
+  ${r.pot?`<details class="aide"><summary class="why" style="cursor:pointer">👉 ton rythme${r.pot.opt&&r.an_max!=null&&r.an_max>(r.an_pct||0)*1.15?` · 💡 jusqu'à ${fr(r.an_max,0)} %/an`:""}</summary><div class="why">${r.pot.actuel}</div>
+  ${r.pot.opt&&r.an_max!=null?(r.an_max>(r.an_pct||0)*1.15?`<div class="why">💡 Jusqu'à <b>${fr(r.an_max,0)} %/an</b>${r.mois_max?` (remboursé en ${fr(r.mois_max,0)} mois)`:""} ${r.pot.opt}</div>`:`<div class="why">✅ Tu en tires déjà presque tout.</div>`):""}</details>`:""}
   ${r.amorti?`<div><b>💳 Amorti ${fr(r.amorti.pct,0)} %</b> (${fr(r.amorti.fait)} / ${fr(r.amorti.prix)} FLW) · reste ${fr(r.amorti.reste)} FLW${r.amorti.mois!=null?` ≈ ${fr(r.amorti.mois,0)} mois à ton rythme`:""}</div><div class="bar"><span style="width:${r.amorti.pct}%"></span></div>`:""}${r.note?"":`<span class="${r.cls}">${r.verdict}</span>`}<details><summary class="why" style="cursor:pointer">ℹ️ détail du calcul</summary><div class="why">${r.note?r.verdict+" · ":""}${r.why}</div></details></td></tr>`;
  const SK=[["n","NFT et ce qu’il fait"],["price","Prix (FLW)"],["jour","Gain / jour"],["mois","Gain / mois"],["an_pct","Rendement / an"],["rembourse_jours","Remboursé en"],[null,"Verdict"]];
  const head=`<tr>${SK.map(([k,l],i)=>`<th ${k?`data-sort="${k}" style="cursor:pointer;user-select:none;${i===0?"text-align:left":""}" title="Clique pour trier"`:'style="text-align:left"'}>${l}<span class="sarr"></span></th>`).join("")}</tr>`;
@@ -592,7 +594,7 @@ function nftTab(){
 
 const SIG={vendre:["🟢","Bon moment pour vendre","good"],normal:["⚪","Prix normal","mid"],attendre:["🟠","Attends si tu peux","wait"],garder:["🔵","À garder","keep"],cout:["🔴","Sous ton coût","bad"]};
 function venteTable(rows,showKeep){return `<table><tr><th>Ressource</th><th style="text-align:left">Conseil</th><th>En stock</th>${showKeep?"<th>Réserve</th>":""}<th>Vendable</th><th>Prix du marché</th><th>Prix mini conseillé</th><th>Valeur vendable</th></tr>
- ${rows.map(r=>{const g=SIG[r.sig];return `<tr><td><b>${nm(r.n)}</b></td><td style="text-align:left"><span class="badge ${g[2]}">${g[0]} ${g[1]}</span><div class="why">${r.txt}</div>${r.alert?`<div class="why warn">⚠️ ${r.alert}</div>`:""}</td><td>${fr(r.stock,0)}</td>${showKeep?`<td>${r.keep?fr(r.keep,0):"—"}</td>`:""}<td><b>${fr(r.sellable,0)}</b></td><td>${fp(r.price)}</td><td>${fp(r.floor)}</td><td class="pos">${fr(r.value)}</td></tr>`}).join("")}</table>`;}
+ ${rows.map(r=>{const g=SIG[r.sig];return `<tr><td><b>${nm(r.n)}</b></td><td style="text-align:left"><span class="badge ${g[2]}">${g[0]} ${g[1]}</span>${/^Prix (haut|bas|normal)/.test(r.txt||"")?"":`<div class="why">${r.txt}</div>`}${r.alert?`<div class="why warn">⚠️ ${r.alert}</div>`:""}</td><td>${fr(r.stock,0)}</td>${showKeep?`<td>${r.keep?fr(r.keep,0):"—"}</td>`:""}<td><b>${fr(r.sellable,0)}</b></td><td>${fp(r.price)}</td><td>${fp(r.floor)}</td><td class="pos">${fr(r.value)}</td></tr>`}).join("")}</table>`;}
 function vente(){
  const el=document.getElementById("vente");const S=D.stock;
  if(!S.length){el.innerHTML='<div class="card empty">Pas de stock vendable trouvé.</div>';return;}
@@ -636,12 +638,15 @@ function rentabilite(){
   const mx=L.find(l=>l.max),gp=groupes(true),gm=groupes(false);
   const plage=(gp?`en comptant la nourriture au prix de vente, nourrir est rentable pour passer les niveaux <b class="pos">${gp}</b>`:"nourrir est à perte à tous les niveaux")+(gm?`, à perte pour <b class="neg">${gm}</b>`:"")+(mx?` ; au niveau 15, chaque cycle : <b class="${cls(mx.marge)}">${sg(mx.marge)}</b>`:"");
   return `<p class="plain">${EMO[t]} <b>${r.nom}</b> : ${plage}.${t==="Pig"&&r.meilleur?` Le mieux : les nourrir jusqu'au <b>niveau ${r.meilleur.niveau}</b> puis les échanger contre ${r.meilleur.poils} poils → <b class="${cls(r.meilleur.par_jour)}">${sg(r.meilleur.par_jour)} FLW par jour et par cochon</b>.`:""}${niv.length&&r.par_jour!=null?` Tes ${niv.length} ${r.nom.toLowerCase()} si tu les nourris aujourd'hui : <b class="${cls(r.par_jour)}">${sg(r.par_jour)} FLW</b> si tu vendais plutôt leur nourriture, <b class="pos">${sg(r.par_jour_maison!=null?r.par_jour_maison:sum(niv,n=>((L.find(l=>l.de===Math.min(n,15))||{}).marge_maison)||0))} FLW</b> avec la nourriture de tes champs (calculé animal par animal, avec l'XP qui leur reste).`:""}</p>`;};
+ const vAn=t=>{const M=(A[t].mes_animaux||[]);const c=sum(M,a=>(a.nourriture||{}).cout||0),r=sum(M,a=>a.revenu||0);return {n:M.length,c,r,g:r-c};};
  const bref=`<div class="card"><h2>📌 En bref</h2>
-  <div class="sub">Comment c'est compté : <b>les coins ne comptent pas</b> (tu les gagnes en jouant). Ce que tu consommes (bois pour une pioche, blé pour une vache…) est compté <b>au prix où tu pourrais le vendre</b> (prix du marché − 7,5 % de taxe). Donc « rentable » = ce que tu obtiens se vend plus cher que ce que tu as consommé.</div>
-  <p class="plain">✅ <b>Rentable à produire</b> : ${bonV.slice(0,8).map(r=>`${nm(r.item)}${r.cout>0?" (+"+pc(r.marge,r.cout)+")":" (ne consomme rien)"}`).join(", ")||"rien pour l'instant"}.</p>
-  ${egalV.length?`<p class="plain">🔁 <b>${egalV.map(r=>nm(r.item)).join(", ")}</b> : ça rapporte à peu près autant que de vendre directement ce que ça consomme (${egalV.map(r=>nm(r.item)+" "+(r.marge>=0?"+":"")+pc(r.marge,r.cout)).join(", ")}, selon les prix du jour). À produire si tu en as besoin (bâtiments, quêtes, outils), sinon c'est pareil.</p>`:""}
-  ${malV.length?`<p class="plain">❌ <b>Consomme plus qu'il ne rapporte</b> : ${malV.map(r=>nm(r.item)).join(", ")} → vends plutôt ce qu'il consomme, ou garde-le pour tes besoins.</p>`:""}
-  ${TY.map(resume).join("")}</div>`;
+  ${TY.some(t=>(A[t].mes_animaux||[]).length)?`<h3>🐾 Nourrir tes animaux aujourd'hui</h3><div class="scroll"><table><tr><th>Animal</th><th>Nombre</th><th>Nourriture à donner<div class="why">ce qu'elle rapporterait vendue</div></th><th>Ce qu'ils vont produire</th><th>Gain en les nourrissant<div class="why">par rapport à vendre la nourriture</div></th></tr>
+   ${TY.filter(t=>(A[t].mes_animaux||[]).length).map(t=>{const v=vAn(t);return `<tr><td>${EMO[t]} <b>${A[t].nom}</b></td><td>${v.n}</td><td>${fr(v.c,2)}</td><td>${fr(v.r,2)}</td><td class="${cls(v.g)}"><b>${sg(v.g)} ${v.g>=0?"✅":"❌"}</b></td></tr>`}).join("")}</table></div>`:""}
+  <h3>⛏️ Produire (pour 1 unité)</h3><div class="scroll"><table><tr><th>Ressource</th><th>Ce que tu consommes<div class="why">valeur si vendu</div></th><th>Ce que ça se vend</th><th>Gain</th></tr>
+   ${res.filter(r=>r.cout>0).map(r=>`<tr><td><b>${nm(r.item)}</b></td><td>${fp(r.cout)}</td><td>${fp(r.vente_nette)}</td><td class="${cls(r.marge)}"><b>${sg(r.marge)}</b> (${r.marge>=0?"+":""}${pc(r.marge,r.cout)})${proche(r)?" 🔁":r.marge>=0?" ✅":" ❌"}</td></tr>`).join("")}
+   <tr><td colspan="4" class="why">Bois, blé, orge, maïs, chou, tomate, citron : ne consomment que des coins (non comptés) → toujours rentables. 🔁 = à peu près pareil que vendre ce que ça consomme.</td></tr></table></div>
+  ${BAT.length?`<h3>🏗️ Agrandir</h3><div class="scroll"><table><tr><th>Bâtiment</th><th>Coût</th><th>Rapporte</th><th>Remboursé en</th></tr>${BAT.map(b=>`<tr><td><b>${{Pigpen:"Porcherie",Barn:"Grange","Hen House":"Poulailler"}[b.batiment]} ${b.niveau}→${b.vers}</b> (+${b.en_plus})</td><td>${fr(b.cout,0)} FLW</td><td class="${cls(b.gain_jour)}">${sg(b.gain_jour)}/jour</td><td><b>${b.jours!=null?fr(b.jours,0)+" j":"jamais"}</b> ${b.jours!=null&&b.jours<=180?"🟢":b.jours!=null&&b.jours<=365?"🟡":"🔴"}</td></tr>`).join("")}</table></div>`:""}
+  <div class="sub">Coins jamais comptés (tu les gagnes en jouant). Tout ce qui est consommé (bois d'une pioche, blé d'une vache…) est compté au prix où tu pourrais le vendre, taxe de 7,5 % déduite. Animaux : nourriture la moins chère pour l'XP qu'il leur reste (caresses comprises), d'après ${A._officiel?"les données officielles du jeu":"sfl.world"}. Agrandir : animaux en plus élevés jusqu'à leur meilleur niveau, sans compter les bounties.</div></div>`;
  const animCard=TY.length?`<div class="card"><h2>🐾 Nourrir tes animaux : ça rapporte ?</h2>
   <div class="sub">Calcul avec les règles du jeu (XP par repas, quantité mangée, production de chaque niveau) + <b>tes</b> compétences et bonus. Un animal produit une fois par jour (puis dort 24 h). La nourriture choisie est la moins chère pour passer le niveau ; elle est comptée à son prix de vente. ${A.Pig?"Cochons : la boue (+25 % d'XP) n'est pas comptée.":""}</div>
   ${TY.map(t=>{const r=A[t];return `<details class="card" style="margin-top:8px"><summary style="cursor:pointer"><b>${EMO[t]} ${r.nom}</b> <span class="msum">${fr(r.qte_par_repas,2)} ration(s) par repas${r.gratuit?" · nourriture gratuite ✨":""}${Object.keys(r.bonus_prod).length?" · tes bonus de production : "+Object.entries(r.bonus_prod).map(([k,v])=>(v>0?"+":"")+fr(v,2)+" "+(PR[k]||k)).join(", "):""}</span></summary>
@@ -654,11 +659,7 @@ function rentabilite(){
    <div class="sub">Deux façons de voir : <b>si tu vendais la nourriture</b> (blé, orge, poisson…) au lieu de la donner, est-ce que l'animal rapporte plus ? Et <b>avec la nourriture de tes champs</b> (graines payées en coins, non comptées) : ce qu'il te rapporte en plus, sans rien vendre.</div>
    ${t==="Pig"&&r.echange?`<h3>Quand échanger un cochon contre ses poils ?</h3><div class="scroll"><table><tr><th>Échangé au niveau</th><th>Jours</th><th>Truffes − nourriture</th><th>Poils</th><th>Total</th><th>Par jour</th></tr>${r.echange.map(e=>`<tr${r.meilleur&&e.niveau===r.meilleur.niveau?' style="font-weight:700"':""}><td>${e.niveau}${r.meilleur&&e.niveau===r.meilleur.niveau?" ⭐":""}</td><td>${e.jours}</td><td class="${cls(e.nourriture_moins_truffes)}">${sg(e.nourriture_moins_truffes)}</td><td>${e.poils} (${fp(e.valeur_poils)})</td><td class="${cls(e.total)}">${sg(e.total)}</td><td class="${cls(e.par_jour)}"><b>${sg(e.par_jour)}</b></td></tr>`).join("")}</table></div><div class="sub">Nouveau cochon : 100 coins (non comptés).</div>`:""}
    ${t!=="Pig"?`<div class="sub">Quand un niveau est ❌ : ne nourris l'animal que si une <b>bounty</b> l'attend (coins, tickets du pass), ou donne-le avant.</div>`:""}</details>`}).join("")}</div>`:"";
- const batCard=BAT.length?`<div class="card"><h2>🏗️ Agrandir tes bâtiments : ça vaut le coup ?</h2>
-  <div class="sub">Coût du niveau suivant en ressources, au prix où tu pourrais les vendre (coins non comptés ; huile ≈ 0,10 FLW). Gain = les animaux en plus, élevés jusqu'à leur meilleur niveau. Sans compter les bounties (coins, tickets), qui peuvent valoir beaucoup plus.</div>
-  ${BAT.map(b=>`<div class="goal"><div class="gchk">${b.jours!=null&&b.jours<=180?"🟢":b.jours!=null&&b.jours<=365?"🟡":"🔴"}</div><div class="gtxt"><div class="gt"><b>${{Pigpen:"Porcherie",Barn:"Grange","Hen House":"Poulailler"}[b.batiment]} niveau ${b.niveau} → ${b.vers}</b> : +${b.en_plus} ${A[b.animal].nom.toLowerCase()}</div>
-   <div class="why">Coûte ≈ <b>${fr(b.cout,0)} FLW</b> (${Object.entries(b.items).map(([k,q])=>fr(q,0)+" "+nm(k)).join(", ")}${b.coins?" + "+fr(b.coins,0)+" coins":""}${b.sans_prix.length?" · sans prix : "+b.sans_prix.map(nm).join(", "):""}) · rapporte ≈ <b class="${cls(b.gain_jour)}">${sg(b.gain_jour)} FLW/jour</b> (${sg(b.par_animal_jour)} par animal, ${b.comment})
-   → ${b.jours!=null?`<b>remboursé en ${fr(b.jours,0)} jours</b> (≈ ${fr(b.jours/30,1)} mois)`:"<b>jamais remboursé</b> par la production seule"}.</div></div></div>`).join("")}</div>`:"";
+ const batCard="";
  el.innerHTML=bref+animCard+batCard+`<div class="hero"><div><div class="l">💡 Ton bénéfice sur tes ventes (30 jours)</div><div class="big ${realTot>=0?"pos":"neg"}">${sg(realTot)} FLW</div><div class="l">ce que tu as vendu (après taxe), moins ce que tu as consommé pour le produire</div></div></div>
  <details class="card"><summary style="cursor:pointer"><b>🧾 Ressources : ce que tu consommes pour en produire 1</b></summary>
  <div class="scroll"><table><tr><th>Ressource</th><th>Tu consommes (pour 1)</th><th>Se vend (après taxe)</th><th>Bilan pour 1</th><th>En %</th><th>Ton prix de vente moyen (30 j)</th><th>Recette</th></tr>

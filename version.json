@@ -1,6 +1,6 @@
 {
- "version": "2026-11-16.3",
- "nouveautes": "Site simplifié : 4 onglets (Aujourd'hui, Objectifs, Ce qui rapporte, Vendre) + « Plus ». Nouvelle carte « À faire maintenant ».",
+ "version": "2026-11-16.4",
+ "nouveautes": "Plus simple : NFT en onglet principal, tout ouvert, des tableaux de chiffres (nourrir tes animaux : coût, production, gain), explications rangées dans « ℹ️ Détail ». Données officielles du jeu utilisées si tu as mis ta clé.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

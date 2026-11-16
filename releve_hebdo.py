@@ -505,6 +505,40 @@ def photo_compteurs():
         print("Stock indisponible (SFL Tool) : photo des compteurs seulement.", file=sys.stderr)
 
 
+def lire_officiel():
+    """Données officielles du jeu (Community API), si tu as mis ta clé dans ma_ferme.json. Sinon None."""
+    cle = CONFIG.get("cle_api_sfl")
+    if not cle:
+        return None
+    for essai in range(3):
+        try:
+            req = urllib.request.Request(f"https://api.sunflower-land.com/community/farms/{FARM_ID}",
+                                         headers={"x-api-key": cle, "User-Agent": "releve-hebdo-sfl"})
+            with urllib.request.urlopen(req, timeout=90) as r:
+                d = json.loads(r.read().decode("utf-8"))
+            farm = d.get("farm") or d
+            safe_write(DATA / "officiel.json", json.dumps({"at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                                                           "farm": farm}, ensure_ascii=False))
+            return farm
+        except Exception as e:
+            print(f"(données officielles du jeu : essai {essai + 1} raté : {e})", file=sys.stderr)
+            time.sleep(10)
+    # secours : la dernière lecture réussie (moins de 2 jours)
+    old = load(DATA / "officiel.json", {})
+    if old.get("farm") and old.get("at", "") >= (datetime.now(timezone.utc) - timedelta(days=2)).isoformat():
+        print("(données officielles : dernière lecture réussie utilisée)", file=sys.stderr)
+        return old["farm"]
+    return None
+
+
+def tenues_portees(farm):
+    """Vêtements portés par ton Bumpkin et tes Farm Hands (les bonus ne marchent que portés)."""
+    t = set(((farm.get("bumpkin") or {}).get("equipped") or {}).values())
+    for b in ((farm.get("farmHands") or {}).get("bumpkins") or {}).values():
+        t |= set((b.get("equipped") or {}).values())
+    return t
+
+
 def main():
     DATA.mkdir(exist_ok=True)
     REPORTS.mkdir(exist_ok=True)
@@ -690,6 +724,7 @@ def main():
     stock_hist.append({"date": today, "at": now.isoformat(timespec="seconds"), "stock": {k: v for k, v in holdings.items() if v}})
     safe_write((DATA / "stock.json"), json.dumps(stock_hist, ensure_ascii=False, indent=1))
     land = try_json(f"https://sfl.world/api/v1.1/land/{FARM_ID}")  # niveau et compétences
+    OFF = lire_officiel()
     goals = load(ROOT / "objectifs.json", [])
     try:
         skn = list(json.loads((ROOT / "competences_jeu.json").read_text()).keys())
@@ -745,31 +780,21 @@ def main():
             detail_an = lire_animaux_detail(page_an)
             niveaux_bat = {v["batiment"]: v["niveau"] for v in animaux_lus.values()}
             source_an = "sfl.world"
-            if CONFIG.get("cle_api_sfl"):
-                # Source officielle du jeu (clé personnelle, gardée seulement dans ma_ferme.json)
-                try:
-                    from nft_analyse import animaux_depuis_api
-                    req = urllib.request.Request(f"https://api.sunflower-land.com/community/farms/{FARM_ID}",
-                                                 headers={"x-api-key": CONFIG["cle_api_sfl"], "User-Agent": "releve-hebdo-sfl"})
-                    with urllib.request.urlopen(req, timeout=60) as r:
-                        officiel = json.loads(r.read().decode("utf-8"))
-                    farm_off = officiel.get("farm") or officiel
-                    det, bats = animaux_depuis_api(farm_off, jeu_an["ANIMAL_LEVELS"])
-                    if det:
-                        # garder les bonus de production vus sur sfl.world
-                        prods = {(x["type"], x["niveau"]): x["produits"] for x in detail_an}
-                        for x in det:
-                            x["produits"] = prods.get((x["type"], x["niveau"]), {})
-                        detail_an, source_an = det, "jeu (officiel)"
-                    niveaux_bat.update(bats)
-                    possedes_an |= set((farm_off.get("inventory") or {}).keys()) | set((farm_off.get("collectibles") or {}).keys())
-                except Exception as e:
-                    print(f"(données officielles du jeu indisponibles : {e})", file=sys.stderr)
+            if OFF:
+                from nft_analyse import animaux_depuis_api
+                det, bats = animaux_depuis_api(OFF, jeu_an["ANIMAL_LEVELS"])
+                if det:
+                    prods = {(x["type"], x["niveau"]): x["produits"] for x in detail_an}
+                    for x in det:
+                        x["produits"] = prods.get((x["type"], x["niveau"]), {})
+                    detail_an, source_an = det, "jeu (officiel)"
+                niveaux_bat.update(bats)
+                possedes_an |= set((OFF.get("collectibles") or {}).keys()) | tenues_portees(OFF)
             anim = rentabilite_animaux(jeu_an, all_prices, ((land or {}).get("bumpkin") or {}).get("skills"),
                                        possedes_an, detail_an, tax=TAX)
             ANIMAUX_CALC.update(anim)
             ANIMAUX_CALC["_source"] = source_an
-            ANIMAUX_CALC["_officiel"] = bool(CONFIG.get("cle_api_sfl"))
+            ANIMAUX_CALC["_officiel"] = bool(OFF)
             ANIMAUX_CALC["_niveaux_bat"] = niveaux_bat
         except Exception as e:
             print(f"(rentabilité des animaux indisponible : {e})", file=sys.stderr)
@@ -997,8 +1022,11 @@ def main():
         nft["pass"] = plan_pass(json.loads((ROOT / "chapitres_jeu.json").read_text()), load(DATA / "activite.json", []),
                                 liv, chap, today, int(CONFIG.get("palier_pass", 40)),
                                 vip=bool((((land or {}).get("land") or {}).get("vip_info") or {}).get("have")),
-                                possedes=set(re.findall(r"(?<![A-Za-z])((?:[A-Z][a-z']+ ){1,3}[A-Z][a-z']+) \d+(?:\.\d+)?K? ", re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", land_page or "")))),
-                                double="Double Rewards Deliveries" in (land_page or ""))
+                                possedes=(tenues_portees(OFF) | set((OFF.get("collectibles") or {}).keys())) if OFF else
+                                         set(re.findall(r"(?<![A-Za-z])((?:[A-Z][a-z']+ ){1,3}[A-Z][a-z']+) \d+(?:\.\d+)?K? ", re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", land_page or "")))),
+                                double=any(d.get("name") == "doubleDelivery" and d.get("date") == today
+                                           for d in ((OFF.get("calendar") or {}).get("dates") or [])) if OFF
+                                       else "Double Rewards Deliveries" in (land_page or ""))
         P = nft["pass"]
         if P:
             # Points de chaque journée du jeu (minuit UTC), avec les photos prises au plus près de minuit
