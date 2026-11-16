@@ -1,6 +1,6 @@
 {
- "version": "2026-11-16.2",
- "nouveautes": "Animaux : caresses comptées, chaque animal suivi (XP qui reste, nourriture à donner), bilan « si tu vendais la nourriture » et « avec la nourriture de tes champs ». Clé du jeu (facultative) pour les données officielles.",
+ "version": "2026-11-16.3",
+ "nouveautes": "Site simplifié : 4 onglets (Aujourd'hui, Objectifs, Ce qui rapporte, Vendre) + « Plus ». Nouvelle carte « À faire maintenant ».",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

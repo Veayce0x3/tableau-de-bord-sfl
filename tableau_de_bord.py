@@ -136,17 +136,14 @@ let FARM;try{FARM=localStorage.getItem("farm")}catch(e){}
 if(!D.farms.some(f=>f.id===FARM))FARM=D.farms[0].id;
 function setFarm(id){const f=D.farms.find(x=>x.id===id);FARM=id;D.trades=f.trades;D.counters=f.counters;try{localStorage.setItem("farm",id)}catch(e){}}
 setFarm(FARM);
-const TABS=[["apercu","Aperçu"],["objectifs","Objectifs"],["vente","Vente"],["rentabilite","Rentabilité"],["nft","NFT"],["bonusgrp","Bonus et compétences"],["ressources","Une ressource"],["histgrp","Historique"]];
+const TABS=[["apercu","🏠 Aujourd'hui"],["objectifs","🎯 Objectifs"],["rentabilite","💰 Ce qui rapporte"],["vente","🛒 Vendre"],["plus","➕ Plus"]];
 // Une phrase par onglet : à quoi il sert (affichée sous la barre d'onglets)
-const AIDE={apercu:"Ce que tu as gagné en vendant au marché, et ce que ta ferme a récolté et utilisé.",
- objectifs:"Ton plan : pass du chapitre, livraisons, ce qu'il te reste à faire pour tes objectifs.",
+const AIDE={apercu:"Ce que tu as gagné, ce que ta ferme a récolté, et ce qu'il y a à faire maintenant.",
+ objectifs:"Le pass du chapitre, les livraisons qui valent le coup, ta liste d'objectifs.",
+ rentabilite:"Ce qui rapporte vraiment : produire, nourrir tes animaux, agrandir tes bâtiments.",
  vente:"Ce que tu as en stock, et s'il vaut mieux le vendre maintenant ou attendre.",
- rentabilite:"Ce qui rapporte vraiment : produire (bois, pierre…), nourrir tes animaux, agrandir tes bâtiments.",
- nft:"Les NFT qui boostent ta ferme : lesquels te rapportent, lesquels acheter ou vendre.",
- bonusgrp:"Tous tes bonus (NFT, vêtements, compétences) et quelles compétences prendre.",
- ressources:"Le prix d'une ressource au fil du temps.",
- histgrp:"Ton historique : gains jour par jour, échanges, dépôts et retraits, saisons passées."};
-const GROUPS={bonusgrp:[["bonus","🧮 Mes bonus"],["skills","🎓 Compétences"]],histgrp:[["historique","📈 Gains"],["echanges","🔁 Échanges"],["compteurs","💳 Mon compte"],["cycles","📅 Saisons et cycles passés"]]};
+ plus:"Pour aller plus loin : historique, compte, NFT, bonus, compétences, cours des ressources."};
+const GROUPS={plus:[["historique","📈 Gains jour par jour"],["echanges","🔁 Échanges"],["compteurs","💳 Mon compte"],["nft","🖼️ NFT"],["bonus","🧮 Mes bonus"],["skills","🎓 Compétences"],["ressources","📉 Cours d'une ressource"],["cycles","📅 Saisons passées"]]};
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const fr=(x,d=2)=>x==null||isNaN(x)?"—":x.toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d});
 const fp=x=>x==null?"—":fr(x,x>=10?2:4);
@@ -232,17 +229,18 @@ function apercu(){
  `${(()=>{let ferme=false;try{ferme=localStorage.getItem("guide_vu")==="1"}catch(e){}
   return `<details class="card" id="guide" ${ferme?"":"open"}><summary style="cursor:pointer"><b>🧭 Bienvenue : comment lire ce tableau de bord</b></summary>
   <p class="plain">Il suit ta ferme Sunflower Land tout seul : clique sur <b>🔄 Actualiser</b> après avoir joué. Une journée commence à <b>${HEURE_JEU}</b>, comme dans le jeu. Tout est en <b>Flower (FLW)</b>, au prix du marché du jour, taxe déduite.</p>
-  <p class="plain"><b>Par où commencer :</b></p>
-  <p class="plain">1️⃣ <b>Aperçu</b> (ici) : est-ce que tu gagnes de l'argent ? Le chiffre « Cette semaine » doit être vert.<br>
-  2️⃣ <b>Objectifs</b> : ce qu'il faut faire aujourd'hui (pass du chapitre, livraisons qui valent le coup).<br>
-  3️⃣ <b>Rentabilité</b> : ce qui rapporte (miner, nourrir tes animaux, agrandir un bâtiment).<br>
-  4️⃣ <b>Vente</b> : quoi vendre, et quand.</p>
-  <p class="plain">Les autres onglets (NFT, bonus, historique) servent pour aller plus loin. Une ligne ℹ️ sous la barre explique chaque onglet.</p>
+  <p class="plain"><b>4 onglets, dans cet ordre :</b></p>
+  <p class="plain">🏠 <b>Aujourd'hui</b> (ici) : ce qu'il y a à faire maintenant, et si tu gagnes de l'argent (« Cette semaine » doit être vert).<br>
+  🎯 <b>Objectifs</b> : ton pass du chapitre (points du jour) et les livraisons qui valent le coup.<br>
+  💰 <b>Ce qui rapporte</b> : miner, nourrir tes animaux, agrandir un bâtiment.<br>
+  🛒 <b>Vendre</b> : quoi vendre, et quand.</p>
+  <p class="plain">➕ <b>Plus</b> rassemble le reste (historique, compte, NFT, compétences) pour aller plus loin. Une ligne ℹ️ sous la barre explique chaque onglet.</p>
   <div class="sub">Les coins ne sont jamais comptés comme une dépense : tu les gagnes en jouant.</div></details>
   <details class="card"><summary style="cursor:pointer"><b>🔑 Données officielles du jeu</b> <span class="msum">${((D.nft||{}).animaux||{})._officiel?"✅ branchées":"facultatif (VIP, niveau 50+)"}</span></summary>
   <p class="plain">Avec ta clé personnelle, l'outil lit ta ferme directement dans le jeu : XP exacte de chaque animal, caresses faites, cochons et niveau de ta porcherie. Pour l'obtenir : ouvre <b>sunflower-land.com/community-docs</b> dans ton navigateur, connecté au jeu ; la clé apparaît à gauche (« Show », puis « Copy »).</p>
   <p class="plain">⚠️ Elle est comme un mot de passe : ne la donne à personne. Ici, elle reste sur ton ordinateur (fichier ma_ferme.json) et ne sert qu'à lire ta ferme.</p>
   <div class="controls"><input id="cle_api" type="password" autocomplete="off" placeholder="Colle ta clé ici (sfl.…)" style="flex:1;min-width:220px"><button class="chip" id="cle_ok">Enregistrer</button>${((D.nft||{}).animaux||{})._officiel?'<button class="chip" id="cle_del">Retirer</button>':""}</div></details>`;})()}
+ ${aFaireCard()}
  <div class="hero"><div><div class="l">Cette semaine</div><div class="big ${wk.net>=0?"pos":"neg"}">${sg(wk.net)} FLW</div></div>
   <div><div class="l">Aujourd'hui</div><div class="big ${td.net>=0?"pos":"neg"}">${sg(td.net)} FLW</div></div>
   <div><div class="l">Objectif</div><div class="big" style="font-size:20px">${wk.net>=0?"✅ Dans le vert":"⚠️ Dans le rouge"} cette semaine</div></div></div>
@@ -321,6 +319,20 @@ function historique(){
  draw(kind);
 }
 
+// Les choses à faire maintenant, en une liste courte (pass, livraisons, animaux, ventes)
+function aFaireCard(){
+ const N=D.nft||{},li=[];
+ const P=N.pass;if(P&&P.jour&&P.jour.objectif!=null){const J=P.jour,reste=J.objectif-J.fait,m=(P.missions||[]).filter(x=>x.absolument&&x.sorte!=="corvee").slice(0,3);
+  li.push(reste>0?`🎟️ <b>Pass</b> : encore <b>${fr(reste,0)} points</b> aujourd'hui (${fr(J.fait,0)} / ${fr(J.objectif,0)}).${m.length?" Les moins chères : "+m.map(x=>`${x.quoi.replace("Livraison ","")} (${fr(x.points,0)} pts)`).join(", ")+".":""}`:`🎟️ <b>Pass</b> : objectif du jour atteint ✅ (${fr(J.fait,0)} / ${fr(J.objectif,0)} points).`);}
+ const L=N.livraisons;if(L){const pr=L.flower.filter(e=>e.verdict==="livrer");if(pr.length)li.push(`📦 <b>Livraisons prêtes</b> : ${pr.map(e=>`${e.pnj} (+${fr(e.en_flower,2)} FLW)`).join(", ")}.`);}
+ const A=N.animaux||{};["Cow","Chicken","Sheep"].forEach(t=>{const r=A[t];if(!r||!(r.mes_animaux||[]).length)return;
+  const ok=r.mes_animaux.filter(a=>a.nourriture&&a.revenu!=null&&a.revenu>(a.nourriture.cout||0));if(!ok.length)return;
+  const gain=sum(ok,a=>a.revenu-(a.nourriture.cout||0));
+  li.push(`${{Cow:"🐄",Chicken:"🐔",Sheep:"🐑"}[t]} <b>${r.nom}</b> : nourris-en ${ok.length} sur ${r.mes_animaux.length} → ≈ <b class="pos">${sg(gain)} FLW</b> (même en comptant leur nourriture au prix de vente). Le détail par animal est dans 💰 Ce qui rapporte.`);});
+ const V=(D.stock||[]).filter(r=>r.sig==="vendre"&&r.sellable>0).sort((a,b)=>(b.value||0)-(a.value||0)).slice(0,3);
+ if(V.length)li.push(`🛒 <b>Bon moment pour vendre</b> : ${V.map(r=>`${nm(r.n)} (≈ ${fr(r.value,2)} FLW)`).join(", ")}.`);
+ return `<div class="card"><h2>✅ À faire maintenant</h2>${li.length?li.map(x=>`<p class="plain">${x}</p>`).join(""):'<div class="empty">Rien d\'urgent. Clique sur 🔄 Actualiser après avoir joué.</div>'}</div>`;}
+function plusLoin(html){return `<details class="card"><summary style="cursor:pointer"><b>📚 Pour aller plus loin</b> <span class="msum">plan pour progresser, objectifs de la saison, NFT remboursés, conseils selon ton objectif</span></summary>${html}</details>`;}
 function objectifs(){
  const el=document.getElementById("objectifs"),G=D.goals;
  const SZ=(D.nft||{}).saison,SFR={spring:"🌸 Printemps",summer:"☀️ Été",autumn:"🍂 Automne",winter:"❄️ Hiver"};
@@ -339,17 +351,17 @@ function objectifs(){
   <div class="sub">Le cycle recommence chaque printemps. Pour chaque NFT que tu possèdes : ce qu'il faut faire <b>cette saison</b> pour qu'il te rapporte au moins 35 %/an. Suivi avec tes vrais compteurs depuis le ${SZ.debut.split("-").reverse().join("/")}${SZ.partielle?" (saison déjà commencée quand l'outil a commencé à la suivre : objectif indicatif)":""}.</div>
   ${(SZ.objectifs||[]).map(o=>{const pct=o.cible&&o.fait!=null?Math.min(100,o.fait/o.cible*100):0,ok=o.cible&&o.fait!=null&&o.fait>=o.cible;
    return `<div class="goal ${ok?"ok":""}"><div class="gchk">${o.cible==null?"💤":ok?"✅":"⬜"}</div><div class="gtxt"><div class="gt"><b>${o.nft}</b> : ${o.cible==null?o.texte:"faire au moins "+o.texte}</div><div class="why">🎁 ${o.quoi}${(()=>{const r=((D.nft||{}).rows||[]).find(x=>x.n===o.nft);return r&&r.an_pct?` · ℹ️ à ton rythme actuel : <b>${fr(r.an_pct,0)} %/an</b>${r.an_pct>35?" (bien au-dessus du minimum de 35 %)":""}`:""})()}</div>${o.cible!=null?`<div class="bar"><span style="width:${pct}%"></span></div><div class="why">${o.fait!=null?fr(o.fait,o.cible<20?1:0)+" / "+fr(o.cible,o.cible<20?1:0)+" ("+fr(pct,0)+" %)":"progression visible au prochain relevé"}</div>`:""}</div></div>`}).join("")||'<div class="empty">Aucun NFT à bonus chiffrable dans ton inventaire.</div>'}</div><div id="cy_pane" style="display:none">${cycleCard||'<div class="empty">Bilan disponible au prochain relevé.</div>'}</div></div>`:"";
- if(!G.length){el.innerHTML=passCard()+progressionCard()+livraisonsCard()+saisonCard+amoCard+'<details class="card"><summary style="cursor:pointer"><b>🎯 Conseils selon ton objectif principal</b></summary>'+conseilCard()+'</details><div class="card"><h2>📝 Ma liste d\'objectifs</h2><div class="controls"><input id="obj_new" placeholder="Écris un objectif…" style="flex:1"><button class="chip" id="obj_add">➕ Ajouter</button></div></div>';const ob=document.getElementById("obj_add");if(ob)ob.onclick=()=>{const v=document.getElementById("obj_new").value.trim();if(v)postObj({action:"add",titre:v});};bindConseil();bindSz();return;}
+ if(!G.length){el.innerHTML=passCard()+livraisonsCard()+plusLoin(progressionCard()+saisonCard+amoCard+conseilCard())+'<div class="card"><h2>📝 Ma liste d\'objectifs</h2><div class="controls"><input id="obj_new" placeholder="Écris un objectif…" style="flex:1"><button class="chip" id="obj_add">➕ Ajouter</button></div></div>';const ob=document.getElementById("obj_add");if(ob)ob.onclick=()=>{const v=document.getElementById("obj_new").value.trim();if(v)postObj({action:"add",titre:v});};bindConseil();bindSz();return;}
  G.forEach((g,i)=>g._i=i);
  const done=G.filter(g=>g.fait).length,pct=Math.round(done/G.length*100);
  const groups={};G.forEach(g=>{(groups[g.groupe||"Autres"]=groups[g.groupe||"Autres"]||[]).push(g)});
  const nftLeft=sum(G.filter(g=>g.type==="nft"&&!g.fait&&g.prix),g=>g.prix);
- el.innerHTML=passCard()+progressionCard()+livraisonsCard()+saisonCard+amoCard+`<details class="card"><summary style="cursor:pointer"><b>🎯 Conseils selon ton objectif principal</b></summary>${conseilCard()}</details><details class="card"><summary style="cursor:pointer"><b>📝 Ma liste d'objectifs (achats, compétences, niveau…)</b></summary><div class="controls" style="margin:8px 0"><input id="obj_new" placeholder="Écris un objectif : « augmenter la porcherie », « acheter Rocky the Mole », « niveau 100 », « prochain agrandissement »…" style="flex:1;min-width:240px"><button class="chip" id="obj_add">➕ Ajouter</button></div><div class="sub">L'outil comprend les bâtiments (porcherie, grange, poulailler + niveau), les NFT, les compétences, les niveaux et l'agrandissement, et calcule ce qu'il te manque. Le reste devient un objectif à cocher toi-même.</div><div class="hero"><div><div class="l">Objectifs validés</div><div class="big">${done} / ${G.length}</div><div class="bar"><span style="width:${pct}%"></span></div></div>
+ el.innerHTML=passCard()+livraisonsCard()+`<details class="card"><summary style="cursor:pointer"><b>📝 Ma liste d'objectifs (achats, compétences, niveau…)</b></summary><div class="controls" style="margin:8px 0"><input id="obj_new" placeholder="Écris un objectif : « augmenter la porcherie », « acheter Rocky the Mole », « niveau 100 », « prochain agrandissement »…" style="flex:1;min-width:240px"><button class="chip" id="obj_add">➕ Ajouter</button></div><div class="sub">L'outil comprend les bâtiments (porcherie, grange, poulailler + niveau), les NFT, les compétences, les niveaux et l'agrandissement, et calcule ce qu'il te manque. Le reste devient un objectif à cocher toi-même.</div><div class="hero"><div><div class="l">Objectifs validés</div><div class="big">${done} / ${G.length}</div><div class="bar"><span style="width:${pct}%"></span></div></div>
   <div><div class="l">NFT encore à acheter</div><div class="big">${fr(nftLeft)} FLW</div><div class="l">au prix du jour</div></div></div>
  ${Object.entries(groups).map(([n,a])=>`<div class="card"><h2>${n} <span class="msum">${a.filter(g=>g.fait).length}/${a.length}</span></h2>
   ${a.map(g=>`<div class="goal ${g.fait?"ok":""}"><div class="gchk">${g.fait?"✅":"⬜"}</div><div class="gtxt"><div class="gt">${g.titre}</div>${g.info?`<div class="why">${g.info}</div>`:""}${g.note?`<div class="why">ℹ️ ${g.note}</div>`:""}${apCard(g)}</div>
    <div class="gcost"><button class="chip" title="Marquer fait / pas fait" data-obj-fait="${g._i}">${g.fait?"↩️":"✅"}</button> <button class="chip" title="Enlever" data-obj-del="${g._i}">🗑️</button><br>${g.type==="nft"&&!g.fait&&g.prix?`<b>${fr(g.prix)}</b> FLW`:g.cout_restant!=null&&!g.fait?`<b>${fr(g.cout_restant)}</b> FLW<div class="why">en ressources manquantes (sur ${fr(g.cout_total)})</div>`:""}</div></div>`).join("")}</div>`).join("")}
- <div class="sub">Validés automatiquement à chaque relevé : NFT achetés ou vendus, compétences, niveau, objectifs de la semaine. Les autres se cochent avec le bouton ✅. Coûts au prix du marché du jour (coins au taux du jour, huile ≈ 0,10).</div></details>`;
+ <div class="sub">Validés automatiquement à chaque relevé : NFT achetés ou vendus, compétences, niveau, objectifs de la semaine. Les autres se cochent avec le bouton ✅.</div></details>`+plusLoin(progressionCard()+saisonCard+amoCard+conseilCard());
  bindConseil();
  bindSz();
  const ob=document.getElementById("obj_add");if(ob)ob.onclick=()=>{const v=document.getElementById("obj_new").value.trim();if(v)postObj({action:"add",titre:v});};
@@ -781,6 +793,7 @@ function bonusTab(){
 }
 
 let start="apercu";try{start=localStorage.getItem("tab")||"apercu"}catch(e){}
+if(!TABS.some(t=>t[0]===start)&&!GROUPS.plus.some(t=>t[0]===start))start="apercu";
 show(TABS.some(t=>t[0]===start)?start:"apercu");
 </script>
 </body>
