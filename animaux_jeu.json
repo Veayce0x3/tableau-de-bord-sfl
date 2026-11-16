@@ -1,0 +1,959 @@
+{
+ "ANIMAL_LEVELS": {
+  "Chicken": {
+   "0": 0,
+   "1": 60,
+   "2": 120,
+   "3": 240,
+   "4": 360,
+   "5": 480,
+   "6": 660,
+   "7": 840,
+   "8": 1020,
+   "9": 1200,
+   "10": 1440,
+   "11": 1680,
+   "12": 1920,
+   "13": 2160,
+   "14": 2400,
+   "15": 2720
+  },
+  "Cow": {
+   "0": 0,
+   "1": 180,
+   "2": 360,
+   "3": 720,
+   "4": 1080,
+   "5": 1440,
+   "6": 1980,
+   "7": 2520,
+   "8": 3060,
+   "9": 3600,
+   "10": 4320,
+   "11": 5040,
+   "12": 5760,
+   "13": 6480,
+   "14": 7200,
+   "15": 8160
+  },
+  "Sheep": {
+   "0": 0,
+   "1": 120,
+   "2": 240,
+   "3": 480,
+   "4": 720,
+   "5": 960,
+   "6": 1320,
+   "7": 1680,
+   "8": 2040,
+   "9": 2400,
+   "10": 2880,
+   "11": 3360,
+   "12": 3840,
+   "13": 4320,
+   "14": 4800,
+   "15": 5440
+  },
+  "Pig": {
+   "0": 0,
+   "1": 180,
+   "2": 360,
+   "3": 720,
+   "4": 1080,
+   "5": 1440,
+   "6": 1980,
+   "7": 2520,
+   "8": 3060,
+   "9": 3600,
+   "10": 4320,
+   "11": 5040,
+   "12": 5760,
+   "13": 6480,
+   "14": 7200,
+   "15": 8160
+  }
+ },
+ "ANIMAL_FOOD_EXPERIENCE": {
+  "Chicken": {
+   "0": {
+    "Hay": 10,
+    "Kernel Blend": 60,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "1": {
+    "Hay": 10,
+    "Kernel Blend": 60,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "2": {
+    "Hay": 10,
+    "Kernel Blend": 60,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "3": {
+    "Kernel Blend": 10,
+    "Hay": 60,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "4": {
+    "Kernel Blend": 10,
+    "Hay": 60,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "5": {
+    "Kernel Blend": 10,
+    "Hay": 60,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "6": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 60,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "7": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 60,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "8": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 60,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "9": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 60,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "10": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "11": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "12": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "13": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "14": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "15": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   }
+  },
+  "Cow": {
+   "0": {
+    "Kernel Blend": 60,
+    "Hay": 10,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "1": {
+    "Kernel Blend": 60,
+    "Hay": 10,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "2": {
+    "Kernel Blend": 60,
+    "Hay": 10,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "3": {
+    "Kernel Blend": 10,
+    "Hay": 60,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "4": {
+    "Kernel Blend": 10,
+    "Hay": 60,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "5": {
+    "Kernel Blend": 10,
+    "Hay": 60,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "6": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 60,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "7": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 60,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "8": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 60,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "9": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 60,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "10": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "11": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "12": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "13": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "14": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "15": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   }
+  },
+  "Sheep": {
+   "0": {
+    "Kernel Blend": 60,
+    "Hay": 10,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "1": {
+    "Kernel Blend": 60,
+    "Hay": 10,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "2": {
+    "Kernel Blend": 60,
+    "Hay": 10,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "3": {
+    "Kernel Blend": 10,
+    "Hay": 60,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "4": {
+    "Kernel Blend": 10,
+    "Hay": 60,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "5": {
+    "Kernel Blend": 10,
+    "Hay": 60,
+    "NutriBarley": 20,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "6": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 60,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "7": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 60,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "8": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 60,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "9": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 60,
+    "Mixed Grain": 30,
+    "Omnifeed": 60
+   },
+   "10": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "11": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "12": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "13": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "14": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   },
+   "15": {
+    "Kernel Blend": 10,
+    "Hay": 20,
+    "NutriBarley": 30,
+    "Mixed Grain": 80,
+    "Omnifeed": 80
+   }
+  },
+  "Pig": {
+   "0": {
+    "Basic Slop": 60,
+    "Hearty Slop": 10,
+    "Rich Slop": 20,
+    "Gourmet Slop": 30
+   },
+   "1": {
+    "Basic Slop": 60,
+    "Hearty Slop": 10,
+    "Rich Slop": 20,
+    "Gourmet Slop": 30
+   },
+   "2": {
+    "Basic Slop": 60,
+    "Hearty Slop": 10,
+    "Rich Slop": 20,
+    "Gourmet Slop": 30
+   },
+   "3": {
+    "Basic Slop": 10,
+    "Hearty Slop": 60,
+    "Rich Slop": 20,
+    "Gourmet Slop": 30
+   },
+   "4": {
+    "Basic Slop": 10,
+    "Hearty Slop": 60,
+    "Rich Slop": 20,
+    "Gourmet Slop": 30
+   },
+   "5": {
+    "Basic Slop": 10,
+    "Hearty Slop": 60,
+    "Rich Slop": 20,
+    "Gourmet Slop": 30
+   },
+   "6": {
+    "Basic Slop": 10,
+    "Hearty Slop": 20,
+    "Rich Slop": 60,
+    "Gourmet Slop": 30
+   },
+   "7": {
+    "Basic Slop": 10,
+    "Hearty Slop": 20,
+    "Rich Slop": 60,
+    "Gourmet Slop": 30
+   },
+   "8": {
+    "Basic Slop": 10,
+    "Hearty Slop": 20,
+    "Rich Slop": 60,
+    "Gourmet Slop": 30
+   },
+   "9": {
+    "Basic Slop": 10,
+    "Hearty Slop": 20,
+    "Rich Slop": 60,
+    "Gourmet Slop": 30
+   },
+   "10": {
+    "Basic Slop": 10,
+    "Hearty Slop": 20,
+    "Rich Slop": 30,
+    "Gourmet Slop": 80
+   },
+   "11": {
+    "Basic Slop": 10,
+    "Hearty Slop": 20,
+    "Rich Slop": 30,
+    "Gourmet Slop": 80
+   },
+   "12": {
+    "Basic Slop": 10,
+    "Hearty Slop": 20,
+    "Rich Slop": 30,
+    "Gourmet Slop": 80
+   },
+   "13": {
+    "Basic Slop": 10,
+    "Hearty Slop": 20,
+    "Rich Slop": 30,
+    "Gourmet Slop": 80
+   },
+   "14": {
+    "Basic Slop": 10,
+    "Hearty Slop": 20,
+    "Rich Slop": 30,
+    "Gourmet Slop": 80
+   },
+   "15": {
+    "Basic Slop": 10,
+    "Hearty Slop": 20,
+    "Rich Slop": 30,
+    "Gourmet Slop": 80
+   }
+  }
+ },
+ "ANIMAL_RESOURCE_DROP": {
+  "Chicken": {
+   "0": {},
+   "1": {
+    "Egg": 1
+   },
+   "2": {
+    "Egg": 1
+   },
+   "3": {
+    "Egg": 1,
+    "Feather": 1
+   },
+   "4": {
+    "Egg": 2,
+    "Feather": 1
+   },
+   "5": {
+    "Egg": 2,
+    "Feather": 1
+   },
+   "6": {
+    "Egg": 2,
+    "Feather": 1
+   },
+   "7": {
+    "Egg": 2,
+    "Feather": 1
+   },
+   "8": {
+    "Egg": 3,
+    "Feather": 1
+   },
+   "9": {
+    "Egg": 3,
+    "Feather": 2
+   },
+   "10": {
+    "Egg": 3,
+    "Feather": 2
+   },
+   "11": {
+    "Egg": 3,
+    "Feather": 2
+   },
+   "12": {
+    "Egg": 3,
+    "Feather": 2
+   },
+   "13": {
+    "Egg": 4,
+    "Feather": 2
+   },
+   "14": {
+    "Egg": 4,
+    "Feather": 2
+   },
+   "15": {
+    "Egg": 5,
+    "Feather": 3
+   }
+  },
+  "Cow": {
+   "0": {},
+   "1": {
+    "Milk": 1,
+    "Leather": 1
+   },
+   "2": {
+    "Milk": 1,
+    "Leather": 1
+   },
+   "3": {
+    "Milk": 1,
+    "Leather": 1
+   },
+   "4": {
+    "Milk": 2,
+    "Leather": 1
+   },
+   "5": {
+    "Milk": 2,
+    "Leather": 1
+   },
+   "6": {
+    "Milk": 2,
+    "Leather": 2
+   },
+   "7": {
+    "Milk": 2,
+    "Leather": 2
+   },
+   "8": {
+    "Milk": 3,
+    "Leather": 2
+   },
+   "9": {
+    "Milk": 3,
+    "Leather": 2
+   },
+   "10": {
+    "Milk": 3,
+    "Leather": 3
+   },
+   "11": {
+    "Milk": 3,
+    "Leather": 3
+   },
+   "12": {
+    "Milk": 3,
+    "Leather": 3
+   },
+   "13": {
+    "Milk": 3,
+    "Leather": 3
+   },
+   "14": {
+    "Milk": 3,
+    "Leather": 3
+   },
+   "15": {
+    "Milk": 4,
+    "Leather": 4
+   }
+  },
+  "Sheep": {
+   "0": {},
+   "1": {
+    "Wool": 1,
+    "Merino Wool": 1
+   },
+   "2": {
+    "Wool": 1,
+    "Merino Wool": 1
+   },
+   "3": {
+    "Wool": 1,
+    "Merino Wool": 1
+   },
+   "4": {
+    "Wool": 2,
+    "Merino Wool": 1
+   },
+   "5": {
+    "Wool": 2,
+    "Merino Wool": 1
+   },
+   "6": {
+    "Wool": 2,
+    "Merino Wool": 2
+   },
+   "7": {
+    "Wool": 2,
+    "Merino Wool": 2
+   },
+   "8": {
+    "Wool": 3,
+    "Merino Wool": 2
+   },
+   "9": {
+    "Wool": 3,
+    "Merino Wool": 2
+   },
+   "10": {
+    "Wool": 3,
+    "Merino Wool": 3
+   },
+   "11": {
+    "Wool": 3,
+    "Merino Wool": 3
+   },
+   "12": {
+    "Wool": 3,
+    "Merino Wool": 3
+   },
+   "13": {
+    "Wool": 3,
+    "Merino Wool": 3
+   },
+   "14": {
+    "Wool": 3,
+    "Merino Wool": 3
+   },
+   "15": {
+    "Wool": 4,
+    "Merino Wool": 4
+   }
+  },
+  "Pig": {
+   "0": {},
+   "1": {
+    "Truffle": 1
+   },
+   "2": {
+    "Truffle": 1
+   },
+   "3": {
+    "Truffle": 1
+   },
+   "4": {
+    "Truffle": 2
+   },
+   "5": {
+    "Truffle": 2
+   },
+   "6": {
+    "Truffle": 2
+   },
+   "7": {
+    "Truffle": 2
+   },
+   "8": {
+    "Truffle": 3
+   },
+   "9": {
+    "Truffle": 3
+   },
+   "10": {
+    "Truffle": 3
+   },
+   "11": {
+    "Truffle": 3
+   },
+   "12": {
+    "Truffle": 3
+   },
+   "13": {
+    "Truffle": 3
+   },
+   "14": {
+    "Truffle": 3
+   },
+   "15": {
+    "Truffle": 4
+   }
+  }
+ },
+ "PIG_BRISTLES_PER_LEVEL": {
+  "0": 0,
+  "1": 0,
+  "2": 0,
+  "3": 1,
+  "4": 1,
+  "5": 2,
+  "6": 3,
+  "7": 3,
+  "8": 4,
+  "9": 5,
+  "10": 6,
+  "11": 6,
+  "12": 7,
+  "13": 8,
+  "14": 9,
+  "15": 12
+ },
+ "PIG_FEEDS": {
+  "Basic Slop": {
+   "Sunflower": 800,
+   "Potato": 150,
+   "Rhubarb": 100,
+   "Pumpkin": 60,
+   "Zucchini": 60,
+   "Carrot": 25,
+   "Yam": 25,
+   "Cabbage": 15,
+   "Broccoli": 15,
+   "Soybean": 9
+  },
+  "Hearty Slop": {
+   "Beetroot": 15,
+   "Pepper": 15,
+   "Cauliflower": 8,
+   "Parsnip": 5,
+   "Tomato": 20,
+   "Lemon": 4,
+   "Blueberry": 4
+  },
+  "Rich Slop": {
+   "Eggplant": 6,
+   "Wheat": 6,
+   "Turnip": 6,
+   "Corn": 5,
+   "Onion": 5,
+   "Radish": 5,
+   "Kale": 4,
+   "Artichoke": 4,
+   "Barley": 3,
+   "Orange": 3,
+   "Apple": 2,
+   "Banana": 2,
+   "Anchovy": 1,
+   "Butterflyfish": 1,
+   "Blowfish": 1,
+   "Clownfish": 1,
+   "Sea Bass": 1,
+   "Sea Horse": 1,
+   "Horse Mackerel": 1,
+   "Halibut": 1,
+   "Squid": 1,
+   "Porgy": 1,
+   "Muskellunge": 1,
+   "Wild Mushroom": 1,
+   "Isopod": 1,
+   "Barnacle": 1
+  },
+  "Gourmet Slop": {
+   "Rice": 1,
+   "Olive": 1,
+   "Grape": 1,
+   "Celestine": 1,
+   "Lunara": 1,
+   "Duskberry": 1,
+   "Red Snapper": 1,
+   "Moray Eel": 1,
+   "Olive Flounder": 1,
+   "Napoleanfish": 1,
+   "Surgeonfish": 1,
+   "Angelfish": 1,
+   "Zebra Turkeyfish": 1,
+   "Ray": 1,
+   "Hammerhead shark": 1,
+   "Barred Knifejaw": 1,
+   "Walleye": 1,
+   "Rock Blackfish": 1,
+   "Tilapia": 1,
+   "Tuna": 1,
+   "Mahi Mahi": 1,
+   "Blue Marlin": 1,
+   "Oarfish": 1,
+   "Football fish": 1,
+   "Sunfish": 1,
+   "Coelacanth": 1,
+   "Parrotfish": 1,
+   "Whale Shark": 1,
+   "Saw Shark": 1,
+   "White Shark": 1,
+   "Cobia": 1,
+   "Trout": 1,
+   "Weakfish": 1,
+   "Blue Crab": 1,
+   "Lobster": 1,
+   "Hermit Crab": 1,
+   "Shrimp": 1,
+   "Mussel": 1,
+   "Oyster": 1,
+   "Anemone": 1,
+   "Sea Slug": 1,
+   "Sea Snail": 1,
+   "Garden Eel": 1,
+   "Sea Grapes": 1,
+   "Octopus": 1,
+   "Sea Urchin": 1,
+   "Horseshoe Crab": 1,
+   "Magic Mushroom": 1
+  }
+ },
+ "REQUIRED_FOOD_QTY": {
+  "Chicken": 1,
+  "Sheep": 3,
+  "Cow": 5,
+  "Pig": 1
+ },
+ "RECETTES": {
+  "Kernel Blend": {
+   "Corn": 1
+  },
+  "Hay": {
+   "Wheat": 1
+  },
+  "NutriBarley": {
+   "Barley": 1
+  },
+  "Mixed Grain": {
+   "Wheat": 1,
+   "Corn": 1,
+   "Barley": 1
+  }
+ },
+ "BONUS": {
+  "chonky_xp": [
+   2,
+   2.5,
+   3
+  ],
+  "chonky_feed": [
+   1.5,
+   1.75,
+   2
+  ],
+  "efficient": [
+   0.95,
+   0.94,
+   0.925
+  ],
+  "diet": {
+   "Clucky Grazing": "Chicken",
+   "Sheepwise Diet": "Sheep",
+   "Cow-Smart Nutrition": "Cow",
+   "Swill Savvy": "Pig"
+  },
+  "diet_buff": [
+   0.75,
+   0.65,
+   0.5
+  ],
+  "diet_debuff": [
+   1.5,
+   1.55,
+   1.65
+  ],
+  "nft_qte": {
+   "Fat Chicken": [
+    "Chicken",
+    0.9
+   ],
+   "Dr Cow": [
+    "Cow",
+    0.95
+   ],
+   "Mermaid Sheep": [
+    "Sheep",
+    0.95
+   ],
+   "Cluckulator": [
+    "Chicken",
+    0.75
+   ]
+  },
+  "gratuit": {
+   "Gold Egg": "Chicken",
+   "Golden Cow": "Cow",
+   "Golden Sheep": "Sheep"
+  },
+  "bullwhip": [
+   "Sheep",
+   "Cow"
+  ],
+  "pig_onesie_xp": 1.05,
+  "boue_xp": 1.25,
+  "source": "code du jeu : types/animals.ts, lib/animals.ts (getBoostedFoodQuantity), feedAnimal.ts (REQUIRED_FOOD_QTY, handleFoodXP), types/pigFeeds.ts, bumpkinSkills.ts"
+ }
+}

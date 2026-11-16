@@ -1,6 +1,6 @@
 {
- "version": "2026-11-14.2",
- "nouveautes": "Tes ressources : œufs, plumes, lait, cuir, laine, truffes, poissons, huile et miel comptés avec les compteurs du jeu (× ce que donne une collecte sur ta ferme).",
+ "version": "2026-11-16.1",
+ "nouveautes": "Rentabilité refaite : coins non comptés, animaux niveau par niveau (nourriture, coût, ce que ça rapporte) avec les règles du jeu, agrandir un bâtiment remboursé en combien de jours. Guide de bienvenue dans l'Aperçu.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
@@ -17,6 +17,7 @@
   "nft_effets_jeu.json",
   "batiments_jeu.json",
   "lancer_windows.py",
-  "chapitres_jeu.json"
+  "chapitres_jeu.json",
+  "animaux_jeu.json"
  ]
 }

@@ -45,6 +45,7 @@ PRICES_FILE = DATA / "prix.json"
 PRICES_CSV = DATA / "prix.csv"
 DAYS = 7
 TAX = 0.075
+ANIMAUX_CALC = {}   # rentabilité des animaux (calculée au relevé, affichée dans Rentabilité)
 # Outils fabriqués : ni « récoltés » ni « utilisés » dans le bilan des ressources (leur coût est déjà dans le bois, la pierre…)
 OUTILS = {"Axe", "Pickaxe", "Stone Pickaxe", "Iron Pickaxe", "Gold Pickaxe", "Rod", "Sand Shovel", "Sand Drill",
           "Oil Drill", "Salt Rake", "Crab Pot", "Mariner Pot", "Petting Hand", "Brush", "Music Box"}
@@ -250,70 +251,22 @@ PRODUCTION_INPUTS = ["Wood", "Stone", "Iron", "Gold", "Crimstone", "Wheat", "Bar
 def production_costs(prices, cfg, coin_rate):
     """Coût pour produire UNE unité, en Flower, avec les prix du jour.
 
-    Les ressources qui servent d'outil (bois, pierre…) sont comptées au prix du
-    marché : c'est ce que tu pourrais en tirer en les vendant. Les coins sont
-    comptés au meilleur taux d'échange.
+    Les coins ne sont PAS comptés (gagnés en jouant : quêtes, livraisons…). Les ressources
+    que l'outil consomme (bois pour une pioche, pierre pour une pioche de fer…) sont comptées
+    à ce que tu toucherais en les vendant (prix du marché − taxe) : produire vaut le coup si
+    ce que tu obtiens se vend plus cher que ce que tu as consommé.
     """
     y = {**DEFAULT_YIELDS, **(cfg.get("rendements") or {})}
+    net = lambda k: (prices.get(k) or 0) * (1 - TAX)
     rows = []
-    propre = {}   # coût réel : les ressources de l'outil comptées à TON coût de production (s'il est plus bas)
     for item, r in RECIPES.items():
         coins = y[r["coins"]] if isinstance(r["coins"], str) else r["coins"]
-        coin_cost = coins / coin_rate
-        mat_cost = sum(q * (prices.get(i) or 0) for i, q in r["items"].items())
-        mat_reel = sum(q * min(propre.get(i, prices.get(i) or 0), prices.get(i) or propre.get(i, 0))
-                       for i, q in r["items"].items())
-        per_unit = (coin_cost + mat_cost) / y[item]
-        reel = (coin_cost + mat_reel) / y[item]
-        propre[item] = reel
-        sell = (prices.get(item) or 0) * (1 - TAX)
-        rows.append({"item": item, "par_action": y[item], "cout_coins": coin_cost / y[item],
-                     "cout_matieres": mat_cost / y[item], "cout": per_unit, "vente_nette": sell,
-                     "cout_reel": reel, "marge_reelle": sell - reel,
-                     "marge": sell - per_unit,
-                     "detail": f"{coins:g} coins" + "".join(f" + {q:g} {NAMES_FR.get(i, i)}" for i, q in r["items"].items())
-                               + f" → {y[item]:g} par action"})
-    # Animaux : par cycle, avec 2 caresses (voir SUNFLOWER_LAND.md)
-    p = lambda k: prices.get(k) or 0
-    meal = 5.344  # rations par repas d'une vache (Chonky Feed, Cow-Smart, Efficient Feeding)
-    for label, meals, food, milk, leather in [
-        ("Vache niv. 3-5 (Hay = blé)", 2.9, p("Wheat"), 3.1, 1.45),
-        ("Vache niv. 6-9 (NutriBarley = orge)", 4.0, p("Barley"), 3.6, 2.45),
-        ("Vache niv. 10+ (Mixed Grain)", 3.8, p("Wheat") + p("Corn") + p("Barley"), 4.1, 3.45),
-    ]:
-        cost = meals * meal * food
-        sell = (milk * p("Milk") + leather * p("Leather")) * (1 - TAX)
-        rows.append({"item": label, "par_action": None, "cout": cost, "vente_nette": sell, "marge": sell - cost,
-                     "detail": f"~{meals:g} repas × {meal} rations · produit ~{milk:g} lait + {leather:g} cuir", "cycle": True})
-    pig_meal = 2.137
-    for label, meals, slop, truffles in [
-        ("Cochon niv. 0-2 (Basic Slop = 9 soja)", 1.6, 9 * p("Soybean"), 1),
-        ("Cochon niv. 3-5 (Hearty Slop = 4 citrons)", 2.4, 4 * p("Lemon"), 2),
-        ("Cochon niv. 6+ (champignons du stock)", 3.6, 0.0, 2.5),
-    ]:
-        cost = meals * pig_meal * slop
-        sell = truffles * p("Truffle") * (1 - TAX)
-        rows.append({"item": label, "par_action": None, "cout": cost, "vente_nette": sell, "marge": sell - cost,
-                     "detail": f"~{meals:g} repas × {pig_meal} Slops · ~{truffles:g} truffe(s) (+ poils à l'échange)", "cycle": True})
-    # Poules : 1 repas (ration 1,92) par cycle, production du code du jeu, sans tes bonus d'œufs
-    hen_meal = 1.92
-    for label, food, eggs, feathers in [
-        ("Poule niv. 1-2 (Kernel Blend = maïs)", p("Corn"), 1, 0),
-        ("Poule niv. 3-5 (Hay = blé)", p("Wheat"), 2, 1),
-        ("Poule niv. 6-9 (NutriBarley = orge)", p("Barley"), 2.5, 1.25),
-        ("Poule niv. 10+ (Mixed Grain)", p("Wheat") + p("Corn") + p("Barley"), 3.5, 2.2),
-    ]:
-        cost = hen_meal * food
-        sell = (eggs * p("Egg") + feathers * p("Feather")) * (1 - TAX)
-        rows.append({"item": label, "par_action": None, "cout": cost, "vente_nette": sell, "marge": sell - cost,
-                     "detail": f"1 repas × {hen_meal} rations · ~{eggs:g} œuf(s) + {feathers:g} plume(s)", "cycle": True})
-    # Échanger un cochon contre ses poils (puis en racheter un pour 100 coins)
-    for lvl, bristles in [(10, 6), (15, 12)]:
-        sell = bristles * p("Pig Bristles") * (1 - TAX)
-        cost = 100 / coin_rate
-        rows.append({"item": f"Échange cochon niv. {lvl} → {bristles} poils", "par_action": None, "cout": cost,
-                     "vente_nette": sell, "marge": sell - cost, "trade": True,
-                     "detail": f"{bristles} poils vendus − nouveau cochon 100 coins"})
+        mat = sum(q * net(i) for i, q in r["items"].items())
+        cout = mat / y[item]
+        vente = net(item)
+        rows.append({"item": item, "par_action": y[item], "cout": cout, "vente_nette": vente, "marge": vente - cout,
+                     "detail": (" + ".join(f"{q:g} {NAMES_FR.get(i, i)}" for i, q in r["items"].items()) or "rien")
+                               + f" (+ {coins:g} coins, non comptés) → {y[item]:g} par action"})
     return rows
 
 
@@ -785,6 +738,17 @@ def main():
         animaux_lus = lire_animaux_sflworld(page_an)
         from nft_analyse import lire_rendements_animaux
         rd_an = lire_rendements_animaux(page_an)
+        try:
+            from nft_analyse import rentabilite_animaux, lire_animaux_detail, plan_batiments
+            jeu_an = json.loads((ROOT / "animaux_jeu.json").read_text())
+            possedes_an = set(holdings) | set(CONFIG.get("nft_possedes") or [])
+            anim = rentabilite_animaux(jeu_an, all_prices, ((land or {}).get("bumpkin") or {}).get("skills"),
+                                       possedes_an, lire_animaux_detail(page_an), tax=TAX)
+            ANIMAUX_CALC.update(anim)
+            niveaux_bat = {v["batiment"]: v["niveau"] for v in animaux_lus.values()}
+            ANIMAUX_CALC["_niveaux_bat"] = niveaux_bat
+        except Exception as e:
+            print(f"(rentabilité des animaux indisponible : {e})", file=sys.stderr)
         if rd_an:
             # ce que donne une collecte (œufs, lait, cuir, plumes…), gardé pour les jours où la page ne répond pas
             safe_write(DATA / "rendements_animaux.json", json.dumps(rd_an, ensure_ascii=False))
@@ -1043,6 +1007,26 @@ def main():
                         c["date_atteinte"] = (now + _td(days=c["manque"] / moy7)).strftime("%Y-%m-%d")
     except Exception as e:
         print(f"(pass du chapitre indisponible : {e})", file=sys.stderr)
+    try:
+        if ANIMAUX_CALC:
+            from nft_analyse import plan_batiments
+            niv = dict(ANIMAUX_CALC.pop("_niveaux_bat", {}))
+            # Niveau de la porcherie (pas affiché sur sfl.world) : réglage, sinon ton objectif « porcherie niveau N »
+            # pas encore fait (→ niveau N−1), sinon d'après les cochons achetés
+            cochons = compteurs.get("Pig Bought") or 0
+            obj_p = [int(m.group(1)) for g in goals if not g.get("fait")
+                     for m in [re.search(r"porcherie niveau (\d)", (g.get("titre") or "").lower())] if m]
+            if CONFIG.get("niveau_porcherie"):
+                niv["Pigpen"] = int(CONFIG["niveau_porcherie"])
+            elif obj_p:
+                niv["Pigpen"] = min(obj_p) - 1
+            elif cochons:
+                niv["Pigpen"] = max(1, min(3, -(-int(min(cochons, 9)) // 3)))
+            ANIMAUX_CALC["_batiments"] = plan_batiments(ANIMAUX_CALC, json.loads((ROOT / "batiments_jeu.json").read_text()),
+                                                        niv, all_prices, TAX)
+            nft["animaux"] = ANIMAUX_CALC
+    except Exception as e:
+        print(f"(agrandissements indisponibles : {e})", file=sys.stderr)
     try:
         from nft_analyse import acheter_ou_produire
         rythme = reel

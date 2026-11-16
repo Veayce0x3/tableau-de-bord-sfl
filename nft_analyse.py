@@ -674,7 +674,7 @@ def lire_activite_sflworld(page_html):
     import html as _h
     t = re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", page_html)))
     return {f"{n.strip()} {v}": float(x) for n, v, x in
-            re.findall(r"([A-Z][A-Za-z' ]*?) (Mined|Harvested|Chopped|Collected|Caught|Drilled|Points Earned) (\d+(?:\.\d+)?)", t)
+            re.findall(r"([A-Z][A-Za-z' ]*?) (Mined|Harvested|Chopped|Collected|Caught|Drilled|Bought|Points Earned) (\d+(?:\.\d+)?)", t)
             if "Farm Name" not in n} | {f"{n} Caught": float(x) for n, x in re.findall(r"Farm Name Amount ([A-Z][A-Za-z' ]*?) Caught (\d+)", t)}
 
 
@@ -1493,3 +1493,162 @@ def plan_pass(chapitres, activite, livraisons, chapitre, aujourdhui, palier_vise
             "corvees_semaine": corv_sem, "cout_median_100": round(cout_median * 100, 2) if cout_median is not None else None,
             "cout_fin": cout_fin, "points_dispo": dispo, "points_bon": sum(m["points"] for m in dispo_bon),
             "cout_bon": round(sum(max(0, m["cout"]) for m in dispo_bon), 2), "calcul": calc}
+
+
+# --- Animaux : nourriture, coût, ce que ça rapporte (règles du jeu) ---
+ANIMAL_FR = {"Chicken": "Poules", "Cow": "Vaches", "Sheep": "Moutons", "Pig": "Cochons"}
+
+
+def lire_animaux_detail(page_html):
+    """Niveau et production de chaque animal (page sfl.world/land/<numéro>/animals) :
+    « Level 4 Age 3 days Exp 402 x2.5 Egg x0.75 Feather »."""
+    import html as _h
+    t = re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", page_html or "")))
+    out = []
+    for niv, exp, prods in re.findall(r"Level (\d+) Age [^E]*?Exp ([\d.]+) ((?:x[\d.]+ [A-Z][A-Za-z]*(?: Wool)? )+)", t):
+        p = {n: float(q) for q, n in re.findall(r"x([\d.]+) ([A-Z][A-Za-z]*(?: Wool)?)", prods)}
+        typ = "Chicken" if "Egg" in p else "Cow" if "Milk" in p else "Sheep" if "Wool" in p else None
+        if typ:
+            out.append({"type": typ, "niveau": int(niv), "exp": float(exp), "produits": p})
+    return out
+
+
+def rentabilite_animaux(jeu, prices, skills, possedes, animaux, nb_par_type=None, tax=0.075):
+    """Pour chaque animal et chaque niveau : avec quoi le nourrir (le moins cher), combien ça coûte,
+    ce que ça rapporte, la marge. Nourriture comptée à ce que tu toucherais en la vendant (prix − taxe).
+    Cochons : en plus, le meilleur niveau pour l'échanger contre ses poils."""
+    import math
+    B = jeu["BONUS"]
+    skills, possedes = skills or {}, set(possedes or ())
+    net = lambda k: (prices.get(k) or 0) * (1 - tax)
+    rang = lambda nom: int(skills.get(nom) or 0)
+    # Bonus de production lus sur ta ferme : écart moyen avec la production de base du jeu
+    delta = {}
+    for a in animaux or []:
+        base = jeu["ANIMAL_RESOURCE_DROP"][a["type"]].get(str(a["niveau"]), {})
+        for prod, q in a["produits"].items():
+            if prod in base:
+                delta.setdefault((a["type"], prod), []).append(q - base[prod])
+    delta = {k: sorted(v)[len(v) // 2] for k, v in delta.items()}
+    def cout_slop(nom):
+        opts = [(q * net(i), i, q) for i, q in jeu["PIG_FEEDS"][nom].items() if prices.get(i)]
+        return min(opts) if opts else None
+    out = {}
+    for typ, niveaux in jeu["ANIMAL_LEVELS"].items():
+        lv = {int(k): v for k, v in niveaux.items()}
+        mx = max(lv)
+        # Quantité par repas et XP par repas, avec tes compétences et tes objets
+        qte, notes = jeu["REQUIRED_FOOD_QTY"][typ], []
+        if rang("Efficient Feeding"):
+            qte *= B["efficient"][rang("Efficient Feeding") - 1]
+        for sk, cible in B["diet"].items():
+            if rang(sk):
+                qte *= (B["diet_buff"] if cible == typ else B["diet_debuff"])[rang(sk) - 1]
+        xp_mult = 1.0
+        if rang("Chonky Feed"):
+            qte *= B["chonky_feed"][rang("Chonky Feed") - 1]
+            xp_mult *= B["chonky_xp"][rang("Chonky Feed") - 1]
+        for nft, (cible, m) in B["nft_qte"].items():
+            if cible == typ and nft in possedes:
+                qte *= m
+                notes.append(nft)
+        if typ in B["bullwhip"] and "Infernal Bullwhip" in possedes:
+            qte *= 0.5
+            notes.append("Infernal Bullwhip")
+        if "Pig Onesie" in possedes:
+            xp_mult *= B["pig_onesie_xp"]
+        gratuit = any(cible == typ and nft in possedes for nft, cible in B["gratuit"].items())
+        lignes = []
+        for L in range(0, mx + 1):
+            xp_besoin = (lv[L + 1] - lv[L]) if L < mx else (lv[mx] - lv[mx - 1])
+            if xp_besoin <= 0:
+                continue
+            arrivee = min(L + 1, mx)
+            options = []
+            for food, xp in jeu["ANIMAL_FOOD_EXPERIENCE"][typ][str(L)].items():
+                if not xp or food == "Omnifeed":
+                    continue
+                if typ == "Pig":
+                    cs = cout_slop(food)
+                    if not cs:
+                        continue
+                    unit, detail = cs[0], f"{cs[2]:g} {cs[1]} par {food}"
+                else:
+                    rec = jeu["RECETTES"].get(food)
+                    if not rec:
+                        continue
+                    unit, detail = sum(q * net(i) for i, q in rec.items()), " + ".join(f"{q:g} {i}" for i, q in rec.items())
+                repas = math.ceil(xp_besoin / (xp * xp_mult))
+                quantite = repas * qte
+                options.append({"food": food, "repas": repas, "quantite": round(quantite, 2), "detail": detail,
+                                "cout": 0.0 if gratuit else quantite * unit})
+            if not options:
+                continue
+            best = min(options, key=lambda o: o["cout"])
+            drop = jeu["ANIMAL_RESOURCE_DROP"][typ].get(str(arrivee), {})
+            produits = {p: max(0.0, q + delta.get((typ, p), 0)) for p, q in drop.items()}
+            revenu = sum(q * net(p) for p, q in produits.items())
+            lignes.append({"de": L, "vers": arrivee, "max": L >= mx, **best, "cout": round(best["cout"], 4),
+                           "produits": {p: round(q, 2) for p, q in produits.items()}, "revenu": round(revenu, 4),
+                           "marge": round(revenu - best["cout"], 4)})
+        r = {"type": typ, "nom": ANIMAL_FR[typ], "qte_par_repas": round(qte, 3), "xp_mult": xp_mult,
+             "gratuit": gratuit, "objets": notes, "lignes": lignes,
+             "bonus_prod": {p: round(v, 2) for (t, p), v in delta.items() if t == typ},
+             "niveaux_ferme": sorted(a["niveau"] for a in animaux or [] if a["type"] == typ),
+             "nombre": (nb_par_type or {}).get(typ)}
+        # Ce que rapportent TES animaux aujourd'hui (un cycle par jour)
+        par_niv = {l["de"]: l for l in lignes}
+        if r["niveaux_ferme"]:
+            r["par_jour"] = round(sum((par_niv.get(min(n, mx)) or {}).get("marge", 0) for n in r["niveaux_ferme"]), 3)
+        # Niveau à partir duquel nourrir coûte plus que ça ne rapporte
+        perte = [l["de"] for l in lignes if l["marge"] < 0]
+        r["perte_des"] = perte[0] if perte else None
+        if typ == "Pig":
+            br = {int(k): v for k, v in jeu["PIG_BRISTLES_PER_LEVEL"].items()}
+            plans = []
+            for T in range(3, mx + 1):
+                cumul = sum(l["marge"] for l in lignes if l["de"] < T)
+                poils = br.get(T, 0) * net("Pig Bristles")
+                total = cumul + poils
+                plans.append({"niveau": T, "jours": T, "nourriture_moins_truffes": round(cumul, 3),
+                              "poils": br.get(T, 0), "valeur_poils": round(poils, 3), "total": round(total, 3),
+                              "par_jour": round(total / T, 4)})
+            r["echange"] = plans
+            r["meilleur"] = max(plans, key=lambda p: p["par_jour"]) if plans else None
+        out[typ] = r
+    return out
+
+
+def plan_batiments(anim, batiments, niveaux, prices, tax=0.075, cout_huile=0.10):
+    """Agrandir le poulailler, la grange ou la porcherie : coût du niveau suivant (ressources à leur prix
+    de vente, coins non comptés), ce que rapportent les animaux en plus, jours pour rembourser."""
+    net = lambda k: (prices.get(k) or 0) * (1 - tax)
+    par_niv = {"Pigpen": ("Pig", 3), "Barn": ("Cow", 5), "Hen House": ("Chicken", 5)}
+    out = []
+    for bat, (typ, n_plus) in par_niv.items():
+        niv = niveaux.get(bat)
+        r = (anim or {}).get(typ)
+        suiv = batiments.get(bat, {}).get(str((niv or 0) + 1)) if niv else None
+        if not r or not suiv:
+            continue
+        items = suiv.get("items", {})
+        sans_prix = [k for k in items if not prices.get(k) and k != "Oil"]
+        cout = sum(q * (cout_huile if k == "Oil" else net(k)) for k, q in items.items())
+        # Valeur d'un animal en plus, par jour : l'élever jusqu'au meilleur niveau, puis le donner (bounty / échange)
+        if typ == "Pig" and r.get("meilleur"):
+            m = r["meilleur"]
+            jour, comment = m["par_jour"], f"nourri jusqu'au niveau {m['niveau']} puis échangé contre {m['poils']} poils"
+        else:
+            # élevé jusqu'au dernier niveau rentable (au moins le niveau 3, demandé par les bounties)
+            stop = r["perte_des"] if r["perte_des"] is not None else max(l["vers"] for l in r["lignes"])
+            stop = max(stop, 3)
+            L = [l for l in r["lignes"] if not l["max"] and l["de"] < stop]
+            cumul = sum(l["marge"] for l in L)
+            jour = cumul / stop if stop else 0
+            comment = f"élevé jusqu'au niveau {stop} (après, nourrir coûte plus que ça ne rapporte), puis donné à une bounty"
+        gain = n_plus * jour
+        out.append({"batiment": bat, "niveau": niv, "vers": niv + 1, "animal": typ, "en_plus": n_plus,
+                    "cout": round(cout, 2), "items": items, "coins": suiv.get("coins", 0), "sans_prix": sans_prix,
+                    "par_animal_jour": round(jour, 3), "gain_jour": round(gain, 3), "comment": comment,
+                    "jours": round(cout / gain) if gain > 0.001 else None})
+    return out
