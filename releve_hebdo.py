@@ -742,10 +742,34 @@ def main():
             from nft_analyse import rentabilite_animaux, lire_animaux_detail, plan_batiments
             jeu_an = json.loads((ROOT / "animaux_jeu.json").read_text())
             possedes_an = set(holdings) | set(CONFIG.get("nft_possedes") or [])
-            anim = rentabilite_animaux(jeu_an, all_prices, ((land or {}).get("bumpkin") or {}).get("skills"),
-                                       possedes_an, lire_animaux_detail(page_an), tax=TAX)
-            ANIMAUX_CALC.update(anim)
+            detail_an = lire_animaux_detail(page_an)
             niveaux_bat = {v["batiment"]: v["niveau"] for v in animaux_lus.values()}
+            source_an = "sfl.world"
+            if CONFIG.get("cle_api_sfl"):
+                # Source officielle du jeu (clé personnelle, gardée seulement dans ma_ferme.json)
+                try:
+                    from nft_analyse import animaux_depuis_api
+                    req = urllib.request.Request(f"https://api.sunflower-land.com/community/farms/{FARM_ID}",
+                                                 headers={"x-api-key": CONFIG["cle_api_sfl"], "User-Agent": "releve-hebdo-sfl"})
+                    with urllib.request.urlopen(req, timeout=60) as r:
+                        officiel = json.loads(r.read().decode("utf-8"))
+                    farm_off = officiel.get("farm") or officiel
+                    det, bats = animaux_depuis_api(farm_off, jeu_an["ANIMAL_LEVELS"])
+                    if det:
+                        # garder les bonus de production vus sur sfl.world
+                        prods = {(x["type"], x["niveau"]): x["produits"] for x in detail_an}
+                        for x in det:
+                            x["produits"] = prods.get((x["type"], x["niveau"]), {})
+                        detail_an, source_an = det, "jeu (officiel)"
+                    niveaux_bat.update(bats)
+                    possedes_an |= set((farm_off.get("inventory") or {}).keys()) | set((farm_off.get("collectibles") or {}).keys())
+                except Exception as e:
+                    print(f"(données officielles du jeu indisponibles : {e})", file=sys.stderr)
+            anim = rentabilite_animaux(jeu_an, all_prices, ((land or {}).get("bumpkin") or {}).get("skills"),
+                                       possedes_an, detail_an, tax=TAX)
+            ANIMAUX_CALC.update(anim)
+            ANIMAUX_CALC["_source"] = source_an
+            ANIMAUX_CALC["_officiel"] = bool(CONFIG.get("cle_api_sfl"))
             ANIMAUX_CALC["_niveaux_bat"] = niveaux_bat
         except Exception as e:
             print(f"(rentabilité des animaux indisponible : {e})", file=sys.stderr)
@@ -1016,7 +1040,9 @@ def main():
             cochons = compteurs.get("Pig Bought") or 0
             obj_p = [int(m.group(1)) for g in goals if not g.get("fait")
                      for m in [re.search(r"porcherie niveau (\d)", (g.get("titre") or "").lower())] if m]
-            if CONFIG.get("niveau_porcherie"):
+            if niv.get("Pigpen") and ANIMAUX_CALC.get("_source", "").startswith("jeu"):
+                pass   # niveau exact, donné par le jeu
+            elif CONFIG.get("niveau_porcherie"):
                 niv["Pigpen"] = int(CONFIG["niveau_porcherie"])
             elif obj_p:
                 niv["Pigpen"] = min(obj_p) - 1

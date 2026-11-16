@@ -1558,12 +1558,29 @@ def rentabilite_animaux(jeu, prices, skills, possedes, animaux, nb_par_type=None
         if "Pig Onesie" in possedes:
             xp_mult *= B["pig_onesie_xp"]
         gratuit = any(cible == typ and nft in possedes for nft, cible in B["gratuit"].items())
+        # Caresses : 2 par cycle, XP de l'objet demandé (au hasard selon le niveau), avec tes bonus
+        CA = jeu.get("CARESSES") or {}
+        def xp_caresse(L):
+            ch = (CA.get("chances") or {}).get(str(L)) or {}
+            tot = sum(ch.values())
+            if not tot:
+                return 0.0
+            moy = sum(CA["xp_objet"][k] * v for k, v in ch.items()) / tot
+            if rang("Heartwarming Instruments"):
+                moy *= 1 + CA["heartwarming"][rang("Heartwarming Instruments") - 1]
+            if typ == "Cow" and "Baby Cow" in possedes:
+                moy += CA["baby_cow"]
+            if typ == "Sheep" and "Spa Sheep" in possedes:
+                moy += CA["spa_sheep"]
+            return moy
         lignes = []
         for L in range(0, mx + 1):
             xp_besoin = (lv[L + 1] - lv[L]) if L < mx else (lv[mx] - lv[mx - 1])
             if xp_besoin <= 0:
                 continue
             arrivee = min(L + 1, mx)
+            xp_car = CA.get("par_cycle", 2) * xp_caresse(L)
+            xp_besoin_net = max(0.0, xp_besoin - xp_car)
             options = []
             for food, xp in jeu["ANIMAL_FOOD_EXPERIENCE"][typ][str(L)].items():
                 if not xp or food == "Omnifeed":
@@ -1578,7 +1595,7 @@ def rentabilite_animaux(jeu, prices, skills, possedes, animaux, nb_par_type=None
                     if not rec:
                         continue
                     unit, detail = sum(q * net(i) for i, q in rec.items()), " + ".join(f"{q:g} {i}" for i, q in rec.items())
-                repas = math.ceil(xp_besoin / (xp * xp_mult))
+                repas = math.ceil(xp_besoin_net / (xp * xp_mult))
                 quantite = repas * qte
                 options.append({"food": food, "repas": repas, "quantite": round(quantite, 2), "detail": detail,
                                 "cout": 0.0 if gratuit else quantite * unit})
@@ -1589,16 +1606,48 @@ def rentabilite_animaux(jeu, prices, skills, possedes, animaux, nb_par_type=None
             produits = {p: max(0.0, q + delta.get((typ, p), 0)) for p, q in drop.items()}
             revenu = sum(q * net(p) for p, q in produits.items())
             lignes.append({"de": L, "vers": arrivee, "max": L >= mx, **best, "cout": round(best["cout"], 4),
+                           "marge_maison": round(revenu, 4),
+                           "xp_besoin": xp_besoin, "xp_caresses": round(xp_car, 1),
+                           "autres": sorted([{"food": o["food"], "repas": o["repas"], "quantite": o["quantite"], "cout": round(o["cout"], 4)}
+                                             for o in options if o is not best], key=lambda o: o["cout"]),
                            "produits": {p: round(q, 2) for p, q in produits.items()}, "revenu": round(revenu, 4),
                            "marge": round(revenu - best["cout"], 4)})
-        r = {"type": typ, "nom": ANIMAL_FR[typ], "qte_par_repas": round(qte, 3), "xp_mult": xp_mult,
+        # Tes animaux, un par un : XP qu'il reste jusqu'au prochain niveau, nourriture à donner maintenant
+        mes = []
+        for a in [a for a in animaux or [] if a["type"] == typ]:
+            n = a["niveau"]
+            seuil = lv[n + 1] if n < mx else lv[mx] + (lv[mx] - lv[mx - 1]) * (1 + int((a["exp"] - lv[mx]) // (lv[mx] - lv[mx - 1])))
+            reste = max(0.0, seuil - a["exp"])
+            car_restantes = CA.get("par_cycle", 2) - int(a.get("caresses") or 0)
+            xp_car = car_restantes * (CA["xp_objet"].get(a["objet"], 0) * (1 + (CA["heartwarming"][rang("Heartwarming Instruments") - 1] if rang("Heartwarming Instruments") else 0)) if a.get("objet") and car_restantes > 0 else 0) \
+                if a.get("objet") else car_restantes * xp_caresse(n)
+            a_nourrir = max(0.0, reste - xp_car)
+            ref = next((l for l in lignes if l["de"] == min(n, mx)), None)
+            opts = []
+            for food, xp in jeu["ANIMAL_FOOD_EXPERIENCE"][typ][str(min(n, mx))].items():
+                o = next((x for x in ([ref] + (ref or {}).get("autres", [])) if x and x["food"] == food), None)
+                if not xp or food == "Omnifeed" or not o or not o["quantite"] or not o["repas"]:
+                    continue
+                par_repas = o["quantite"] / o["repas"]
+                repas = math.ceil(a_nourrir / (xp * xp_mult)) if a_nourrir > 0 else 0
+                opts.append({"food": food, "repas": repas, "quantite": round(repas * par_repas, 1),
+                             "cout": round(o["cout"] / o["repas"] * repas, 4)})
+            meilleur = min(opts, key=lambda o: o["cout"]) if opts else None
+            mes.append({"niveau": n, "exp": a["exp"], "seuil": seuil, "reste": round(reste, 1), "caresses_xp": round(xp_car, 1),
+                        "a_nourrir": round(a_nourrir, 1), "nourriture": meilleur, "produira": (ref or {}).get("produits"),
+                        "revenu": (ref or {}).get("revenu"), "etat": a.get("etat")})
+        r = {"type": typ, "nom": ANIMAL_FR[typ], "mes_animaux": mes, "qte_par_repas": round(qte, 3), "xp_mult": xp_mult,
              "gratuit": gratuit, "objets": notes, "lignes": lignes,
              "bonus_prod": {p: round(v, 2) for (t, p), v in delta.items() if t == typ},
              "niveaux_ferme": sorted(a["niveau"] for a in animaux or [] if a["type"] == typ),
              "nombre": (nb_par_type or {}).get(typ)}
         # Ce que rapportent TES animaux aujourd'hui (un cycle par jour)
         par_niv = {l["de"]: l for l in lignes}
-        if r["niveaux_ferme"]:
+        if mes:
+            # d'après chaque animal : ce qu'il lui reste à manger pour produire, et ce qu'il produira
+            r["par_jour"] = round(sum((m["revenu"] or 0) - ((m["nourriture"] or {}).get("cout") or 0) for m in mes), 3)
+            r["par_jour_maison"] = round(sum(m["revenu"] or 0 for m in mes), 3)
+        elif r["niveaux_ferme"]:
             r["par_jour"] = round(sum((par_niv.get(min(n, mx)) or {}).get("marge", 0) for n in r["niveaux_ferme"]), 3)
         # Niveau à partir duquel nourrir coûte plus que ça ne rapporte
         perte = [l["de"] for l in lignes if l["marge"] < 0]
@@ -1652,3 +1701,24 @@ def plan_batiments(anim, batiments, niveaux, prices, tax=0.075, cout_huile=0.10)
                     "par_animal_jour": round(jour, 3), "gain_jour": round(gain, 3), "comment": comment,
                     "jours": round(cout / gain) if gain > 0.001 else None})
     return out
+
+
+def animaux_depuis_api(farm, niveaux_jeu):
+    """Animaux et bâtiments lus dans les données officielles du jeu (Community API) :
+    niveau, XP exacte, caresses déjà faites, objet demandé, état — y compris les cochons."""
+    out, bats = [], {}
+    noms = {"henHouse": "Hen House", "barn": "Barn", "pigpen": "Pigpen"}
+    for cle, bat in noms.items():
+        b = (farm or {}).get(cle) or {}
+        if b.get("level"):
+            bats[bat] = int(b["level"])
+        for a in (b.get("animals") or {}).values():
+            typ, exp = a.get("type"), float(a.get("experience") or 0)
+            if typ not in niveaux_jeu:
+                continue
+            lv = {int(k): v for k, v in niveaux_jeu[typ].items()}
+            niv = max(l for l, v in lv.items() if exp >= v)
+            caresses = (a.get("lovesThisSleep") or 0) if (a.get("lovedAt") or 0) > (a.get("asleepAt") or 0) else 0
+            out.append({"type": typ, "niveau": niv, "exp": exp, "produits": {}, "caresses": caresses,
+                        "objet": a.get("item"), "etat": a.get("state")})
+    return out, bats

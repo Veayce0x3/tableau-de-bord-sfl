@@ -1,6 +1,6 @@
 {
- "version": "2026-11-16.1",
- "nouveautes": "Rentabilité refaite : coins non comptés, animaux niveau par niveau (nourriture, coût, ce que ça rapporte) avec les règles du jeu, agrandir un bâtiment remboursé en combien de jours. Guide de bienvenue dans l'Aperçu.",
+ "version": "2026-11-16.2",
+ "nouveautes": "Animaux : caresses comptées, chaque animal suivi (XP qui reste, nourriture à donner), bilan « si tu vendais la nourriture » et « avec la nourriture de tes champs ». Clé du jeu (facultative) pour les données officielles.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

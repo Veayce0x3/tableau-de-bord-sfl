@@ -67,6 +67,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         if self.path == "/objectifs":
             return self._objectifs()
+        if self.path == "/cle":
+            return self._cle()
         if self.path != "/actualiser":
             self.send_error(404)
             return
@@ -119,6 +121,26 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return self._json(400, {"ok": False, "message": "Action inconnue."})
             tmp = f.with_name("objectifs.json.tmp")
             tmp.write_text(json.dumps(goals, ensure_ascii=False, indent=1))
+            tmp.replace(f)
+            return self._json(200, {"ok": True})
+        except Exception as e:
+            return self._json(500, {"ok": False, "message": str(e)})
+
+    def _cle(self):
+        """Enregistre (ou efface) ta clé de l'API officielle du jeu dans ma_ferme.json, sur ton ordinateur uniquement."""
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+            cle = (json.loads(self.rfile.read(n) or b"{}").get("cle") or "").strip()
+            if cle and not (cle.startswith("sfl.") and len(cle) > 20 and " " not in cle):
+                return self._json(400, {"ok": False, "message": "Ce n'est pas une clé valide (elle commence par « sfl. »)."})
+            f = ROOT / "ma_ferme.json"
+            cfg = json.loads(f.read_text(encoding="utf-8"))
+            if cle:
+                cfg["cle_api_sfl"] = cle
+            else:
+                cfg.pop("cle_api_sfl", None)
+            tmp = f.with_name("ma_ferme.json.tmp")
+            tmp.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
             tmp.replace(f)
             return self._json(200, {"ok": True})
         except Exception as e:
