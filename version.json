@@ -1,6 +1,6 @@
 {
- "version": "2026-11-16.4",
- "nouveautes": "Plus simple : NFT en onglet principal, tout ouvert, des tableaux de chiffres (nourrir tes animaux : coût, production, gain), explications rangées dans « ℹ️ Détail ». Données officielles du jeu utilisées si tu as mis ta clé.",
+ "version": "2026-11-18.1",
+ "nouveautes": "Refonte : chaque onglet commence par les chiffres clés, puis des choix côte à côte (« nourrir ou vendre la nourriture », « livrer ou vendre les ingrédients », « acheter ou produire », « vendre maintenant ou attendre ») avec ce que tu gagnes. Guide et clé dans Plus → Réglages.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

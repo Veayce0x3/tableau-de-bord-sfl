@@ -725,6 +725,13 @@ def main():
     safe_write((DATA / "stock.json"), json.dumps(stock_hist, ensure_ascii=False, indent=1))
     land = try_json(f"https://sfl.world/api/v1.1/land/{FARM_ID}")  # niveau et compétences
     OFF = lire_officiel()
+    # pseudo : SFL Tool, sinon le jeu, sinon le dernier connu
+    if OFF and OFF.get("username") and farms[0]["nom"] == FARM_ID:
+        farms[0]["nom"] = OFF["username"]
+    if farms[0]["nom"] != FARM_ID:
+        (DATA / "nom.txt").write_text(farms[0]["nom"])
+    elif (DATA / "nom.txt").exists():
+        farms[0]["nom"] = (DATA / "nom.txt").read_text().strip() or FARM_ID
     goals = load(ROOT / "objectifs.json", [])
     try:
         skn = list(json.loads((ROOT / "competences_jeu.json").read_text()).keys())
