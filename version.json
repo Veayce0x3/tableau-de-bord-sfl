@@ -1,6 +1,6 @@
 {
- "version": "2026-11-18.1",
- "nouveautes": "Refonte : chaque onglet commence par les chiffres clés, puis des choix côte à côte (« nourrir ou vendre la nourriture », « livrer ou vendre les ingrédients », « acheter ou produire », « vendre maintenant ou attendre ») avec ce que tu gagnes. Guide et clé dans Plus → Réglages.",
+ "version": "2026-11-18.2",
+ "nouveautes": "Aujourd'hui : « 💳 Rembourser la ferme » (ce qu'il reste avant de passer à zéro) et un objectif de retrait (réglable dans ma_ferme.json → objectif_retrait).",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

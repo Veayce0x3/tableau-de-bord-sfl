@@ -250,7 +250,7 @@ function apercu(){
   kpi("📅 Marché cette semaine",sg(wk.net)+" FLW",wk.net>=0?"pos":"neg",wk.net>=0?"✅ dans le vert":"⚠️ dans le rouge"),
   kpi("🌾 Ta ferme aujourd'hui",fj!=null?sg(fj)+" FLW":"—",fj==null?"":fj>=0?"pos":"neg","récolté − utilisé"),
   kpi("🎟️ Pass aujourd'hui",J?`${fr(J.fait,0)} / ${fr(J.objectif,0)}`:"—",J&&J.fait>=J.objectif?"pos":"","points"),
-  kpi("📦 Ton inventaire",fr(vr+vn,0)+" FLW","",`ressources ${fr(vr,0)} · NFT ${fr(vn,0)}`)])+aFaireCard()+`
+  kpi("📦 Ton inventaire",fr(vr+vn,0)+" FLW","",`ressources ${fr(vr,0)} · NFT ${fr(vn,0)}`)])+compteCard()+aFaireCard()+`
  <div class="card"><h2>🌾 Ta ferme : récolté et utilisé</h2>
  <div class="controls"><button class="chip on" id="mode_ferme">🌾 Ma ferme</button><button class="chip" id="mode_marche">🏪 Le marché</button></div>
  <div class="controls" id="res_per"></div>
@@ -316,6 +316,14 @@ function historique(){
 }
 
 // Les choses à faire maintenant, en une liste courte (pass, livraisons, animaux, ventes)
+// Rembourser la ferme (déposé − retiré) et objectif de retrait du mois (ex. PS5)
+function compteCard(){const C=D.counters;if(!C||!C.length)return "";const L=C[C.length-1],usd=L.flower_usd;
+ const reste=(L.deposited||0)-(L.withdrawn||0),pct=L.deposited?Math.min(100,(L.withdrawn||0)/L.deposited*100):0;
+ const O=(D.nft||{}).objectif_retrait,dep=(O&&O.depuis)||new Date().toISOString().slice(0,7)+"-01";let flw=0,dol=0;
+ for(let i=1;i<C.length;i++){const dw=(C[i].withdrawn||0)-(C[i-1].withdrawn||0);if(dw>0.01&&C[i].date>=dep){flw+=dw;dol+=dw*(C[i].flower_usd||usd||0);}}
+ const po=O&&O.usd?Math.min(100,dol/O.usd*100):0,rythme=550*(usd||0),moisRest=O&&rythme?Math.max(0,O.usd-dol)/rythme:null;
+ return `<div class="cards3"><div class="card"><h2>💳 Rembourser la ferme</h2>${reste>0?`<div class="kpi" style="border:0;box-shadow:none;padding:0"><div class="v neg">reste ${fr(reste,0)} FLW</div><div class="s">≈ ${fr(reste*(usd||0),0)} $ au cours du jour · déposé ${fr(L.deposited,0)} · retiré ${fr(L.withdrawn,0)}</div></div>`:`<div class="kpi" style="border:0;box-shadow:none;padding:0"><div class="v pos">✅ remboursée : +${fr(-reste,0)} FLW</div></div>`}<div class="bar"><span style="width:${pct}%"></span></div><div class="why">${fr(pct,0)} % récupéré</div></div>
+  ${O?`<div class="card"><h2>🎮 ${O.nom}</h2><div class="kpi" style="border:0;box-shadow:none;padding:0"><div class="v ${po>=100?"pos":""}">${fr(dol,0)} $ / ${fr(O.usd,0)} $</div><div class="s">retiré depuis le ${dep.split("-").reverse().join("/")} (${fr(flw,0)} FLW)${usd?` · il manque ≈ ${fr(Math.max(0,O.usd-dol)/usd,0)} FLW au cours du jour`:""}${moisRest!=null&&po<100?` · ≈ ${fr(moisRest,1)} mois à 550 FLW/mois`:""}</div></div><div class="bar"><span style="width:${po}%"></span></div></div>`:""}</div>`;}
 function aFaireCard(){
  const N=D.nft||{},li=[];   // [action, gain FLW ou texte]
  const P=N.pass;if(P&&P.jour&&P.jour.objectif!=null){const J=P.jour,reste=J.objectif-J.fait,m=(P.missions||[]).filter(x=>x.absolument&&x.sorte!=="corvee").slice(0,3);

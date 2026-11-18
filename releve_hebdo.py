@@ -1101,6 +1101,7 @@ def main():
                                          float(CONFIG.get("coins_par_flower", 1525)), TAX)
     except Exception as e:
         print(f"(acheter ou produire indisponible : {e})", file=sys.stderr)
+    nft["objectif_retrait"] = CONFIG.get("objectif_retrait")
     dash = build_dashboard(ROOT, farms, history, WATCH, NAMES_FR, all_prices, costs, cost_hist, stock, goals_eval,
                            CONFIG.get("date_depart"), nft)
     print(report)
