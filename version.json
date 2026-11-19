@@ -1,6 +1,6 @@
 {
- "version": "2026-11-19.1",
- "nouveautes": "Objectifs : « 🛍️ Boutique du chapitre » (quel NFT viser avec tes Duende Caps, ce qu'il te rapporterait, quand tu l'auras). « Rembourser la ferme » déplacé dans Plus → Mon compte.",
+ "version": "2026-11-19.2",
+ "nouveautes": "Pass et boutique : « dans N jours » au lieu de dates.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
