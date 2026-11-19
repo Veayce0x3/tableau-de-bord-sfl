@@ -1,6 +1,6 @@
 {
- "version": "2026-11-18.2",
- "nouveautes": "Aujourd'hui : « 💳 Rembourser la ferme » (ce qu'il reste avant de passer à zéro) et un objectif de retrait (réglable dans ma_ferme.json → objectif_retrait).",
+ "version": "2026-11-19.1",
+ "nouveautes": "Objectifs : « 🛍️ Boutique du chapitre » (quel NFT viser avec tes Duende Caps, ce qu'il te rapporterait, quand tu l'auras). « Rembourser la ferme » déplacé dans Plus → Mon compte.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

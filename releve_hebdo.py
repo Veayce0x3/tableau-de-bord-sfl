@@ -1101,6 +1101,19 @@ def main():
                                          float(CONFIG.get("coins_par_flower", 1525)), TAX)
     except Exception as e:
         print(f"(acheter ou produire indisponible : {e})", file=sys.stderr)
+    try:
+        from nft_analyse import boutique_chapitre
+        if nft.get("pass"):
+            ph_b = load(DATA / "compteurs_releves.json", []) + [a for a in load(DATA / "activite.json", []) if a.get("at")]
+            caps = ((OFF or {}).get("inventory") or {}).get("Duende Cap", 0) if OFF else None
+            nft["boutique"] = boutique_chapitre(json.loads((ROOT / "chapitres_jeu.json").read_text()), nft["pass"]["chapitre"],
+                                                ph_b, caps, today, (nft.get("ressources") or {}).get("7"),
+                                                marges={r["item"]: max(0.0, r["marge"] / r["vente_nette"]) for r in costs
+                                                        if r.get("par_action") and r.get("vente_nette")})
+            if nft["boutique"]:
+                nft["boutique"]["stock_connu"] = OFF is not None
+    except Exception as e:
+        print(f"(boutique du chapitre indisponible : {e})", file=sys.stderr)
     nft["objectif_retrait"] = CONFIG.get("objectif_retrait")
     dash = build_dashboard(ROOT, farms, history, WATCH, NAMES_FR, all_prices, costs, cost_hist, stock, goals_eval,
                            CONFIG.get("date_depart"), nft)

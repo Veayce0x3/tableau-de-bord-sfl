@@ -1722,3 +1722,74 @@ def animaux_depuis_api(farm, niveaux_jeu):
             out.append({"type": typ, "niveau": niv, "exp": exp, "produits": {}, "caresses": caresses,
                         "objet": a.get("item"), "etat": a.get("state")})
     return out, bats
+
+
+def boutique_chapitre(chapitres, chapitre_nom, photos, stock_caps, aujourdhui, bilan7, heures_jeu=16, marges=None):
+    """Boutique du chapitre (payée en Duende Caps…) : ton rythme de caps, ce que tu auras d'ici la fin,
+    et ce que chaque objet te rapporterait (estimé avec ta production réelle des 7 derniers jours)."""
+    from datetime import date, datetime
+    ch = (chapitres or {}).get(chapitre_nom) or {}
+    B = ch.get("boutique")
+    if not B:
+        return None
+    cle = f"{B['monnaie']} Collected"
+    ph = sorted([p for p in photos or [] if cle in p.get("c", {}) and p.get("at")], key=lambda p: p["at"])
+    rythme = None
+    if len(ph) >= 2:
+        t = lambda p: datetime.fromisoformat(p["at"]).timestamp()
+        recents = [p for p in ph if t(ph[-1]) - t(p) <= 7 * 86400] or ph
+        p0, p1 = recents[0], ph[-1]
+        j = (t(p1) - t(p0)) / 86400
+        if j >= 1:
+            rythme = (p1["c"][cle] - p0["c"][cle]) / j
+    reste_j = max(0, (date.fromisoformat(ch["fin"]) - date.fromisoformat(aujourdhui)).days)
+    stock = float(stock_caps or 0)
+    total_fin = stock + (rythme or 0) * reste_j
+    # Valeur de ta production par jour (7 derniers jours), par famille
+    CULT = {"Sunflower", "Potato", "Pumpkin", "Carrot", "Cabbage", "Soybean", "Beetroot", "Cauliflower", "Parsnip", "Eggplant",
+            "Corn", "Radish", "Wheat", "Kale", "Barley", "Artichoke", "Rhubarb", "Zucchini", "Yam", "Broccoli", "Pepper", "Onion", "Turnip"}
+    FRUIT = {"Tomato", "Lemon", "Blueberry", "Orange", "Apple", "Banana", "Celestine", "Lunara", "Duskberry", "Grape", "Olive", "Rice"}
+    val = {"cultures": 0.0, "fruits": 0.0, "mines": 0.0, "bois": 0.0}
+    jours = 7.0
+    if bilan7:
+        a, b = [datetime.fromisoformat(x) for x in bilan7["compteurs"]]
+        jours = max(1.0, (b - a).total_seconds() / 86400)
+        for x in bilan7["gagne"]:
+            n, v = x["n"], x["v"] or 0
+            k = "cultures" if n in CULT else "fruits" if n in FRUIT else "mines" if n in ("Stone", "Iron", "Gold") else "bois" if n == "Wood" else None
+            if k:
+                # minerais : seulement le gain net (vente − ce que consomment les pioches)
+                ratio = (marges or {}).get(n, 1.0) if k == "mines" else 1.0
+                val[k] += v * ratio / jours
+    out = []
+    for o in B["objets"]:
+        g = {"nom": o["nom"], "prix": o["prix"], "effet": o["effet"], "sorte": o["sorte"]}
+        if o["calc"] == "cultures_fruits_temps":
+            g["jour"] = (val["cultures"] + val["fruits"]) * (1 / o["val"] - 1)
+            g["note"] = "au maximum : si tu replantes dès que c'est prêt"
+        elif o["calc"] == "compost":
+            g["jour"] = val["cultures"] * 0.06
+            g["note"] = "estimation : assez d'engrais pour toutes tes cultures, pas seulement maïs et orge"
+        elif o["calc"] == "lit":
+            g["jour"] = None
+            g["note"] = "dépend de la tenue à bonus que tu ferais porter au Farm Hand en plus"
+        elif o["calc"] == "agrandir":
+            g["jour"] = None
+            g["note"] = "utile seulement si tu agrandis ta ferme"
+        elif o["calc"] == "sablier":
+            base = val.get(o["quoi"])
+            if base is not None and o["x"] > 1:
+                g["par_usage"] = base / heures_jeu * o["h"] * (o["x"] - 1)
+                g["note"] = f"si tu joues pendant les {o['h']} h"
+            else:
+                g["par_usage"] = None
+                g["note"] = "pour aller plus vite (quêtes, pêche), pas de gain chiffrable"
+        if g.get("jour") is not None:
+            g["par_1000_caps_an"] = g["jour"] * 365 / o["prix"] * 1000
+        if g.get("par_usage") is not None:
+            g["par_1000_caps"] = g["par_usage"] / o["prix"] * 1000
+        g["jours_pour_avoir"] = max(0.0, (o["prix"] - stock) / rythme) if rythme else None
+        g["atteignable"] = total_fin >= o["prix"]
+        out.append(g)
+    return {"monnaie": B["monnaie"], "stock": stock, "rythme": round(rythme, 1) if rythme else None, "reste_jours": reste_j,
+            "total_fin": round(total_fin), "objets": out, "valeurs_jour": {k: round(v, 2) for k, v in val.items()}}

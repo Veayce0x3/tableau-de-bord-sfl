@@ -2077,7 +2077,112 @@
    "Duende Shoes",
    "Duende Pants",
    "Duende Shirt"
-  ]
+  ],
+  "boutique": {
+   "monnaie": "Duende Cap",
+   "objets": [
+    {
+     "nom": "Duende Hat",
+     "prix": 9000,
+     "sorte": "vêtement",
+     "effet": "Cultures et fruits poussent 10 % plus vite (à porter)",
+     "calc": "cultures_fruits_temps",
+     "val": 0.9
+    },
+    {
+     "nom": "Straw House",
+     "prix": 9000,
+     "sorte": "collectible",
+     "effet": "Composteurs 10 % plus rapides et production ×3 (engrais, vers)",
+     "calc": "compost"
+    },
+    {
+     "nom": "Double Bed",
+     "prix": 9000,
+     "sorte": "collectible",
+     "effet": "Un lit : un Farm Hand de plus (une tenue à bonus en plus)",
+     "calc": "lit"
+    },
+    {
+     "nom": "Duende Monument",
+     "prix": 4000,
+     "sorte": "collectible",
+     "effet": "Agrandissements 10 % moins chers et 10 % plus rapides",
+     "calc": "agrandir"
+    },
+    {
+     "nom": "Ore Hourglass",
+     "prix": 400,
+     "sorte": "sablier",
+     "effet": "Pierre, fer, or repoussent 2× plus vite pendant 5 h",
+     "calc": "sablier",
+     "quoi": "mines",
+     "x": 2,
+     "h": 5
+    },
+    {
+     "nom": "Harvest Hourglass",
+     "prix": 200,
+     "sorte": "sablier",
+     "effet": "Cultures 1,35× plus rapides pendant 9 h",
+     "calc": "sablier",
+     "quoi": "cultures",
+     "x": 1.35,
+     "h": 9
+    },
+    {
+     "nom": "Timber Hourglass",
+     "prix": 200,
+     "sorte": "sablier",
+     "effet": "Arbres 1,35× plus rapides pendant 4 h",
+     "calc": "sablier",
+     "quoi": "bois",
+     "x": 1.35,
+     "h": 4
+    },
+    {
+     "nom": "Orchard Hourglass",
+     "prix": 200,
+     "sorte": "sablier",
+     "effet": "Fruits 1,35× plus rapides pendant 8 h",
+     "calc": "sablier",
+     "quoi": "fruits",
+     "x": 1.35,
+     "h": 8
+    },
+    {
+     "nom": "Blossom Hourglass",
+     "prix": 200,
+     "sorte": "sablier",
+     "effet": "Fleurs 1,35× plus rapides pendant 12 h",
+     "calc": "sablier",
+     "quoi": "fleurs",
+     "x": 1.35,
+     "h": 12
+    },
+    {
+     "nom": "Fisher's Hourglass",
+     "prix": 200,
+     "sorte": "sablier",
+     "effet": "Pêche boostée pendant 4 h",
+     "calc": "sablier",
+     "quoi": "peche",
+     "x": 1,
+     "h": 4
+    },
+    {
+     "nom": "Gourmet Hourglass",
+     "prix": 100,
+     "sorte": "sablier",
+     "effet": "Cuisine 2× plus rapide pendant 6 h",
+     "calc": "sablier",
+     "quoi": "cuisine",
+     "x": 2,
+     "h": 6
+    }
+   ],
+   "source": "megastore.ts (CAVE_DWELLERS_ITEMS), plant.ts / fruitPlanted.ts (Duende Hat ×0.9), startComposter.ts (Straw House ×0.9 temps, ×3 production), expandLand.ts (Duende Monument), boostWindows.ts + collectibleBuilt.ts (sabliers)"
+  }
  },
  "_regles": {
   "tickets_livraison": {
