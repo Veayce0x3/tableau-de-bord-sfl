@@ -1105,13 +1105,17 @@ def main():
         from nft_analyse import boutique_chapitre
         if nft.get("pass"):
             ph_b = load(DATA / "compteurs_releves.json", []) + [a for a in load(DATA / "activite.json", []) if a.get("at")]
-            caps = ((OFF or {}).get("inventory") or {}).get("Duende Cap", 0) if OFF else None
+            caps = ((OFF or {}).get("inventory") or {}).get("Duende Cap")   # le jeu ne le transmet pas toujours
+            caps = float(caps) if caps is not None else None
             nft["boutique"] = boutique_chapitre(json.loads((ROOT / "chapitres_jeu.json").read_text()), nft["pass"]["chapitre"],
                                                 ph_b, caps, today, (nft.get("ressources") or {}).get("7"),
                                                 marges={r["item"]: max(0.0, r["marge"] / r["vente_nette"]) for r in costs
-                                                        if r.get("par_action") and r.get("vente_nette")})
+                                                        if r.get("par_action") and r.get("vente_nette")},
+                                                avec_engrais=CONFIG.get("cultures_avec_engrais") or [],
+                                                rendement_culture=float((CONFIG.get("rendements") or {}).get("Wheat") or 2.3),
+                                                points=nft["pass"]["points"], rythme_points=nft["pass"].get("rythme"))
             if nft["boutique"]:
-                nft["boutique"]["stock_connu"] = OFF is not None
+                nft["boutique"]["stock_connu"] = not nft["boutique"].get("stock_estime")
     except Exception as e:
         print(f"(boutique du chapitre indisponible : {e})", file=sys.stderr)
     nft["objectif_retrait"] = CONFIG.get("objectif_retrait")

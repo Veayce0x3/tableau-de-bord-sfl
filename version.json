@@ -1,6 +1,6 @@
 {
- "version": "2026-11-19.2",
- "nouveautes": "Pass et boutique : « dans N jours » au lieu de dates.",
+ "version": "2026-11-19.3",
+ "nouveautes": "Boutique du chapitre : Straw House chiffrée avec l'engrais combiné sur toutes tes cultures (réglage « cultures_avec_engrais »), stock de caps estimé, paliers du pass comptés.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

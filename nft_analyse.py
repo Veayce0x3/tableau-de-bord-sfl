@@ -1724,7 +1724,8 @@ def animaux_depuis_api(farm, niveaux_jeu):
     return out, bats
 
 
-def boutique_chapitre(chapitres, chapitre_nom, photos, stock_caps, aujourdhui, bilan7, heures_jeu=16, marges=None):
+def boutique_chapitre(chapitres, chapitre_nom, photos, stock_caps, aujourdhui, bilan7, heures_jeu=16, marges=None,
+                      avec_engrais=(), rendement_culture=2.3, points=None, rythme_points=None):
     """Boutique du chapitre (payée en Duende Caps…) : ton rythme de caps, ce que tu auras d'ici la fin,
     et ce que chaque objet te rapporterait (estimé avec ta production réelle des 7 derniers jours)."""
     from datetime import date, datetime
@@ -1743,13 +1744,25 @@ def boutique_chapitre(chapitres, chapitre_nom, photos, stock_caps, aujourdhui, b
         if j >= 1:
             rythme = (p1["c"][cle] - p0["c"][cle]) / j
     reste_j = max(0, (date.fromisoformat(ch["fin"]) - date.fromisoformat(aujourdhui)).days)
-    stock = float(stock_caps or 0)
-    total_fin = stock + (rythme or 0) * reste_j
+    def caps_paliers(jusqua):
+        n = 0
+        for pl in ch.get("paliers") or []:
+            if pl["points"] <= jusqua:
+                for r in pl["gratuit"] + pl["vip"]:
+                    m = re.match(r"(\d+) " + re.escape(B["monnaie"]), r)
+                    if m:
+                        n += int(m.group(1))
+        return n
+    deja_paliers = caps_paliers(points or 0)
+    estime = stock_caps is None
+    stock = float(stock_caps) if stock_caps is not None else float((ph[-1]["c"][cle] if ph else 0) + deja_paliers)
+    futurs = caps_paliers((points or 0) + (rythme_points or 0) * reste_j) - deja_paliers
+    total_fin = stock + (rythme or 0) * reste_j + futurs
     # Valeur de ta production par jour (7 derniers jours), par famille
     CULT = {"Sunflower", "Potato", "Pumpkin", "Carrot", "Cabbage", "Soybean", "Beetroot", "Cauliflower", "Parsnip", "Eggplant",
             "Corn", "Radish", "Wheat", "Kale", "Barley", "Artichoke", "Rhubarb", "Zucchini", "Yam", "Broccoli", "Pepper", "Onion", "Turnip"}
     FRUIT = {"Tomato", "Lemon", "Blueberry", "Orange", "Apple", "Banana", "Celestine", "Lunara", "Duskberry", "Grape", "Olive", "Rice"}
-    val = {"cultures": 0.0, "fruits": 0.0, "mines": 0.0, "bois": 0.0}
+    val = {"cultures": 0.0, "fruits": 0.0, "mines": 0.0, "bois": 0.0, "cultures_sans_engrais": 0.0}
     jours = 7.0
     if bilan7:
         a, b = [datetime.fromisoformat(x) for x in bilan7["compteurs"]]
@@ -1761,15 +1774,27 @@ def boutique_chapitre(chapitres, chapitre_nom, photos, stock_caps, aujourdhui, b
                 # minerais : seulement le gain net (vente − ce que consomment les pioches)
                 ratio = (marges or {}).get(n, 1.0) if k == "mines" else 1.0
                 val[k] += v * ratio / jours
+                if k == "cultures" and n not in set(avec_engrais or ()):
+                    val["cultures_sans_engrais"] += v / jours
     out = []
     for o in B["objets"]:
         g = {"nom": o["nom"], "prix": o["prix"], "effet": o["effet"], "sorte": o["sorte"]}
         if o["calc"] == "cultures_fruits_temps":
-            g["jour"] = (val["cultures"] + val["fruits"]) * (1 / o["val"] - 1)
-            g["note"] = "au maximum : si tu replantes dès que c'est prêt"
+            g["jour_max"] = (val["cultures"] + val["fruits"]) * (1 / o["val"] - 1)
+            g["jour_min"] = 0.0
+            g["jour"] = g["jour_max"] / 2
+            g["note"] = "0 si tes cultures attendent déjà que tu repasses, au maximum si tu replantes dès que c'est prêt"
         elif o["calc"] == "compost":
-            g["jour"] = val["cultures"] * 0.06
-            g["note"] = "estimation : assez d'engrais pour toutes tes cultures, pas seulement maïs et orge"
+            # ×3 d'engrais : engrais combiné (+0,2 récolte, temps ÷ 2) sur TOUTES les cultures, pas seulement celles d'aujourd'hui
+            base = val["cultures_sans_engrais"]
+            bonus = 0.2 / max(0.5, rendement_culture)
+            g["jour_min"] = base * bonus                       # seulement le +0,2 par récolte
+            g["jour_max"] = base * (2 * (1 + bonus) - 1)       # + deux fois plus de récoltes (temps ÷ 2)
+            g["jour"] = (g["jour_min"] + g["jour_max"]) / 2
+            FRN = {"Corn": "maïs", "Barley": "orge", "Wheat": "blé", "Kale": "chou kale", "Onion": "oignon", "Turnip": "navet"}
+            sans = " et ".join(FRN.get(x, x) for x in sorted(avec_engrais)) if avec_engrais else ""
+            g["note"] = (f"engrais combiné sur toutes tes cultures (aujourd'hui : {sans} seulement)" if sans else
+                         "engrais combiné sur toutes tes cultures") + " ; le haut suppose que tu récoltes 2× plus souvent"
         elif o["calc"] == "lit":
             g["jour"] = None
             g["note"] = "dépend de la tenue à bonus que tu ferais porter au Farm Hand en plus"
@@ -1788,8 +1813,10 @@ def boutique_chapitre(chapitres, chapitre_nom, photos, stock_caps, aujourdhui, b
             g["par_1000_caps_an"] = g["jour"] * 365 / o["prix"] * 1000
         if g.get("par_usage") is not None:
             g["par_1000_caps"] = g["par_usage"] / o["prix"] * 1000
-        g["jours_pour_avoir"] = max(0.0, (o["prix"] - stock) / rythme) if rythme else None
+        par_jour_total = (rythme or 0) + (futurs / reste_j if reste_j else 0)
+        g["jours_pour_avoir"] = max(0.0, (o["prix"] - stock) / par_jour_total) if par_jour_total else None
         g["atteignable"] = total_fin >= o["prix"]
         out.append(g)
-    return {"monnaie": B["monnaie"], "stock": stock, "rythme": round(rythme, 1) if rythme else None, "reste_jours": reste_j,
+    return {"monnaie": B["monnaie"], "stock": stock, "stock_estime": estime, "caps_paliers_futurs": futurs,
+            "rythme": round(rythme, 1) if rythme else None, "reste_jours": reste_j,
             "total_fin": round(total_fin), "objets": out, "valeurs_jour": {k: round(v, 2) for k, v in val.items()}}
