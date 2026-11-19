@@ -1,6 +1,6 @@
 {
- "version": "2026-11-19.3",
- "nouveautes": "Boutique du chapitre : Straw House chiffrée avec l'engrais combiné sur toutes tes cultures (réglage « cultures_avec_engrais »), stock de caps estimé, paliers du pass comptés.",
+ "version": "2026-11-19.4",
+ "nouveautes": "Boutique du chapitre : objectif de caps par jour pour le NFT visé (réglage « objectif_boutique »), aussi dans « À faire maintenant ».",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

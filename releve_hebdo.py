@@ -1115,7 +1115,22 @@ def main():
                                                 rendement_culture=float((CONFIG.get("rendements") or {}).get("Wheat") or 2.3),
                                                 points=nft["pass"]["points"], rythme_points=nft["pass"].get("rythme"))
             if nft["boutique"]:
-                nft["boutique"]["stock_connu"] = not nft["boutique"].get("stock_estime")
+                Bq = nft["boutique"]
+                Bq["stock_connu"] = not Bq.get("stock_estime")
+                # Caps gagnées chaque journée du jeu + objectif par jour pour le NFT visé
+                from nft_analyse import points_par_jour
+                cle_c = f"{Bq['monnaie']} Collected"
+                hist_c = points_par_jour(ph_b, cle_c, today, now.timestamp() * 1000, 7)
+                auj_c = next((h for h in hist_c if h["en_cours"]), None)
+                vises = [o for o in Bq["objets"] if o["nom"] == CONFIG.get("objectif_boutique")] or \
+                        sorted([o for o in Bq["objets"] if o.get("jour")], key=lambda o: -o["jour"])[:1]
+                if vises:
+                    v = vises[0]
+                    fait_c = auj_c["fait"] if auj_c else 0
+                    reste_c = max(0.0, v["prix"] - (Bq["stock"] - fait_c) - Bq.get("caps_paliers_futurs", 0))
+                    Bq["jour_obj"] = {"vise": v["nom"], "prix": v["prix"], "fait": fait_c,
+                                      "objectif": round(reste_c / max(1, Bq["reste_jours"])), "historique": hist_c,
+                                      "manque": round(max(0.0, v["prix"] - Bq["stock"] - Bq.get("caps_paliers_futurs", 0)))}
     except Exception as e:
         print(f"(boutique du chapitre indisponible : {e})", file=sys.stderr)
     nft["objectif_retrait"] = CONFIG.get("objectif_retrait")
