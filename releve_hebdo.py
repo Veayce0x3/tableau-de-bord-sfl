@@ -1133,6 +1133,10 @@ def main():
                                       "manque": round(max(0.0, v["prix"] - Bq["stock"] - Bq.get("caps_paliers_futurs", 0)))}
     except Exception as e:
         print(f"(boutique du chapitre indisponible : {e})", file=sys.stderr)
+    # Jours double livraison à venir (calendrier officiel du jeu)
+    if OFF:
+        nft["double_livraison"] = sorted(d["date"] for d in ((OFF.get("calendar") or {}).get("dates") or [])
+                                         if d.get("name") == "doubleDelivery" and d.get("date", "") >= today)
     nft["objectif_retrait"] = CONFIG.get("objectif_retrait")
     dash = build_dashboard(ROOT, farms, history, WATCH, NAMES_FR, all_prices, costs, cost_hist, stock, goals_eval,
                            CONFIG.get("date_depart"), nft)

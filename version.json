@@ -1,6 +1,6 @@
 {
- "version": "2026-11-19.4",
- "nouveautes": "Boutique du chapitre : objectif de caps par jour pour le NFT visé (réglage « objectif_boutique »), aussi dans « À faire maintenant ».",
+ "version": "2026-11-20.1",
+ "nouveautes": "Boutique : plan pour atteindre le NFT visé (à ton rythme, ce qui manque, coût pour le rattraper, livraisons classées par FLW par cap). Jours double livraison affichés (et prévenus la veille dans À faire).",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
