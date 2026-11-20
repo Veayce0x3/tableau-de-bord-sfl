@@ -1466,6 +1466,7 @@ def plan_pass(chapitres, activite, livraisons, chapitre, aujourdhui, palier_vise
         if d["type"] != "tickets":
             detail = "10 points par livraison"
         missions.append({"quoi": f"Livraison {d['pnj']}", "sorte": d["type"], "points": p, "cout": round(cout, 2), "calcul": detail,
+                         "recompense": (t if d["type"] == "tickets" else d.get("recompense")),
                          "flw_100": round(cout / p * 100, 2) if p else None, "pret": d["pret"], "manque": manque})
     for c in (chapitre or {}).get("corvees", []):
         if c["monnaie"] != "tickets" or c["a"] >= c["b"]:
