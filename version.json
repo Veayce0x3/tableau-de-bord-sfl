@@ -1,6 +1,6 @@
 {
- "version": "2026-11-20.1",
- "nouveautes": "Boutique : plan pour atteindre le NFT visé (à ton rythme, ce qui manque, coût pour le rattraper, livraisons classées par FLW par cap). Jours double livraison affichés (et prévenus la veille dans À faire).",
+ "version": "2026-11-20.2",
+ "nouveautes": "Objectifs : « 📋 À préparer » — chaque objet qui te manque pour une mission ou une livraison, avec comment l'obtenir (graine et croisement pour les fleurs, appât et saison pour les poissons, recette d'établi pour les poupées, recette de cuisine…).",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",
@@ -18,6 +18,7 @@
   "batiments_jeu.json",
   "lancer_windows.py",
   "chapitres_jeu.json",
-  "animaux_jeu.json"
+  "animaux_jeu.json",
+  "comment_obtenir.json"
  ]
 }

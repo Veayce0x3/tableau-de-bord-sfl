@@ -1137,6 +1137,20 @@ def main():
     if OFF:
         nft["double_livraison"] = sorted(d["date"] for d in ((OFF.get("calendar") or {}).get("dates") or [])
                                          if d.get("name") == "doubleDelivery" and d.get("date", "") >= today)
+    # Comment obtenir chaque objet qui te manque (missions du pass, livraisons)
+    try:
+        from nft_analyse import comment_obtenir
+        rec = json.loads((ROOT / "comment_obtenir.json").read_text())
+        noms = set()
+        for m in ((nft.get("pass") or {}).get("missions") or []):
+            for x in m.get("manque") or []:
+                noms.add(re.sub(r"^\d+(?:\.\d+)?\s+", "", x))
+        for e in ((nft.get("livraisons") or {}).get("flower") or []):
+            for x in e.get("manque") or []:
+                noms.add(x["n"])
+        nft["comment"] = {n: c for n in noms if (c := comment_obtenir(n, rec))}
+    except Exception as e:
+        print(f"(recettes indisponibles : {e})", file=sys.stderr)
     nft["objectif_retrait"] = CONFIG.get("objectif_retrait")
     dash = build_dashboard(ROOT, farms, history, WATCH, NAMES_FR, all_prices, costs, cost_hist, stock, goals_eval,
                            CONFIG.get("date_depart"), nft)

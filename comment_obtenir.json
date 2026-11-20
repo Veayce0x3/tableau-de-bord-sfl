@@ -1,0 +1,986 @@
+{
+ "Red Pansy": {
+  "type": "fleur",
+  "texte": "Plante une Sunpetal Seed croisée avec : Radish, Banana, Red Cosmos (fleur, 1d), Purple Daffodil (fleur, 2d), Red Balloon Flower (fleur, 2d), Red Lotus (fleur, 5d)"
+ },
+ "Yellow Pansy": {
+  "type": "fleur",
+  "texte": "Plante une Sunpetal Seed croisée avec : Sunflower, Apple, Red Pansy (fleur, 1d), Red Daffodil (fleur, 2d), Yellow Balloon Flower (fleur, 2d), Yellow Carnation (fleur, 5d)"
+ },
+ "Purple Pansy": {
+  "type": "fleur",
+  "texte": "Plante une Sunpetal Seed croisée avec : Blue Pansy (fleur, 1d), Purple Balloon Flower (fleur, 2d), Purple Carnation (fleur, 5d)"
+ },
+ "White Pansy": {
+  "type": "fleur",
+  "texte": "Plante une Sunpetal Seed croisée avec : Yellow Cosmos (fleur, 1d)"
+ },
+ "Blue Pansy": {
+  "type": "fleur",
+  "texte": "Plante une Sunpetal Seed croisée avec : Purple Cosmos (fleur, 1d), White Pansy (fleur, 1d), White Cosmos (fleur, 1d), White Daffodil (fleur, 2d), Blue Daffodil (fleur, 2d), White Carnation (fleur, 5d)"
+ },
+ "Red Cosmos": {
+  "type": "fleur",
+  "texte": "Plante une Sunpetal Seed croisée avec : Yellow Daffodil (fleur, 2d), Purple Lotus (fleur, 5d)"
+ },
+ "Yellow Cosmos": {
+  "type": "fleur",
+  "texte": "Plante une Sunpetal Seed croisée avec : Yellow Pansy (fleur, 1d), White Balloon Flower (fleur, 2d), Red Carnation (fleur, 5d)"
+ },
+ "Purple Cosmos": {
+  "type": "fleur",
+  "texte": "Plante une Sunpetal Seed croisée avec : Beetroot, Eggplant, Kale, Blue Cosmos (fleur, 1d), Blue Balloon Flower (fleur, 2d), Celestial Frostbloom (fleur, 2d)"
+ },
+ "White Cosmos": {
+  "type": "fleur",
+  "texte": "Plante une Sunpetal Seed croisée avec : Prism Petal (fleur, 1d), Yellow Lotus (fleur, 5d)"
+ },
+ "Blue Cosmos": {
+  "type": "fleur",
+  "texte": "Plante une Sunpetal Seed croisée avec : Cauliflower, Parsnip, Blueberry, Purple Pansy (fleur, 1d), White Lotus (fleur, 5d), Blue Carnation (fleur, 5d)"
+ },
+ "Prism Petal": {
+  "type": "fleur",
+  "texte": "Plante une Sunpetal Seed croisée avec : Blue Lotus (fleur, 5d)"
+ },
+ "Red Balloon Flower": {
+  "type": "fleur",
+  "texte": "Plante une Bloom Seed croisée avec : Sunflower, Beetroot, Apple, Banana, Purple Pansy (fleur, 1d), Red Pansy (fleur, 1d)"
+ },
+ "Yellow Balloon Flower": {
+  "type": "fleur",
+  "texte": "Plante une Bloom Seed croisée avec : Yellow Lotus (fleur, 5d)"
+ },
+ "Purple Balloon Flower": {
+  "type": "fleur",
+  "texte": "Plante une Bloom Seed croisée avec : Blue Carnation (fleur, 5d)"
+ },
+ "White Balloon Flower": {
+  "type": "fleur",
+  "texte": "Plante une Bloom Seed croisée avec : White Cosmos (fleur, 1d), Blue Daffodil (fleur, 2d), White Daffodil (fleur, 2d), White Balloon Flower (fleur, 2d)"
+ },
+ "Blue Balloon Flower": {
+  "type": "fleur",
+  "texte": "Plante une Bloom Seed croisée avec : Cauliflower, Parsnip, Eggplant, Kale, Blue Pansy (fleur, 1d), Blue Cosmos (fleur, 1d)"
+ },
+ "Red Daffodil": {
+  "type": "fleur",
+  "texte": "Plante une Bloom Seed croisée avec : Yellow Pansy (fleur, 1d), Yellow Balloon Flower (fleur, 2d), Red Carnation (fleur, 5d), Primula Enigma (fleur, 5d)"
+ },
+ "Yellow Daffodil": {
+  "type": "fleur",
+  "texte": "Plante une Bloom Seed croisée avec : Red Cosmos (fleur, 1d), White Carnation (fleur, 5d), White Lotus (fleur, 5d)"
+ },
+ "Purple Daffodil": {
+  "type": "fleur",
+  "texte": "Plante une Bloom Seed croisée avec : Radish, Blueberry, Red Balloon Flower (fleur, 2d), Red Lotus (fleur, 5d), Blue Lotus (fleur, 5d)"
+ },
+ "White Daffodil": {
+  "type": "fleur",
+  "texte": "Plante une Bloom Seed croisée avec : Yellow Cosmos (fleur, 1d), Prism Petal (fleur, 1d)"
+ },
+ "Blue Daffodil": {
+  "type": "fleur",
+  "texte": "Plante une Bloom Seed croisée avec : Purple Balloon Flower (fleur, 2d), Purple Carnation (fleur, 5d), Purple Lotus (fleur, 5d)"
+ },
+ "Celestial Frostbloom": {
+  "type": "fleur",
+  "texte": "Plante une Bloom Seed croisée avec : White Pansy (fleur, 1d)"
+ },
+ "Red Carnation": {
+  "type": "fleur",
+  "texte": "Plante une Lily Seed croisée avec : Purple Pansy (fleur, 1d)"
+ },
+ "Yellow Carnation": {
+  "type": "fleur",
+  "texte": "Plante une Lily Seed croisée avec : Sunflower, Yellow Cosmos (fleur, 1d), Red Lotus (fleur, 5d), White Carnation (fleur, 5d)"
+ },
+ "Purple Carnation": {
+  "type": "fleur",
+  "texte": "Plante une Lily Seed croisée avec : Eggplant, Blueberry, Apple, Blue Cosmos (fleur, 1d), Blue Balloon Flower (fleur, 2d), Purple Lotus (fleur, 5d)"
+ },
+ "White Carnation": {
+  "type": "fleur",
+  "texte": "Plante une Lily Seed croisée avec : Yellow Pansy (fleur, 1d), White Cosmos (fleur, 1d), Prism Petal (fleur, 1d), Yellow Daffodil (fleur, 2d), Celestial Frostbloom (fleur, 2d)"
+ },
+ "Blue Carnation": {
+  "type": "fleur",
+  "texte": "Plante une Lily Seed croisée avec : Purple Daffodil (fleur, 2d), White Balloon Flower (fleur, 2d), Primula Enigma (fleur, 5d)"
+ },
+ "Red Lotus": {
+  "type": "fleur",
+  "texte": "Plante une Lily Seed croisée avec : Beetroot, Radish, Purple Cosmos (fleur, 1d), Red Balloon Flower (fleur, 2d), Yellow Balloon Flower (fleur, 2d), Purple Carnation (fleur, 5d)"
+ },
+ "Yellow Lotus": {
+  "type": "fleur",
+  "texte": "Plante une Lily Seed croisée avec : Red Pansy (fleur, 1d), Red Cosmos (fleur, 1d), Red Daffodil (fleur, 2d), Yellow Lotus (fleur, 5d)"
+ },
+ "Purple Lotus": {
+  "type": "fleur",
+  "texte": "Plante une Lily Seed croisée avec : Blue Carnation (fleur, 5d)"
+ },
+ "White Lotus": {
+  "type": "fleur",
+  "texte": "Plante une Lily Seed croisée avec : Cauliflower, Parsnip, Kale, Banana, White Pansy (fleur, 1d), Blue Daffodil (fleur, 2d)"
+ },
+ "Blue Lotus": {
+  "type": "fleur",
+  "texte": "Plante une Lily Seed croisée avec : Blue Pansy (fleur, 1d), White Daffodil (fleur, 2d)"
+ },
+ "Primula Enigma": {
+  "type": "fleur",
+  "texte": "Plante une Lily Seed croisée avec : Purple Balloon Flower (fleur, 2d)"
+ },
+ "Red Edelweiss": {
+  "type": "fleur",
+  "texte": "Plante une Edelweiss Seed croisée avec : Artichoke, Barley, Yellow Edelweiss (fleur, 3d), Yellow Lavender (fleur, 3d), Purple Lavender (fleur, 3d), Red Clover (fleur, 3d)"
+ },
+ "Yellow Edelweiss": {
+  "type": "fleur",
+  "texte": "Plante une Edelweiss Seed croisée avec : Onion, Red Edelweiss (fleur, 3d), Yellow Gladiolus (fleur, 3d), Red Lavender (fleur, 3d), White Lavender (fleur, 3d)"
+ },
+ "Purple Edelweiss": {
+  "type": "fleur",
+  "texte": "Plante une Edelweiss Seed croisée avec : Rhubarb, Pepper, Red Gladiolus (fleur, 3d), Purple Gladiolus (fleur, 3d), Blue Gladiolus (fleur, 3d), Blue Lavender (fleur, 3d)"
+ },
+ "White Edelweiss": {
+  "type": "fleur",
+  "texte": "Plante une Edelweiss Seed croisée avec : Blue Edelweiss (fleur, 3d), Yellow Clover (fleur, 3d)"
+ },
+ "Blue Edelweiss": {
+  "type": "fleur",
+  "texte": "Plante une Edelweiss Seed croisée avec : Purple Edelweiss (fleur, 3d), White Edelweiss (fleur, 3d), White Gladiolus (fleur, 3d), Purple Clover (fleur, 3d), White Clover (fleur, 3d)"
+ },
+ "Red Gladiolus": {
+  "type": "fleur",
+  "texte": "Plante une Gladiolus Seed croisée avec : Yellow Edelweiss (fleur, 3d)"
+ },
+ "Yellow Gladiolus": {
+  "type": "fleur",
+  "texte": "Plante une Gladiolus Seed croisée avec : Pepper, Onion, Barley, Yellow Gladiolus (fleur, 3d), White Gladiolus (fleur, 3d), Red Lavender (fleur, 3d)"
+ },
+ "Purple Gladiolus": {
+  "type": "fleur",
+  "texte": "Plante une Gladiolus Seed croisée avec : Artichoke, Red Edelweiss (fleur, 3d), Red Gladiolus (fleur, 3d), Purple Gladiolus (fleur, 3d), Red Clover (fleur, 3d), Purple Clover (fleur, 3d)"
+ },
+ "White Gladiolus": {
+  "type": "fleur",
+  "texte": "Plante une Gladiolus Seed croisée avec : White Edelweiss (fleur, 3d), Blue Edelweiss (fleur, 3d), Blue Gladiolus (fleur, 3d)"
+ },
+ "Blue Gladiolus": {
+  "type": "fleur",
+  "texte": "Plante une Gladiolus Seed croisée avec : Rhubarb, Purple Edelweiss (fleur, 3d), Purple Lavender (fleur, 3d), Blue Lavender (fleur, 3d), White Clover (fleur, 3d), Blue Clover (fleur, 3d)"
+ },
+ "Red Lavender": {
+  "type": "fleur",
+  "texte": "Plante une Lavender Seed croisée avec : Pepper, Artichoke, Red Edelweiss (fleur, 3d), Purple Edelweiss (fleur, 3d), Red Lavender (fleur, 3d), Purple Lavender (fleur, 3d)"
+ },
+ "Yellow Lavender": {
+  "type": "fleur",
+  "texte": "Plante une Lavender Seed croisée avec : Red Gladiolus (fleur, 3d), Yellow Gladiolus (fleur, 3d), White Gladiolus (fleur, 3d), Yellow Lavender (fleur, 3d), Red Clover (fleur, 3d)"
+ },
+ "Purple Lavender": {
+  "type": "fleur",
+  "texte": "Plante une Lavender Seed croisée avec : Blue Lavender (fleur, 3d), Purple Gladiolus (fleur, 3d)"
+ },
+ "White Lavender": {
+  "type": "fleur",
+  "texte": "Plante une Lavender Seed croisée avec : Rhubarb, Onion, Barley, Yellow Edelweiss (fleur, 3d), Blue Gladiolus (fleur, 3d), White Lavender (fleur, 3d)"
+ },
+ "Blue Lavender": {
+  "type": "fleur",
+  "texte": "Plante une Lavender Seed croisée avec : White Edelweiss (fleur, 3d), Blue Edelweiss (fleur, 3d), Purple Clover (fleur, 3d), White Clover (fleur, 3d), Blue Clover (fleur, 3d)"
+ },
+ "Red Clover": {
+  "type": "fleur",
+  "texte": "Plante une Clover Seed croisée avec : Red Edelweiss (fleur, 3d), Purple Clover (fleur, 3d)"
+ },
+ "Yellow Clover": {
+  "type": "fleur",
+  "texte": "Plante une Clover Seed croisée avec : Pepper, Onion, Barley, Yellow Edelweiss (fleur, 3d), Red Gladiolus (fleur, 3d), Yellow Lavender (fleur, 3d)"
+ },
+ "Purple Clover": {
+  "type": "fleur",
+  "texte": "Plante une Clover Seed croisée avec : Red Lavender (fleur, 3d), Red Clover (fleur, 3d)"
+ },
+ "White Clover": {
+  "type": "fleur",
+  "texte": "Plante une Clover Seed croisée avec : Blue Edelweiss (fleur, 3d), Yellow Gladiolus (fleur, 3d), Blue Lavender (fleur, 3d)"
+ },
+ "Blue Clover": {
+  "type": "fleur",
+  "texte": "Plante une Clover Seed croisée avec : Rhubarb, Artichoke, Purple Edelweiss (fleur, 3d), White Edelweiss (fleur, 3d), Purple Gladiolus (fleur, 3d), White Gladiolus (fleur, 3d)"
+ },
+ "Angler Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Kelp Fibre + 1 Doll"
+ },
+ "Bigfin Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Angler Doll + 1 Gilded Doll"
+ },
+ "Bloom Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 3 Prism Petal + 2 Celestial Frostbloom + 1 Doll + 3 Primula Enigma"
+ },
+ "Buzz Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Honey + 1 Doll"
+ },
+ "Cluck Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Feather + 1 Doll"
+ },
+ "Cosmo Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Bloom Doll + 1 Gilded Doll"
+ },
+ "Crude Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Oil + 1 Doll"
+ },
+ "Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 4 Leather + 5 Wool"
+ },
+ "Dune Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Coral + 1 Lumber Doll"
+ },
+ "Ember Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Crimsteel + 1 Doll"
+ },
+ "Frosty Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Celestial Frostbloom + 1 Harvest Doll"
+ },
+ "Gilded Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Gold + 1 Doll"
+ },
+ "Grubby Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 1 Shadow Doll + 1 Ember Doll + 1 Gilded Doll"
+ },
+ "Harvest Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Turnip + 1 Doll"
+ },
+ "Jacuzzi Bear": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Refined Salt + 1 Basic Bear"
+ },
+ "Juicy Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Tomato + 1 Doll"
+ },
+ "Lumber Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Timber + 1 Doll"
+ },
+ "Lunar Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 3 Lunara + 2 Duskberry + 1 Doll + 3 Celestine"
+ },
+ "Moo Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Leather + 1 Doll"
+ },
+ "Mouse Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Hardened Leather + 1 Cluck Doll"
+ },
+ "Nefari Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 7 Vase + 1 Royal Ornament + 1 Gilded Doll"
+ },
+ "Salt Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 3 Pickled Pepper + 5 Refined Salt + 1 Doll"
+ },
+ "Shadow Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Obsidian + 1 Doll"
+ },
+ "Sizzle Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Synthetic Fabric + 1 Doll"
+ },
+ "Solar Doll": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Merino Wool + 1 Doll"
+ },
+ "Basic Bear": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 6 Wool"
+ },
+ "Bee Box": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Honey + 1 Red Pansy"
+ },
+ "Crimsteel": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 3 Crimstone + 3 Iron"
+ },
+ "Cushion": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 9 Feather"
+ },
+ "Hardened Leather": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 9 Leather"
+ },
+ "Kelp Fibre": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 9 Seaweed"
+ },
+ "Merino Cushion": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 9 Merino Wool"
+ },
+ "Ocean's Treasure": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 5 Coral + 2 Pearl + 1 Pirate Bounty"
+ },
+ "Royal Bedding": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 5 Merino Cushion + 4 Synthetic Fabric"
+ },
+ "Royal Ornament": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 5 Gold + 4 Crimstone"
+ },
+ "Synthetic Fabric": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 6 Oil + 3 Wool"
+ },
+ "Timber": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 9 Wood"
+ },
+ "Basic Bed": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 4 Cushion + 5 Timber"
+ },
+ "Fisher Bed": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 6 Kelp Fibre + 1 Basic Bed"
+ },
+ "Floral Bed": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 1 Prism Petal + 1 Celestial Frostbloom + 1 Primula Enigma + 1 Red Pansy + 1 Blue Pansy + 1 Yellow Pansy + 2 Basic Bed + 1 Bee Box"
+ },
+ "Sturdy Bed": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 3 Merino Cushion + 5 Crimsteel + 1 Basic Bed"
+ },
+ "Desert Bed": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 8 Synthetic Fabric + 1 Sturdy Bed"
+ },
+ "Cow Bed": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 7 Hardened Leather + 2 Sturdy Bed"
+ },
+ "Pirate Bed": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 3 Kelp Fibre + 2 Vase + 1 Ocean's Treasure + 3 Sturdy Bed"
+ },
+ "Royal Bed": {
+  "type": "établi",
+  "texte": "Établi (Crafting Box) : 3 Royal Bedding + 3 Royal Ornament + 3 Sturdy Bed"
+ },
+ "Blue Crab": {
+  "type": "casier",
+  "texte": "Casier : Crab Pot avec 3 Heart Leaf"
+ },
+ "Lobster": {
+  "type": "casier",
+  "texte": "Casier : Crab Pot avec 3 Wild Grass"
+ },
+ "Hermit Crab": {
+  "type": "casier",
+  "texte": "Casier : Crab Pot avec 5 Grape"
+ },
+ "Shrimp": {
+  "type": "casier",
+  "texte": "Casier : Crab Pot avec 2 Crimstone"
+ },
+ "Mussel": {
+  "type": "casier",
+  "texte": "Casier : Crab Pot avec 1 Moonfur"
+ },
+ "Oyster": {
+  "type": "casier",
+  "texte": "Casier : Crab Pot avec 2 Fish Stick"
+ },
+ "Anemone": {
+  "type": "casier",
+  "texte": "Casier : Crab Pot avec 2 Fish Oil"
+ },
+ "Sea Slug": {
+  "type": "casier",
+  "texte": "Casier : Mariner Pot avec 2 Crimstone"
+ },
+ "Sea Snail": {
+  "type": "casier",
+  "texte": "Casier : Mariner Pot avec 3 Chewed Bone"
+ },
+ "Garden Eel": {
+  "type": "casier",
+  "texte": "Casier : Mariner Pot avec 3 Dewberry"
+ },
+ "Sea Grapes": {
+  "type": "casier",
+  "texte": "Casier : Mariner Pot avec 3 Lunara"
+ },
+ "Octopus": {
+  "type": "casier",
+  "texte": "Casier : Mariner Pot avec 1 Moonfur"
+ },
+ "Sea Urchin": {
+  "type": "casier",
+  "texte": "Casier : Mariner Pot avec 2 Fish Stick"
+ },
+ "Horseshoe Crab": {
+  "type": "casier",
+  "texte": "Casier : Mariner Pot avec 2 Crab Stick"
+ },
+ "Anchovy": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm, toute l'année · attire-le avec : Carrot, Egg"
+ },
+ "Butterflyfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm, saison : été, automne · attire-le avec : Sunflower"
+ },
+ "Blowfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm, saison : hiver · attire-le avec : Yam"
+ },
+ "Clownfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm, saison : été, hiver · attire-le avec : Cabbage"
+ },
+ "Sea Bass": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm, saison : printemps, automne · attire-le avec : Anchovy"
+ },
+ "Sea Horse": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm, saison : printemps, été · attire-le avec : Seaweed"
+ },
+ "Horse Mackerel": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm, saison : été, hiver · attire-le avec : Blueberry"
+ },
+ "Halibut": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm, saison : printemps, automne · attire-le avec : Anchovy"
+ },
+ "Squid": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm, saison : printemps, hiver · attire-le avec : Eggplant, Onion"
+ },
+ "Porgy": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm, saison : printemps · attire-le avec : Yam"
+ },
+ "Muskellunge": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm, saison : automne · attire-le avec : Turnip"
+ },
+ "Red Snapper": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub ou Red Wiggler ou Fishing Lure, toute l'année · attire-le avec : Apple, Honey"
+ },
+ "Moray Eel": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm ou Grub ou Fishing Lure, saison : été, automne · attire-le avec : Gold"
+ },
+ "Olive Flounder": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm ou Grub ou Fishing Lure, saison : printemps, automne · attire-le avec : Rhubarb"
+ },
+ "Napoleanfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub ou Fishing Lure, saison : été, automne · attire-le avec : Carrot"
+ },
+ "Surgeonfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub ou Fishing Lure, saison : été, automne · attire-le avec : Orange"
+ },
+ "Angelfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub ou Fishing Lure, saison : été, hiver · attire-le avec : Banana"
+ },
+ "Zebra Turkeyfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub ou Fishing Lure, saison : printemps, été · attire-le avec : Beetroot, Rhubarb"
+ },
+ "Ray": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub ou Fishing Lure, saison : printemps, été · attire-le avec : Squid"
+ },
+ "Hammerhead shark": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub ou Fishing Lure, saison : été, automne · attire-le avec : Iron"
+ },
+ "Barred Knifejaw": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub ou Fishing Lure, saison : printemps, été · attire-le avec : Anchovy"
+ },
+ "Walleye": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub, saison : hiver · attire-le avec : Broccoli"
+ },
+ "Rock Blackfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub, saison : automne · attire-le avec : Onion"
+ },
+ "Tilapia": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub, saison : été · attire-le avec : Zucchini"
+ },
+ "Tuna": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub ou Red Wiggler ou Fishing Lure, toute l'année · attire-le avec : Orange, Wild Mushroom"
+ },
+ "Mahi Mahi": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub ou Red Wiggler ou Fishing Lure, saison : été, automne · attire-le avec : Corn"
+ },
+ "Blue Marlin": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub ou Red Wiggler ou Fishing Lure, saison : été, hiver · attire-le avec : Wheat"
+ },
+ "Oarfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler ou Fishing Lure, saison : printemps, hiver · attire-le avec : Kale"
+ },
+ "Football fish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler ou Fishing Lure, saison : hiver · attire-le avec : Sunflower"
+ },
+ "Sunfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler ou Fishing Lure, saison : été, automne · attire-le avec : Anchovy"
+ },
+ "Coelacanth": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler ou Fishing Lure, saison : printemps, hiver · attire-le avec : Cabbage"
+ },
+ "Parrotfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler ou Fishing Lure, saison : printemps, été · attire-le avec : Seaweed"
+ },
+ "Whale Shark": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler ou Fishing Lure, saison : été, hiver · attire-le avec : Crab, Fat Chicken"
+ },
+ "Saw Shark": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler ou Fishing Lure, saison : printemps, été · attire-le avec : Red Snapper, Speed Chicken"
+ },
+ "White Shark": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler ou Fishing Lure, saison : été, hiver · attire-le avec : Tuna, Rich Chicken"
+ },
+ "Cobia": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler, saison : été · attire-le avec : Broccoli"
+ },
+ "Trout": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler, saison : hiver · attire-le avec : Pepper"
+ },
+ "Weakfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler, saison : printemps · attire-le avec : Artichoke"
+ },
+ "Twilight Anglerfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler ou Grub ou Fishing Lure, toute l'année · attire-le avec : Sunfish"
+ },
+ "Starlight Tuna": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler ou Fishing Lure, toute l'année · attire-le avec : Horse Mackerel, Zebra Turkeyfish"
+ },
+ "Radiant Ray": {
+  "type": "poisson",
+  "texte": "Pêche : appât Red Wiggler ou Fishing Lure, toute l'année · attire-le avec : Iron"
+ },
+ "Phantom Barracuda": {
+  "type": "poisson",
+  "texte": "Pêche : appât Grub ou Fishing Lure, toute l'année · attire-le avec : Squid"
+ },
+ "Gilded Swordfish": {
+  "type": "poisson",
+  "texte": "Pêche : appât Earthworm ou Red Wiggler ou Fishing Lure, toute l'année · attire-le avec : Gold"
+ },
+ "Furikake Sprinkle": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 1 Fish Flake + 1 Seaweed"
+ },
+ "Mashed Potato": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 8 Potato"
+ },
+ "Pumpkin Soup": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 10 Pumpkin"
+ },
+ "Reindeer Carrot": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 5 Carrot"
+ },
+ "Mushroom Soup": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 5 Wild Mushroom"
+ },
+ "Popcorn": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 100 Sunflower + 5 Corn"
+ },
+ "Bumpkin Broth": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 10 Carrot + 5 Cabbage"
+ },
+ "Cabbers n Mash": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 10 Mashed Potato + 20 Cabbage"
+ },
+ "Boiled Eggs": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 10 Egg"
+ },
+ "Kale Stew": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 10 Kale"
+ },
+ "Kale Omelette": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 40 Egg + 5 Kale"
+ },
+ "Gumbo": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 50 Potato + 30 Pumpkin + 20 Carrot + 3 Red Snapper"
+ },
+ "Rapid Roast": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 1 Magic Mushroom + 40 Pumpkin"
+ },
+ "Saltbite": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 10 Saltwort"
+ },
+ "Crystal Cookie": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 10 Crystal Leaf"
+ },
+ "Fried Tofu": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 15 Soybean + 200 Sunflower"
+ },
+ "Rice Bun": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 2 Rice + 50 Wheat"
+ },
+ "Antipasto": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 2 Olive + 2 Grape"
+ },
+ "Pizza Margherita": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 30 Tomato + 5 Cheese + 20 Wheat"
+ },
+ "Rhubarb Tart": {
+  "type": "plat",
+  "texte": "À cuisiner (feu de camp) : 3 Rhubarb"
+ },
+ "Surimi Rice Bowl": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 1 Fish Stick + 1 Rice + 1 Onion"
+ },
+ "Creamy Crab Bite": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 1 Crab Stick + 3 Cheese"
+ },
+ "Crimstone Infused Fish Oil": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 1 Fish Oil + 1 Crimstone"
+ },
+ "Sunflower Crunch": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 300 Sunflower"
+ },
+ "Mushroom Jacket Potatoes": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 10 Wild Mushroom + 5 Potato"
+ },
+ "Fruit Salad": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 1 Apple + 1 Orange + 1 Blueberry"
+ },
+ "Pancakes": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 10 Wheat + 10 Egg + 6 Honey"
+ },
+ "Roast Veggies": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 15 Cauliflower + 10 Carrot"
+ },
+ "Cauliflower Burger": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 15 Cauliflower + 5 Wheat"
+ },
+ "Club Sandwich": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 100 Sunflower + 25 Carrot + 5 Wheat"
+ },
+ "Bumpkin Salad": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 20 Beetroot + 10 Parsnip"
+ },
+ "Bumpkin ganoush": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 30 Eggplant + 50 Potato + 10 Parsnip"
+ },
+ "Goblin's Treat": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 10 Pumpkin + 20 Radish + 10 Cabbage"
+ },
+ "Chowder": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 10 Beetroot + 10 Wheat + 5 Parsnip + 3 Anchovy"
+ },
+ "Bumpkin Roast": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 20 Mashed Potato + 5 Roast Veggies"
+ },
+ "Goblin Brunch": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 5 Boiled Eggs + 1 Goblin's Treat"
+ },
+ "Beetroot Blaze": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 2 Magic Mushroom + 50 Beetroot"
+ },
+ "Steamed Red Rice": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 3 Rice + 50 Beetroot"
+ },
+ "Tofu Scramble": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 20 Soybean + 20 Egg + 10 Cauliflower"
+ },
+ "Fried Calamari": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 200 Sunflower + 15 Wheat + 1 Squid"
+ },
+ "Fish Burger": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 10 Beetroot + 10 Wheat + 1 Horse Mackerel"
+ },
+ "Fish Omelette": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 40 Egg + 1 Surgeonfish + 2 Butterflyfish"
+ },
+ "Ocean's Olive": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 1 Olive Flounder + 2 Olive"
+ },
+ "Seafood Basket": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 2 Blowfish + 2 Napoleanfish + 2 Sunfish"
+ },
+ "Fish n Chips": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 1 Fancy Fries + 1 Halibut"
+ },
+ "Sushi Roll": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 1 Angelfish + 1 Seaweed + 2 Rice"
+ },
+ "Caprese Salad": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 1 Cheese + 25 Tomato + 20 Kale"
+ },
+ "Spaghetti al Limone": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 10 Wheat + 15 Lemon + 3 Cheese"
+ },
+ "Creamy Truffle Risotto": {
+  "type": "plat",
+  "texte": "À cuisiner (cuisine) : 8 Truffle + 3 Rice + 5 Wild Mushroom"
+ },
+ "Apple Pie": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 5 Apple + 10 Wheat + 20 Egg"
+ },
+ "Orange Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 5 Orange + 30 Egg + 10 Wheat"
+ },
+ "Sunflower Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 1000 Sunflower + 10 Wheat + 30 Egg"
+ },
+ "Honey Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 10 Honey + 10 Wheat + 20 Egg"
+ },
+ "Potato Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 500 Potato + 10 Wheat + 30 Egg"
+ },
+ "Pumpkin Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 130 Pumpkin + 10 Wheat + 30 Egg"
+ },
+ "Cornbread": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 15 Corn + 5 Wheat + 10 Egg"
+ },
+ "Carrot Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 120 Carrot + 10 Wheat + 30 Egg"
+ },
+ "Cabbage Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 90 Cabbage + 10 Wheat + 30 Egg"
+ },
+ "Beetroot Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 100 Beetroot + 10 Wheat + 30 Egg"
+ },
+ "Cauliflower Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 60 Cauliflower + 10 Wheat + 30 Egg"
+ },
+ "Parsnip Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 45 Parsnip + 10 Wheat + 30 Egg"
+ },
+ "Eggplant Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 30 Eggplant + 10 Wheat + 30 Egg"
+ },
+ "Radish Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 25 Radish + 10 Wheat + 30 Egg"
+ },
+ "Wheat Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 35 Wheat + 30 Egg"
+ },
+ "Lemon Cheesecake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 20 Lemon + 5 Cheese + 40 Egg"
+ },
+ "Truffle Cake": {
+  "type": "plat",
+  "texte": "À cuisiner (boulangerie) : 15 Truffle + 30 Wheat + 30 Egg + 5 Honey"
+ },
+ "Blueberry Jam": {
+  "type": "plat",
+  "texte": "À cuisiner (épicerie) : 5 Blueberry"
+ },
+ "Fermented Carrots": {
+  "type": "plat",
+  "texte": "À cuisiner (épicerie) : 20 Carrot"
+ },
+ "Sauerkraut": {
+  "type": "plat",
+  "texte": "À cuisiner (épicerie) : 20 Cabbage"
+ },
+ "Fancy Fries": {
+  "type": "plat",
+  "texte": "À cuisiner (épicerie) : 500 Sunflower + 500 Potato"
+ },
+ "Fermented Fish": {
+  "type": "plat",
+  "texte": "À cuisiner (épicerie) : 6 Tuna"
+ },
+ "Shroom Syrup": {
+  "type": "plat",
+  "texte": "À cuisiner (épicerie) : 3 Magic Mushroom + 20 Honey"
+ },
+ "Cheese": {
+  "type": "plat",
+  "texte": "À cuisiner (épicerie) : 3 Milk"
+ },
+ "Blue Cheese": {
+  "type": "plat",
+  "texte": "À cuisiner (épicerie) : 2 Cheese + 10 Blueberry"
+ },
+ "Honey Cheddar": {
+  "type": "plat",
+  "texte": "À cuisiner (épicerie) : 3 Cheese + 5 Honey"
+ },
+ "Purple Smoothie": {
+  "type": "plat",
+  "texte": "À cuisiner (bar à smoothies) : 5 Blueberry + 10 Cabbage"
+ },
+ "Orange Juice": {
+  "type": "plat",
+  "texte": "À cuisiner (bar à smoothies) : 5 Orange"
+ },
+ "Apple Juice": {
+  "type": "plat",
+  "texte": "À cuisiner (bar à smoothies) : 5 Apple"
+ },
+ "Power Smoothie": {
+  "type": "plat",
+  "texte": "À cuisiner (bar à smoothies) : 10 Blueberry + 5 Kale"
+ },
+ "Bumpkin Detox": {
+  "type": "plat",
+  "texte": "À cuisiner (bar à smoothies) : 5 Apple + 5 Orange + 10 Carrot"
+ },
+ "Banana Blast": {
+  "type": "plat",
+  "texte": "À cuisiner (bar à smoothies) : 10 Banana + 10 Egg"
+ },
+ "Grape Juice": {
+  "type": "plat",
+  "texte": "À cuisiner (bar à smoothies) : 5 Grape + 20 Radish"
+ },
+ "The Lot": {
+  "type": "plat",
+  "texte": "À cuisiner (bar à smoothies) : 1 Blueberry + 1 Orange + 1 Grape + 1 Apple + 1 Banana"
+ },
+ "Carrot Juice": {
+  "type": "plat",
+  "texte": "À cuisiner (bar à smoothies) : 30 Carrot"
+ },
+ "Quick Juice": {
+  "type": "plat",
+  "texte": "À cuisiner (bar à smoothies) : 50 Sunflower + 40 Pumpkin"
+ },
+ "Slow Juice": {
+  "type": "plat",
+  "texte": "À cuisiner (bar à smoothies) : 10 Grape + 100 Kale"
+ },
+ "Sour Shake": {
+  "type": "plat",
+  "texte": "À cuisiner (bar à smoothies) : 20 Lemon"
+ },
+ "Fish Stick": {
+  "type": "transformé",
+  "texte": "Poissonnerie (Fish Market), par exemple : 6 Red Snapper + 2 Olive Flounder + 2 Zebra Turkeyfish"
+ },
+ "Fish Oil": {
+  "type": "transformé",
+  "texte": "Poissonnerie (Fish Market), par exemple : 8 Tuna + 2 Weakfish + 2 Oarfish"
+ },
+ "Crab Stick": {
+  "type": "transformé",
+  "texte": "Poissonnerie (Fish Market), par exemple : 1 Crab + 1 Blue Crab + 1 Hermit Crab"
+ },
+ "Fish Flake": {
+  "type": "transformé",
+  "texte": "Poissonnerie (Fish Market), par exemple : 4 Anchovy + 2 Porgy + 2 Sea Bass"
+ }
+}

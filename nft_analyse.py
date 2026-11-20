@@ -1820,3 +1820,33 @@ def boutique_chapitre(chapitres, chapitre_nom, photos, stock_caps, aujourdhui, b
     return {"monnaie": B["monnaie"], "stock": stock, "stock_estime": estime, "caps_paliers_futurs": futurs,
             "rythme": round(rythme, 1) if rythme else None, "reste_jours": reste_j,
             "total_fin": round(total_fin), "objets": out, "valeurs_jour": {k: round(v, 2) for k, v in val.items()}}
+
+
+def comment_obtenir(nom, recettes):
+    """Comment obtenir un objet demandé (fleur, poupée, poisson, plat…), en une phrase."""
+    r = (recettes or {}).get(nom)
+    if r:
+        txt = r["texte"]
+        # ingrédients qui se fabriquent eux aussi (Doll, Crimsteel…) : leur recette en plus, sur un niveau
+        sous = []
+        for q, ing in re.findall(r"(\d+) ([A-Z][A-Za-z' ]+?)(?= \+|$)", txt.split(":", 1)[-1]):
+            s2 = (recettes or {}).get(ing)
+            if s2 and s2["type"] in ("établi", "transformé") and ing != nom:
+                sous.append(f"{ing} = {s2['texte'].split(':', 1)[-1].strip()}")
+        return txt + (" · " + " · ".join(sous) if sous else "")
+    if nom.startswith("Aged "):
+        return f"Cave d'affinage (Aging Shed) : fais vieillir des {nom[5:]} avec du sel"
+    BASE = {"Egg": "Poules (nourris-les, puis ramasse)", "Feather": "Poules (ramassées avec les œufs, à partir du niveau 3)",
+            "Milk": "Vaches", "Leather": "Vaches", "Wool": "Moutons", "Merino Wool": "Moutons", "Truffle": "Cochons",
+            "Honey": "Ruches (fleurs autour)", "Wood": "Arbres", "Stone": "Rochers de pierre", "Iron": "Rochers de fer",
+            "Gold": "Rochers d'or", "Crimstone": "Rochers de crimstone", "Oil": "Réserves d'huile (foreuse)",
+            "Grape": "Serre : plante des graines de raisin (Grape Seed)", "Olive": "Serre : plante des graines d'olive (Olive Seed)",
+            "Rice": "Serre : plante du riz (Rice Seed)", "Salt": "Saline (râteau à sel)", "Wild Mushroom": "Champignons sauvages / cave",
+            "Magic Mushroom": "Cave (fouilles)"}
+    if nom in BASE:
+        return BASE[nom]
+    if nom in CROPS:
+        return f"Champ : plante des graines ({nom} Seed)"
+    if nom in ("Tomato", "Lemon", "Blueberry", "Orange", "Apple", "Banana", "Celestine", "Lunara", "Duskberry"):
+        return f"Verger : plante des graines ({nom} Seed)"
+    return None
