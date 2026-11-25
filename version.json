@@ -1,6 +1,6 @@
 {
- "version": "2026-11-20.3",
- "nouveautes": "Missions du pass : filtres « 🎟️ Caps · 🌼 Flower · 🪙 Coins » et colonne Récompense.",
+ "version": "2026-11-25.1",
+ "nouveautes": "Boutique : plusieurs NFT visés (ex. Straw House + Duende Hat) et ce que te coûtent tes caps par jour. Vendre : alertes comparées au marché du même jour + prix en dollars selon le cours du Flower.",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

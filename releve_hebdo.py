@@ -285,7 +285,29 @@ NOT_FOR_SALE = {"Love Charm", "Basic Land", "Sunflorian Emblem", "Axe", "Pickaxe
                 "Iron Pickaxe", "Gold Pickaxe", "Rod", "Sand Shovel", "Sand Drill", "Salt Rake", "Oil Drill"}
 
 
-def sell_advice(holdings, prices, history, costs, cfg, trades=()):
+def ecart_ventes(trades, item, history, jours=14):
+    """Tes ventes comparées au prix du marché DU JOUR de chaque vente (pas au prix d'aujourd'hui :
+    le prix bouge, notamment quand le cours du Flower change). Renvoie (ton prix moyen, marché moyen, écart %) ou None."""
+    since = datetime.now(timezone.utc).timestamp() * 1000 - jours * 864e5
+    par_jour = {h["date"]: h["prices"].get(item) for h in history or [] if h["prices"].get(item)}
+    dates = sorted(par_jour)
+    q = mine = mk = 0.0
+    for t in trades or ():
+        if not (t.get("sold") and t["name"] == item and t["at"] >= since and t.get("quantity")):
+            continue
+        d = datetime.fromtimestamp(t["at"] / 1000, timezone.utc).date()
+        proche = min(dates, key=lambda x: abs((datetime.fromisoformat(x).date() - d).days), default=None)
+        if not proche or abs((datetime.fromisoformat(proche).date() - d).days) > 1:
+            continue   # pas de prix du marché connu ce jour-là : on ne juge pas
+        q += t["quantity"]
+        mine += t.get("gross") or 0
+        mk += par_jour[proche] * t["quantity"]
+    if not q or not mk:
+        return None
+    return mine / q, mk / q, (mine - mk) / mk * 100
+
+
+def sell_advice(holdings, prices, history, costs, cfg, trades=(), usd=None):
     keep = {**DEFAULT_KEEP, **(cfg.get("stock_a_garder") or {})}
     cost = {r["item"]: r["cout"] for r in costs if not r.get("cycle")}
     since = (datetime.now(timezone.utc) - timedelta(days=14)).timestamp() * 1000
@@ -333,17 +355,23 @@ def sell_advice(holdings, prices, history, costs, cfg, trades=()):
                 txt = "Nouvelle ressource : vends au fil de l'eau tant que le prix n'est pas stable"
         floor = max(p * 0.98, (c or 0) / (1 - TAX))
         alert = None
-        if item in my_sales and my_sales[item][0]:
-            mine = my_sales[item][1] / my_sales[item][0]
-            gap = (mine - p) / p * 100
-            if gap < -10:
-                alert = (f"Attention : tes ventes des 14 derniers jours étaient {gap:.0f} % sous le prix du marché "
-                         f"(moyenne {mine:.4f}). Mets en vente au prix mini conseillé ou attends.")
+        ec = ecart_ventes(trades, item, history)
+        if ec and ec[2] < -10:
+            alert = (f"Attention : tes ventes des 14 derniers jours étaient {ec[2]:.0f} % sous le prix du marché du même jour "
+                     f"(toi {ec[0]:.4f}, marché {ec[1]:.4f}). Mets en vente au prix mini conseillé.")
+        # Même ressource il y a ~2 semaines, en Flower et en dollars (le cours du Flower bouge)
+        ref = next((h for h in history if h["prices"].get(item) and (usd or {}).get(h["date"])
+                    and h["date"] >= (datetime.now(timezone.utc) - timedelta(days=15)).strftime("%Y-%m-%d")), None)
+        u_now = (usd or {}).get("_now")
+        dollars = None
+        if ref and u_now:
+            dollars = {"date": ref["date"], "flw_avant": ref["prices"][item], "usd_avant": ref["prices"][item] * usd[ref["date"]],
+                       "usd_now": p * u_now, "cours_avant": usd[ref["date"]], "cours_now": u_now}
         role = ("vente" if item in (cfg.get("a_vendre") or DEFAULT_FOR_SALE)
                 else "ferme" if item in (cfg.get("pour_ma_ferme") or DEFAULT_FOR_FARM) else "autre")
         rows.append({"n": item, "role": role, "stock": qty, "keep": k, "sellable": sellable, "price": p, "avg7": avg7,
                      "lo": lo, "hi": hi, "floor": floor, "value": sellable * net, "sig": sig, "txt": txt, "alert": alert,
-                     "days": len(vals)})
+                     "days": len(vals), "dollars": dollars})
     rows.sort(key=lambda r: -r["value"])
     return rows
 
@@ -429,13 +457,10 @@ def evaluate_goals(goals, holdings, prices, trades, land, coin_rate):
             done = spent < 5
             info = f"Fer acheté sur 7 jours : {spent:.2f} FLW"
         elif typ == "prix_vente":
-            s = [t for t in trades if t["sold"] and t["name"] == name and t["at"] >= now_ms - 14 * 864e5 and t.get("quantity")]
-            mk = prices.get(name)
-            if s and mk:
-                avg = sum(t["gross"] for t in s) / sum(t["quantity"] for t in s)
-                gap = (avg - mk) / mk * 100
-                done = gap >= -5
-                info = f"Tes ventes (14 j) : {avg:.4f} · marché {mk:.4f} ({gap:+.0f} %)"
+            ec = ecart_ventes(trades, name, load(PRICES_FILE, []))
+            if ec:
+                done = ec[2] >= -5
+                info = f"Tes ventes (14 j) : {ec[0]:.4f} · marché du même jour {ec[1]:.4f} ({ec[2]:+.0f} %)"
             else:
                 info = "Pas de vente récente"
         res = g.get("ressources")
@@ -719,7 +744,10 @@ def main():
     cost_hist = [c for c in load(DATA / "couts.json", []) if c["date"] != today]
     cost_hist.append({"date": today, "couts": {r["item"]: round(r["cout"], 6) for r in costs}})
     safe_write((DATA / "couts.json"), json.dumps(cost_hist, ensure_ascii=False, indent=1))
-    stock = sell_advice(holdings, all_prices, history, costs, CONFIG, all_trades)
+    usd_j = {sn["date"]: sn["flower_usd"] for sn in snaps if sn.get("flower_usd")}
+    if usd_j:
+        usd_j["_now"] = usd_j[max(usd_j)]
+    stock = sell_advice(holdings, all_prices, history, costs, CONFIG, all_trades, usd_j)
     stock_hist = [s for s in load(DATA / "stock.json", []) if s["date"] != today]
     stock_hist.append({"date": today, "at": now.isoformat(timespec="seconds"), "stock": {k: v for k, v in holdings.items() if v}})
     safe_write((DATA / "stock.json"), json.dumps(stock_hist, ensure_ascii=False, indent=1))
@@ -1122,15 +1150,43 @@ def main():
                 cle_c = f"{Bq['monnaie']} Collected"
                 hist_c = points_par_jour(ph_b, cle_c, today, now.timestamp() * 1000, 7)
                 auj_c = next((h for h in hist_c if h["en_cours"]), None)
-                vises = [o for o in Bq["objets"] if o["nom"] == CONFIG.get("objectif_boutique")] or \
+                # Un ou plusieurs objets visés (dans l'ordre où tu veux les prendre)
+                ob_cfg = CONFIG.get("objectif_boutique")
+                ob_cfg = [ob_cfg] if isinstance(ob_cfg, str) else list(ob_cfg or [])
+                par_nom = {o["nom"]: o for o in Bq["objets"]}
+                vises = [par_nom[n] for n in ob_cfg if n in par_nom] or \
                         sorted([o for o in Bq["objets"] if o.get("jour")], key=lambda o: -o["jour"])[:1]
+                # Flower dépensés au marché chaque journée du jeu (minuit UTC), pour savoir ce que coûtent tes caps
+                achats_j, ventes_j = {}, {}
+                for t in load(TRADES_FILE, []):
+                    d = datetime.fromtimestamp(t["at"] / 1000, timezone.utc).strftime("%Y-%m-%d")
+                    if t.get("sold"):
+                        ventes_j[d] = ventes_j.get(d, 0.0) + abs(t.get("net") or 0)
+                    else:
+                        achats_j[d] = achats_j.get(d, 0.0) + abs(t.get("net") or 0)
+                for h in hist_c:
+                    h["achats"] = round(achats_j.get(h["date"], 0.0), 2)
+                    h["ventes"] = round(ventes_j.get(h["date"], 0.0), 2)
                 if vises:
-                    v = vises[0]
                     fait_c = auj_c["fait"] if auj_c else 0
-                    reste_c = max(0.0, v["prix"] - (Bq["stock"] - fait_c) - Bq.get("caps_paliers_futurs", 0))
-                    Bq["jour_obj"] = {"vise": v["nom"], "prix": v["prix"], "fait": fait_c,
-                                      "objectif": round(reste_c / max(1, Bq["reste_jours"])), "historique": hist_c,
-                                      "manque": round(max(0.0, v["prix"] - Bq["stock"] - Bq.get("caps_paliers_futurs", 0)))}
+                    fut = Bq.get("caps_paliers_futurs", 0)
+                    rj = max(1, Bq["reste_jours"])
+                    etapes, cumul = [], 0
+                    for v in vises:
+                        cumul += v["prix"]
+                        etapes.append({"nom": v["nom"], "prix": v["prix"], "cumul": cumul,
+                                       "objectif": round(max(0.0, cumul - (Bq["stock"] - fait_c) - fut) / rj),
+                                       "manque": round(max(0.0, cumul - Bq["stock"] - fut)),
+                                       "jour": v.get("jour"), "jour_min": v.get("jour_min"), "jour_max": v.get("jour_max")})
+                    passes = [h for h in hist_c if not h["en_cours"]]
+                    caps7 = sum(h["fait"] for h in passes)
+                    ach7 = sum(h["achats"] for h in passes)
+                    Bq["jour_obj"] = {"vise": " + ".join(e["nom"] for e in etapes), "prix": cumul, "fait": fait_c,
+                                      "objectif": etapes[-1]["objectif"], "historique": hist_c,
+                                      "manque": etapes[-1]["manque"], "etapes": etapes,
+                                      "moy_recente": round(caps7 / len(passes)) if passes else None,
+                                      "achats_moy": round(ach7 / len(passes), 2) if passes else None,
+                                      "flw_par_cap": round(ach7 / caps7, 3) if caps7 else None}
     except Exception as e:
         print(f"(boutique du chapitre indisponible : {e})", file=sys.stderr)
     # Jours double livraison à venir (calendrier officiel du jeu)
