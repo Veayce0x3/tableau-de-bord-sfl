@@ -1177,7 +1177,8 @@ def main():
                         etapes.append({"nom": v["nom"], "prix": v["prix"], "cumul": cumul,
                                        "objectif": round(max(0.0, cumul - (Bq["stock"] - fait_c) - fut) / rj),
                                        "manque": round(max(0.0, cumul - Bq["stock"] - fut)),
-                                       "jour": v.get("jour"), "jour_min": v.get("jour_min"), "jour_max": v.get("jour_max")})
+                                       "jour": v.get("jour"), "jour_min": v.get("jour_min"), "jour_max": v.get("jour_max"),
+                                       "avec": v.get("avec") if v.get("avec") and v["avec"]["nom"] in [x["nom"] for x in etapes] else None})
                     passes = [h for h in hist_c if not h["en_cours"]]
                     caps7 = sum(h["fait"] for h in passes)
                     ach7 = sum(h["achats"] for h in passes)

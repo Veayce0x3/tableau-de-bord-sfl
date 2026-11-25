@@ -1,6 +1,6 @@
 {
- "version": "2026-11-25.1",
- "nouveautes": "Boutique : plusieurs NFT visés (ex. Straw House + Duende Hat) et ce que te coûtent tes caps par jour. Vendre : alertes comparées au marché du même jour + prix en dollars selon le cours du Flower.",
+ "version": "2026-11-25.2",
+ "nouveautes": "Boutique : valeur de la Duende Hat une fois la Straw House achetée (les deux effets s'additionnent).",
  "fichiers": [
   "releve_hebdo.py",
   "tableau_de_bord.py",

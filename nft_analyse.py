@@ -1818,6 +1818,16 @@ def boutique_chapitre(chapitres, chapitre_nom, photos, stock_caps, aujourdhui, b
         g["jours_pour_avoir"] = max(0.0, (o["prix"] - stock) / par_jour_total) if par_jour_total else None
         g["atteignable"] = total_fin >= o["prix"]
         out.append(g)
+    # Objet « plus vite » (Duende Hat) une fois l'objet compost (Straw House) acheté : il accélère aussi
+    # les récoltes en plus apportées par l'engrais (les temps se multiplient : ÷ 2 puis × 0,9)
+    maison = next((g for g in out if g.get("jour_max") is not None and
+                   next((o for o in B["objets"] if o["nom"] == g["nom"]), {}).get("calc") == "compost"), None)
+    for g, o in zip(out, B["objets"]):
+        if o["calc"] == "cultures_fruits_temps" and maison:
+            f = 1 / o["val"] - 1
+            mx = (val["cultures"] + val["fruits"] + maison["jour_max"]) * f
+            g["avec"] = {"nom": maison["nom"], "jour_min": 0.0, "jour_max": mx, "jour": mx / 2,
+                         "en_plus_max": mx - g["jour_max"]}
     return {"monnaie": B["monnaie"], "stock": stock, "stock_estime": estime, "caps_paliers_futurs": futurs,
             "rythme": round(rythme, 1) if rythme else None, "reste_jours": reste_j,
             "total_fin": round(total_fin), "objets": out, "valeurs_jour": {k: round(v, 2) for k, v in val.items()}}
